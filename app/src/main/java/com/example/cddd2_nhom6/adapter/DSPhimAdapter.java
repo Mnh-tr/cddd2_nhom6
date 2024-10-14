@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import java.util.List;
 
+import com.example.cddd2_nhom6.activity.ChiTietPhimActivity;
 import com.example.cddd2_nhom6.databinding.ItemPhimBinding;
 import com.example.cddd2_nhom6.model.DSPhim;
 public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimViewHolder>{
@@ -68,7 +69,11 @@ public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimView
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    recyclerViewItemClickListener.onItemClick(view, position);
+                    //Lay thong tin chi tiet phim tu slug truyen den man hinh chi tiet phim
+                    Intent intent = new Intent(view.getContext(), ChiTietPhimActivity.class);
+                    DSPhim dsPhim = dsPhims.get(position);
+                    intent.putExtra("slug", dsPhim.getSlug());
+                    view.getContext().startActivity(intent);
                 }
             });
 
