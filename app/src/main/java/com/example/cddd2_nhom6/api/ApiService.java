@@ -29,4 +29,7 @@ public interface ApiService {
 
     @GET("phim/{slug}")
     Call<ChiTietPhim> getChiTietPhim(@Path("slug") String slug);
+
+    @GET("v1/api/tim-kiem")
+    Call<DSPhimResponse> searchMovies(@Query("keyword") String keyword, @Query("limit") int limit);
 }
