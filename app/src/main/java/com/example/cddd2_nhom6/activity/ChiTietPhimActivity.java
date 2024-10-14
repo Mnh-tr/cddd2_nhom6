@@ -49,6 +49,14 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         //fetchMovieDetail();
         apiService = ApiClient.getClient().create(ApiService.class);
         loadMovieDetails(movieSlug);
+
+        binding.btnXemPhim.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ChiTietPhimActivity.this, XemPhimActivity.class);
+                startActivity(intent);
+            }
+        });
     }
     private void loadMovieDetails(String slug) {
         binding.progressBar.setVisibility(View.VISIBLE);
