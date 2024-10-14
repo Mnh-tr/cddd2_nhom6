@@ -7,15 +7,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
 import com.bumptech.glide.Glide;
-import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.adapter.TapPhimAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityChiTietPhimBinding;
@@ -35,6 +29,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
     private ApiService apiService;
     private String movieLink;
     private ChiTietPhim.MovieItem movieDetails;
+    private TapPhimAdapter tapPhimAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,8 +48,17 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         binding.btnXemPhim.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ChiTietPhimActivity.this, XemPhimActivity.class);
-                startActivity(intent);
+                if (movieLink != null && !movieLink.isEmpty()) {
+                    String episodeCurrent = serverDataList.get(0).getName();
+                    // Khởi động activity phát video
+                    Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
+                    intent.putExtra("movie_link", movieLink);  // Truyền link phim
+                    intent.putExtra("slug", movieSlug);
+                    intent.putExtra("episodeCurrent", episodeCurrent);
+                    view.getContext().startActivity(intent);
+                } else {
+                    Toast.makeText(view.getContext(), "Link phim không khả dụng", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -133,6 +137,15 @@ public class ChiTietPhimActivity extends AppCompatActivity {
                                 serverDataList.addAll(data); // Thêm tất cả các tập phim vào danh sách
                             }
                         }
+                        tapPhimAdapter = new TapPhimAdapter(ChiTietPhimActivity.this, serverDataList);
+
+                        ChiTietPhim.Episode.ServerData firstServerData = serverDataList.get(0);
+                        if (firstServerData != null) {
+                            movieLink = firstServerData.getLinkM3u8();
+                            Log.d("MovieDetailActivity", "Link phim tập 1: " + movieLink);
+                        }
+
+                        tapPhimAdapter.notifyDataSetChanged();
                         binding.progressBar.setVisibility(View.GONE);
                         binding.scvChitiet.setVisibility(View.VISIBLE);
                     } else {
