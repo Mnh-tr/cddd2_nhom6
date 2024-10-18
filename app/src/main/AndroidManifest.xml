@@ -21,7 +21,7 @@
             android:name=".activity.ChiTietPhimActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".activity.DangNhapActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,7 +30,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.DangKyActivity" />
-        <activity android:name=".activity.DangNhapActivity" />
+        <activity android:name=".activity.MainActivity" />
     </application>
 
 </manifest>
