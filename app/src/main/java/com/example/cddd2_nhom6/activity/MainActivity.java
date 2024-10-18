@@ -31,7 +31,6 @@ import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import java.util.List;
 
 import retrofit2.Call;
@@ -51,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
+        // Write a message to the database
+
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, binding.drawerlayout, binding.toolbar,
