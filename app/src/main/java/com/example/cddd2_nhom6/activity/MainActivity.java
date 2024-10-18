@@ -6,6 +6,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponse;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.List;
 
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-// Thiết lập ActionBar và DrawerLayout
+        // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         loadTVShow();
         loadPhimLe();
         loadPhimHoatHinh();
+        navigationBottom();
 
     }
 
@@ -315,6 +319,35 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
                 binding.mainContent.setVisibility(View.VISIBLE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            }
+        });
+    }
+
+    private void navigationBottom() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // Đặt item mặc định được chọn là màn hình Home
+        bottomNavigationView.setSelectedItemId(R.id.nav_home);
+
+        // Xử lý sự kiện chọn item của Bottom Navigation
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Intent intent = null;
+                if (item.getItemId() == R.id.nav_home) {
+                    intent = new Intent(MainActivity.this, MainActivity.class);
+                } else if (item.getItemId() == R.id.nav_vip) {
+                    intent = new Intent(MainActivity.this, VipActivity.class);
+                }
+                // Pass the selected item to the new Activity
+                if (intent != null) {
+                    intent.putExtra("selected_item_id", item.getItemId());
+                    startActivity(intent);
+                    overridePendingTransition(0, 0);  // No animation for smooth transition
+                    return true;
+                }
+                return false;
+
             }
         });
     }

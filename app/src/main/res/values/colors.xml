@@ -5,4 +5,5 @@
     <color name="pink">#D91656</color>
     <color name="pink_nhat">#FFCDD2</color>
     <color name="meBlack">#272726</color>
+    <color name="bottom_nav_unselected">#808080</color>
 </resources>
