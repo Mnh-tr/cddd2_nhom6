@@ -1,0 +1,369 @@
+package com.example.cddd2_nhom6.activity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
+import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.example.cddd2_nhom6.adapter.DSPhimAdapter;
+import com.example.cddd2_nhom6.adapter.PhimAdapter;
+import com.example.cddd2_nhom6.api.ApiClient;
+import com.example.cddd2_nhom6.api.ApiService;
+import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
+import com.example.cddd2_nhom6.model.DSPhim;
+import com.example.cddd2_nhom6.model.Phim;
+import com.example.cddd2_nhom6.response.DSPhimResponse;
+import com.example.cddd2_nhom6.response.PhimResponse;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+
+public class MainActivity extends AppCompatActivity {
+    private ActivityMainBinding binding;
+    private PhimAdapter movieAdapter;
+    private ApiService apiService;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        // Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Write a message to the database
+
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, binding.drawerlayout, binding.toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        );
+
+        binding.drawerlayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        // Đặt biểu tượng trở về
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+        }
+        // Ẩn tiêu đề
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+        swipeRefreshLayout = binding.swipeRefreshLayout; // Khởi tạo SwipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadMovies(); // Tải lại danh sách phim
+            loadSeries(); // Tải lại danh sach phim bo
+            loadTVShow();// Tải lại danh sách tvshow
+            loadPhimLe();
+            loadPhimHoatHinh();
+        });
+
+        apiService = ApiClient.getClient().create(ApiService.class);
+
+
+        setupRecyclerViews();
+        loadMovies();
+        loadSeries();
+        loadTVShow();
+        loadPhimLe();
+        loadPhimHoatHinh();
+        navigationBottom();
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Nạp menu
+        getMenuInflater().inflate(R.menu.menu_timkiem, menu);
+        // Tìm kiếm item trong menu
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+
+        // Thiết lập listener cho sự kiện tìm kiếm
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Khi người dùng nhấn vào nút tìm kiếm trên bàn phím
+                // Hiển thị nội dung tìm kiếm qua Toast
+                Toast.makeText(MainActivity.this, "Tìm kiếm: " + query, Toast.LENGTH_SHORT).show();
+
+                // Gọi API tìm kiếm với từ khóa và giới hạn 10 kết quả
+                apiService.searchMovies(query, 10).enqueue(new Callback<DSPhimResponse>() {
+                    @Override
+                    public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            List<DSPhim> series = response.body().getData().getItems();
+                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, series));
+
+                            // Đóng SearchView sau khi tìm kiếm
+                            searchView.clearFocus();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                        Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                //searchView.clearFocus();
+                searchItem.collapseActionView();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Xử lý khi nội dung tìm kiếm thay đổi (nếu cần)
+                return false;
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_search) {
+            // Xử lý sự kiện khi nhấn vào tìm kiếm
+            Toast.makeText(this, "Bạn muốn tìm kiếm gì", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.nav_phimbo) {
+            // Xử lý sự kiện khi nhấn vào thông báo
+            Toast.makeText(this, "Thông báo được nhấn", Toast.LENGTH_SHORT).show();
+            return true;
+        }else if (id == R.id.nav_theloai) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setupRecyclerViews() {
+        binding.recyclerViewMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.recyclerViewSeries.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.recyclerViewtvShow.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.recyclerViewphimle.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.recyclerViewphimhoathinh.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+    }
+    private void loadMovies() {
+        // Hiển thị ProgressBar và ẩn nội dung chính
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.mainContent.setVisibility(View.GONE);
+
+        apiService.getMovies(1).enqueue(new Callback<PhimResponse>() {
+            @Override
+            public void onResponse(Call<PhimResponse> call, Response<PhimResponse> response) {
+
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Phim> movies = response.body().getItems();
+                    // Khởi tạo MovieAdapter
+                    movieAdapter = new PhimAdapter(MainActivity.this, movies);
+                    // Thiết lập sự kiện click cho từng item
+                    movieAdapter.setRecyclerViewItemClickListener(new PhimAdapter.OnRecyclerViewItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, int position) {
+                            //Lay thong tin chi tiet phim tu slug truyen den man hinh chi tiet phim
+                            Intent intent = new Intent(view.getContext(), ChiTietPhimActivity.class);
+                            Phim movie = movies.get(position);
+                            intent.putExtra("slug", movie.getSlug());
+                            view.getContext().startActivity(intent);
+                        }
+                    });
+                    binding.recyclerViewMovies.setAdapter(movieAdapter);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PhimResponse> call, Throwable t) {
+                // Ẩn ProgressBar và thông báo lỗi
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
+                binding.mainContent.setVisibility(View.VISIBLE); // Hiển thị lại nội dung chính
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            }
+        });
+    }
+
+    private void loadSeries() {
+        apiService.getSeries().enqueue(new Callback<DSPhimResponse>() {
+            @Override
+            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<DSPhim> dsPhims = response.body().getData().getItems();
+                    binding.recyclerViewSeries.setAdapter(new DSPhimAdapter(MainActivity.this, dsPhims));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+            }
+        });
+    }
+
+    private void loadPhimLe() {
+
+        apiService.getPhimLe().enqueue(new Callback<DSPhimResponse>() {
+            @Override
+            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<DSPhim> series = response.body().getData().getItems();
+                    binding.recyclerViewphimle.setAdapter(new DSPhimAdapter(MainActivity.this, series));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            }
+        });
+    }
+
+    private void loadTVShow() {
+
+
+        apiService.getTVShow().enqueue(new Callback<DSPhimResponse>() {
+            @Override
+            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<DSPhim> series = response.body().getData().getItems();
+                    binding.recyclerViewtvShow.setAdapter(new DSPhimAdapter(MainActivity.this, series));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            }
+        });
+    }
+
+    private void loadPhimHoatHinh() {
+
+
+        apiService.getHoatHinh().enqueue(new Callback<DSPhimResponse>() {
+            @Override
+            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<DSPhim> series = response.body().getData().getItems();
+                    binding.recyclerViewphimhoathinh.setAdapter(new DSPhimAdapter(MainActivity.this, series));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                // Ẩn ProgressBar và hiển thị nội dung chính
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
+                binding.mainContent.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            }
+        });
+    }
+
+    private void navigationBottom() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // Đặt item mặc định được chọn là màn hình Home
+        bottomNavigationView.setSelectedItemId(R.id.nav_home);
+
+        // Xử lý sự kiện chọn item của Bottom Navigation
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Intent intent = null;
+                if (item.getItemId() == R.id.nav_home) {
+                    intent = new Intent(MainActivity.this, MainActivity.class);
+                } else if (item.getItemId() == R.id.nav_vip) {
+                    intent = new Intent(MainActivity.this, VipActivity.class);
+                }
+                // Pass the selected item to the new Activity
+                if (intent != null) {
+                    intent.putExtra("selected_item_id", item.getItemId());
+                    startActivity(intent);
+                    overridePendingTransition(0, 0);  // No animation for smooth transition
+                    return true;
+                }
+                return false;
+
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Giữ màn hình sáng khi ứng dụng hoạt động
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+}
