@@ -7,10 +7,16 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.databinding.ActivityDangNhapBinding;
+import com.google.firebase.database.DatabaseReference;
 
 
 public class DangNhapActivity extends AppCompatActivity {
 
+    // Firebase Authentication
+   // private FirebaseAuth mAuth;
+    private DatabaseReference usersRef;
+    private ActivityDangNhapBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

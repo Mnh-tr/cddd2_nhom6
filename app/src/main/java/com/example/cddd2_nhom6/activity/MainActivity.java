@@ -28,6 +28,8 @@ import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponse;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
@@ -48,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
+        // Write a message to the database
+
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, binding.drawerlayout, binding.toolbar,
