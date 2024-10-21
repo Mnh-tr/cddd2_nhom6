@@ -336,9 +336,11 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 Intent intent = null;
                 if (item.getItemId() == R.id.nav_home) {
-                    intent = new Intent(MainActivity.this, MainActivity.class);
+                    return true;
                 } else if (item.getItemId() == R.id.nav_vip) {
                     intent = new Intent(MainActivity.this, VipActivity.class);
+                }else if(item.getItemId() == R.id.nav_profile) {
+                    intent = new Intent(MainActivity.this, ProfileActivity.class);
                 }
                 // Pass the selected item to the new Activity
                 if (intent != null) {

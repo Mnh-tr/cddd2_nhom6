@@ -23,6 +23,8 @@ public class VipActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityVipBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+// Đặt item mặc định được chọn là màn hình Home
+        binding.bottomNavigation.setSelectedItemId(R.id.nav_vip);
 
 
         // Xử lý sự kiện chọn item của Bottom Navigation
@@ -34,6 +36,8 @@ public class VipActivity extends AppCompatActivity {
                     intent = new Intent(VipActivity.this, MainActivity.class);
                 } else if (item.getItemId() == R.id.nav_vip) {
                     return true;
+                }else if(item.getItemId() == R.id.nav_profile) {
+                    intent = new Intent(VipActivity.this, ProfileActivity.class);
                 }
                 // Pass the selected item to the new Activity
                 if (intent != null) {
