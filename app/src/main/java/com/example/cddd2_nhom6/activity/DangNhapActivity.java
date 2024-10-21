@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityDangNhapBinding;
 import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
+import com.example.cddd2_nhom6.model.LoaiNguoiDung;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
