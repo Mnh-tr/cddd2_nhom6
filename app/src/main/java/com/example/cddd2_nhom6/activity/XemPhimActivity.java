@@ -9,6 +9,8 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import com.example.cddd2_nhom6.adapter.TapPhimAdapter;
@@ -24,12 +26,18 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class XemPhimActivity extends AppCompatActivity {
     private ActivityXemPhimBinding binding; // Khai báo View Binding
@@ -41,6 +49,7 @@ public class XemPhimActivity extends AppCompatActivity {
     private String movieLink;
     private ApiService apiService;
     private String movieSlug;
+    private String idUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,16 +69,15 @@ public class XemPhimActivity extends AppCompatActivity {
     }
 
     public void setEvent() {
-        initializePlayer();
+        layLinkPhim();
         // Thiết lập sự kiện cho nút toàn màn hình
         movieSlug = getIntent().getStringExtra("slug");
-        btnFullScreen.setOnClickListener(v -> toggleFullScreen());
+        btnFullScreen.setOnClickListener(v -> phongToManHinhVideo());
         apiService = ApiClient.getClient().create(ApiService.class);
-        loadMovieDetails();
-
+        hienThiChiTietPhim();
     }
 
-    private void initializePlayer() {
+    private void layLinkPhim() {
         String movieLink = getIntent().getStringExtra("movie_link");
         if (exoPlayer == null) {
             exoPlayer = new ExoPlayer.Builder(this).build();
@@ -95,7 +103,7 @@ public class XemPhimActivity extends AppCompatActivity {
         }
     }
 
-    private void playEpisode(String episodeLink) {
+    private void phatPhim(String episodeLink) {
         if (exoPlayer != null) {
             // Prepare a new media source for the new episode
             DefaultHttpDataSource.Factory dataSourceFactory = new DefaultHttpDataSource.Factory();
@@ -108,31 +116,21 @@ public class XemPhimActivity extends AppCompatActivity {
         }
     }
 
-    private void toggleFullScreen() {
-        long currentPosition = exoPlayer.getCurrentPosition(); // Lưu lại thời điểm hiện tại của video
+    private void phongToManHinhVideo() {
+        // Lưu lại thời điểm hiện tại của video
 
         if (isFullScreen) {
+            // Chuyển về chế độ portrait
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            binding.playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT); // Chuyển về chế độ phù hợp với kích thước
-            // Đặt lại LayoutParams khi thoát toàn màn hình (phụ thuộc vào layout cha)
-            binding.playerView.setLayoutParams(new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT,
-                    200 // hoặc giá trị chiều cao mong muốn
-            ));
         } else {
-            // Chuyển sang chế độ ngang
+            // Chuyển sang chế độ landscape
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            binding.playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL); // Chế độ toàn màn hình
-            binding.playerView.setLayoutParams(new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT,
-                    RelativeLayout.LayoutParams.MATCH_PARENT
-            ));
         }
 
-        isFullScreen = !isFullScreen; // Đổi trạng thái fullscreen
+        isFullScreen = !isFullScreen;// Đổi trạng thái fullscreen
     }
 
-    private void loadMovieDetails() {
+    private void hienThiChiTietPhim() {
         Call<ChiTietPhim> call = apiService.getChiTietPhim(movieSlug);
         call.enqueue(new Callback<ChiTietPhim>() {
             @Override
@@ -165,7 +163,7 @@ public class XemPhimActivity extends AppCompatActivity {
                                 String episodeName = selectedEpisode.getName();
                                 binding.tvMovieTitle.setText(movieTitle + " - " + episodeName);
 
-                                playEpisode(newMovieLink);
+                                phatPhim(newMovieLink);
                             }
                         });
 
@@ -173,7 +171,7 @@ public class XemPhimActivity extends AppCompatActivity {
 
                         // Play the first episode automatically
                         movieLink = serverDataList.get(0).getLinkM3u8();
-                        initializePlayer(); // Initialize player with the first episode
+                        layLinkPhim(); // Initialize player with the first episode
                     } else {
                         Toast.makeText(XemPhimActivity.this, "Không có tập phim nào", Toast.LENGTH_SHORT).show();
                     }
@@ -193,11 +191,31 @@ public class XemPhimActivity extends AppCompatActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            binding.playerView.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT
+            // Ở chế độ ngang, vào fullscreen
+            binding.playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+            binding.playerView.setLayoutParams(new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                    RelativeLayout.LayoutParams.MATCH_PARENT
             ));
+
+            // Ẩn thanh trạng thái và thanh điều hướng
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_FULLSCREEN   // Ẩn thanh trạng thái (status bar)
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION   // Ẩn thanh điều hướng (navigation bar)
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY  // Ở chế độ immersive (toàn màn hình)
+            );
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            // Thoát fullscreen khi về portrait
+            binding.playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            binding.playerView.setLayoutParams(new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT  // Trở về chiều cao ban đầu (ban đầu như thế nào thì set lại)
+            ));
+
+            // Hiển thị lại các thanh trạng thái và điều hướng
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
         }
     }
 
