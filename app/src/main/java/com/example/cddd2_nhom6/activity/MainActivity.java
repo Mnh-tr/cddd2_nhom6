@@ -14,12 +14,8 @@ import androidx.appcompat.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -378,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (item.getItemId() == R.id.nav_vip) {
                     intent = new Intent(MainActivity.this, VipActivity.class);
                 }else if(item.getItemId() == R.id.nav_profile) {
-                    intent = new Intent(MainActivity.this, ProfileActivity.class);
+                    intent = new Intent(MainActivity.this, CaNhanActivity.class);
                 }
                 // Pass the selected item to the new Activity
                 if (intent != null) {
