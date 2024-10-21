@@ -27,7 +27,7 @@
                 android:orientation="vertical"
                 android:gravity="center_horizontal">
                 <TextView
-                    android:id="@+id/free_plan_title"
+
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Thường"
@@ -47,7 +47,7 @@
                     android:gravity="center_horizontal">
 
                     <TextView
-                        android:id="@+id/free_plan_subtitle"
+
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Người sử dụng miễn phí"
@@ -57,7 +57,7 @@
                         android:layout_marginTop="8dp" />
 
                     <TextView
-                        android:id="@+id/free_plan_price"
+
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0đ/ tháng"
@@ -67,7 +67,7 @@
                         android:layout_marginTop="4dp" />
 
                     <Button
-                        android:id="@+id/free_plan_button"
+                        android:id="@+id/btnFree"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Đang sử dụng"
@@ -84,14 +84,14 @@
                         android:layout_marginTop="12dp">
 
                         <TextView
-                            android:id="@+id/free_plan_feature1"
+
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="✔️ 1 lần tải video về xem offline"
                             android:textColor="#fff" />
 
                         <TextView
-                            android:id="@+id/free_plan_feature2"
+
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="✔️ Xem các bộ phim không thuộc gói Vip"
@@ -100,7 +100,6 @@
                     </LinearLayout>
                 </LinearLayout>
                 <TextView
-                    android:id="@+id/vip_plan_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="VIP"
@@ -121,7 +120,6 @@
 
 
                     <TextView
-                        android:id="@+id/vip_plan_subtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Người sử dụng gói VIP"
@@ -131,7 +129,6 @@
                         android:layout_marginTop="8dp" />
 
                     <TextView
-                        android:id="@+id/vip_plan_price"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="99.000đ/ tháng"
@@ -141,7 +138,7 @@
                         android:layout_marginTop="4dp" />
 
                     <Button
-                        android:id="@+id/vip_plan_button"
+                        android:id="@+id/btnDangKy"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Đăng ký ngay"
