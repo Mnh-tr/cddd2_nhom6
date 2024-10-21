@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#7B6262"
-    tools:context=".activity.ProfileActivity">
+    tools:context=".activity.CaNhanActivity">
 
 
     <!-- Phần giao diện chính của ứng dụng -->

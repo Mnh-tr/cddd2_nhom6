@@ -7,15 +7,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
 import com.example.cddd2_nhom6.databinding.ActivityVipBinding;
 import com.example.cddd2_nhom6.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -56,7 +52,7 @@ public class VipActivity extends AppCompatActivity {
                 } else if (item.getItemId() == R.id.nav_vip) {
                     return true;
                 }else if(item.getItemId() == R.id.nav_profile) {
-                    intent = new Intent(VipActivity.this, ProfileActivity.class);
+                    intent = new Intent(VipActivity.this, CaNhanActivity.class);
                 }
                 if (intent != null) {
                     intent.putExtra("selected_item_id", item.getItemId());
