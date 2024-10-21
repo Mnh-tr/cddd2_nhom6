@@ -41,6 +41,7 @@
         <activity android:name=".activity.DangKyActivity" />
         <activity android:name=".activity.DangNhapActivity" />
         <activity android:name=".activity.LichSuXemActivity" />
+        <activity android:name=".activity.DanhSachYeuThichActivity" />
     </application>
 
 </manifest>

@@ -1,14 +1,14 @@
 package com.example.cddd2_nhom6.model;
 
-public class FavoriteMovie {
+public class PhimYeuThich {
     private String id_user; // ID của phim
     private String slug; // Slug phim
 
-    public FavoriteMovie() {
+    public PhimYeuThich() {
         // Cần một constructor rỗng cho Firebase
     }
 
-    public FavoriteMovie(String id_user, String slug) {
+    public PhimYeuThich(String id_user, String slug) {
         this.id_user = id_user;
         this.slug = slug;
     }

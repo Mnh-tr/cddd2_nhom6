@@ -9,18 +9,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.databinding.ItemLichsuBinding;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
-import com.example.xemphim.databinding.ItemLichsuBinding;
-import com.example.xemphim.model.MovieDetail;
+
 
 import java.util.List;
 
-public class FavoriteMoviesAdapter extends RecyclerView.Adapter<FavoriteMoviesAdapter.ViewHolder> {
+public class YeuThichAdapter extends RecyclerView.Adapter<YeuThichAdapter.ViewHolder> {
     private Activity context;
     private List<ChiTietPhim.MovieItem> movies;
     private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
 
-    public FavoriteMoviesAdapter(Activity context, List<ChiTietPhim.MovieItem> favoriteMovies) {
+    public YeuThichAdapter(Activity context, List<ChiTietPhim.MovieItem> favoriteMovies) {
         this.context = context;
         this.movies = favoriteMovies;
     }
@@ -32,7 +32,7 @@ public class FavoriteMoviesAdapter extends RecyclerView.Adapter<FavoriteMoviesAd
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Item binding = ItemLichsuBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        ItemLichsuBinding binding = ItemLichsuBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(binding);
     }
 

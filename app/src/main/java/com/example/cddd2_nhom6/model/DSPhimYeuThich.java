@@ -10,7 +10,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.example.cddd2_nhom6.activity.DangNhapActivity;
 import com.example.cddd2_nhom6.databinding.ActivityXemPhimBinding;
 import com.example.cddd2_nhom6.R;
-import com.example.cddd2_nhom6.activity.DangNhapActivity;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,7 +34,7 @@ public class DSPhimYeuThich {
         idUser = sharedPreferences.getString("id_user", null);
     }
 
-    public void addToFavorites() {
+    public void themYeuThich() {
         // Lấy thông tin cần thiết
         String userId = idUser; // ID của người dùng hiện tại
         String movieSlug = this.movieSlug; // Slug của phim
@@ -67,8 +66,8 @@ public class DSPhimYeuThich {
 
                 // Kiểm tra từng entry trong danh sách yêu thích
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    FavoriteMovie favoriteMovie = snapshot.getValue(FavoriteMovie.class);
-                    if (favoriteMovie != null && favoriteMovie.getId_user() != null && favoriteMovie.getId_user().equals(userId)) {
+                    PhimYeuThich phimYeuThich = snapshot.getValue(PhimYeuThich.class);
+                    if (phimYeuThich != null && phimYeuThich.getId_user() != null && phimYeuThich.getId_user().equals(userId)) {
                         movieExists = true;
                         movieIdToDelete = snapshot.getKey(); // Lưu id_phim để xóa
                         break;
@@ -85,8 +84,8 @@ public class DSPhimYeuThich {
                             .addOnFailureListener(e -> Toast.makeText(context, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 } else {
                     // Nếu phim chưa tồn tại, thêm nó
-                    FavoriteMovie favoriteMovie = new FavoriteMovie(userId, movieSlug);
-                    favoritesRef.push().setValue(favoriteMovie)
+                    PhimYeuThich phimYeuThich = new PhimYeuThich(userId, movieSlug);
+                    favoritesRef.push().setValue(phimYeuThich)
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(context, "Đã thêm vào yêu thích!", Toast.LENGTH_SHORT).show();
                                 // Đổi màu trái tim thành đỏ
@@ -105,7 +104,7 @@ public class DSPhimYeuThich {
 
 
 
-    public void checkAndToggleFavorite() {
+    public void kiemTraYeuThich() {
         // Lấy thông tin cần thiết
         String userId = idUser; // ID của người dùng hiện tại
         String movieSlug = this.movieSlug; // Slug của phim
@@ -118,8 +117,8 @@ public class DSPhimYeuThich {
 
                 // Kiểm tra từng entry trong danh sách yêu thích
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    FavoriteMovie favoriteMovie = snapshot.getValue(FavoriteMovie.class);
-                    if (favoriteMovie != null && favoriteMovie.getId_user() != null && userId != null && favoriteMovie.getId_user().equals(userId)) {
+                    PhimYeuThich phimYeuThich = snapshot.getValue(PhimYeuThich.class);
+                    if (phimYeuThich != null && phimYeuThich.getId_user() != null && userId != null && phimYeuThich.getId_user().equals(userId)) {
                         movieExists = true;
                         break;
                     }
