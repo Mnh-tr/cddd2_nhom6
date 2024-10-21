@@ -25,6 +25,7 @@ import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityXemPhimBinding;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
+import com.example.cddd2_nhom6.model.DSPhimYeuThich;
 import com.example.cddd2_nhom6.model.LichSuPhim;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -92,9 +93,9 @@ public class XemPhimActivity extends AppCompatActivity {
         lichSuPhim = new LichSuPhim(this);
         dsPhimYeuThich = new DSPhimYeuThich(this, binding, movieSlug);
         // Kiểm tra và cập nhật màu nút trái tim
-        dsPhimYeuThich.checkAndToggleFavorite();
+        dsPhimYeuThich.kiemTraYeuThich();
         // Thêm sự kiện nhấn cho nút thêm vào danh sách yêu thích
-        binding.btnAddToFavorites.setOnClickListener(v -> dsPhimYeuThich.addToFavorites());
+        binding.btnAddToFavorites.setOnClickListener(v -> dsPhimYeuThich.themYeuThich());
     }
 
 

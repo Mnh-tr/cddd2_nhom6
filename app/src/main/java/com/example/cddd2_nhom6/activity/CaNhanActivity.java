@@ -111,7 +111,14 @@ public class CaNhanActivity extends AppCompatActivity {
             }
         });
 
-
+        binding.dsYeuThich.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CaNhanActivity.this, DanhSachYeuThichActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
         binding.caiDat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
