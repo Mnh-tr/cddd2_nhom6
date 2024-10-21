@@ -1,38 +1,20 @@
 package com.example.cddd2_nhom6.activity;
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.RatingBar;
-import android.widget.RelativeLayout;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.annotation.OptIn;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.exoplayer.hls.HlsMediaSource;
-import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -46,18 +28,11 @@ import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.example.cddd2_nhom6.model.LichSuPhim;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -81,6 +56,7 @@ public class XemPhimActivity extends AppCompatActivity {
     private DatabaseReference usersRef;
     private String currentUserId;
     private LichSuPhim lichSuPhim;
+    private DSPhimYeuThich dsPhimYeuThich;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +90,11 @@ public class XemPhimActivity extends AppCompatActivity {
             currentUserId = currentUser.getUid(); // Lấy ID người dùng
         }
         lichSuPhim = new LichSuPhim(this);
-
+        dsPhimYeuThich = new DSPhimYeuThich(this, binding, movieSlug);
+        // Kiểm tra và cập nhật màu nút trái tim
+        dsPhimYeuThich.checkAndToggleFavorite();
+        // Thêm sự kiện nhấn cho nút thêm vào danh sách yêu thích
+        binding.btnAddToFavorites.setOnClickListener(v -> dsPhimYeuThich.addToFavorites());
     }
 
 
