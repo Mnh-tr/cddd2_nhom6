@@ -201,7 +201,7 @@ public class LichSuXemActivity extends AppCompatActivity {
                                                 intent.putExtra("movie_link", movieLink);
                                                 intent.putExtra("episode", episodeName);
                                                 intent.putExtra("slug", slug);
-                                                intent.putExtra("from_watch_history", true);
+                                                intent.putExtra("lichsu", true);
 
                                                 // Bắt đầu màn hình phát phim
                                                 view.getContext().startActivity(intent);

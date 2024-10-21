@@ -19,7 +19,7 @@ import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.LichSuAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
-import com.example.cddd2_nhom6.databinding.ActivityProfileBinding;
+import com.example.cddd2_nhom6.databinding.ActivityCanhanBinding;
 
 import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -39,7 +39,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CaNhanActivity extends AppCompatActivity {
-    private ActivityProfileBinding binding;
+    private ActivityCanhanBinding binding;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String idUser;
     private  String nameUser;
@@ -58,7 +58,7 @@ public class CaNhanActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         // Initialize Data Binding
-        binding = ActivityProfileBinding.inflate(getLayoutInflater());
+        binding = ActivityCanhanBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setControl();
