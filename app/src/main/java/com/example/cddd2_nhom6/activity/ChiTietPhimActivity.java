@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -51,6 +53,8 @@ public class ChiTietPhimActivity extends AppCompatActivity {
     private String emailUser;
     private int idLoaiND;
     private LichSuPhim lichSuPhim;
+    private DatabaseReference ratingsRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,10 +90,47 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         swipeRefreshLayout = binding.swipeRefreshLayout; // Khởi tạo SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(() -> {
             hienThiChiTietPhim(movieSlug);
+            tinhTrungBinhDanhGia(movieSlug);
         });
         lichSuPhim = new LichSuPhim(this);
+        ratingsRef = FirebaseDatabase.getInstance().getReference("Ratings");
+        // Tính và hiển thị trung bình sao và số lượt đánh giá
+        tinhTrungBinhDanhGia(movieSlug);
     }
+    public void tinhTrungBinhDanhGia(String movieSlug) {
+        ratingsRef.child(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int totalRatings = 0;
+                float sumRatings = 0;
 
+                for (DataSnapshot ratingSnapshot : snapshot.getChildren()) {
+                    float rating = ratingSnapshot.child("rating").getValue(Float.class);
+                    sumRatings += rating;
+                    totalRatings++;
+                }
+
+                if (totalRatings > 0) {
+                    float averageRating = sumRatings / totalRatings;
+                    // Cập nhật giao diện với tổng số đánh giá và trung bình sao
+                    binding.tvAverageRating.setText("( " + averageRating + " điểm / " + totalRatings + " lượt)");
+                    binding.ratingBar.setRating(averageRating);
+                    binding.ratingBar.setIsIndicator(true);
+                } else {
+                    binding.tvAverageRating.setText("( 0 điểm / 0 lượt )");
+                    binding.ratingBar.setRating(0); // Reset ratingBar nếu không có đánh giá
+                    binding.ratingBar.setIsIndicator(true);
+                }
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý lỗi
+                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            }
+        });
+    }
     private void hienThiChiTietPhim(String slug) {
         binding.progressBar.setVisibility(View.VISIBLE);
         // Đảm bảo apiService được khởi tạo trước khi gọi hàm này

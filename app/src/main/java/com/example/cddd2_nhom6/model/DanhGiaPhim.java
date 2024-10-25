@@ -35,7 +35,7 @@ public class DanhGiaPhim {
     }
 
 
-    public void saveRating(String movieSlug, String userId, float rating) {
+    public void luuDanhGia(String movieSlug, String userId, float rating) {
         Map<String, Object> ratingData = new HashMap<>();
         ratingData.put("userId", userId);
         ratingData.put("rating", rating);
@@ -53,7 +53,7 @@ public class DanhGiaPhim {
                                 binding.ratingBar.setRating(rating); // Cập nhật số sao đã đánh giá
                                 binding.ratingBar.setProgressTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.color_your_rating))); // Đặt màu sắc cho RatingBar
                                 // Gọi hàm tính toán điểm trung bình
-                                calculateAverageRating();
+                                tinhTrungBinhDanhGia();
                             })
                             .addOnFailureListener(e -> {
                                 Toast.makeText(context, "Lỗi khi lưu đánh giá: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -63,7 +63,7 @@ public class DanhGiaPhim {
     }
 
 
-    public void calculateAverageRating() {
+    public void tinhTrungBinhDanhGia() {
         ratingsRef.child(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {

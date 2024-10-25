@@ -26,6 +26,7 @@ import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityXemPhimBinding;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.example.cddd2_nhom6.model.DSPhimYeuThich;
+import com.example.cddd2_nhom6.model.DanhGiaPhim;
 import com.example.cddd2_nhom6.model.LichSuPhim;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -58,6 +59,7 @@ public class XemPhimActivity extends AppCompatActivity {
     private String currentUserId;
     private LichSuPhim lichSuPhim;
     private DSPhimYeuThich dsPhimYeuThich;
+    private DanhGiaPhim danhGiaPhim;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +98,18 @@ public class XemPhimActivity extends AppCompatActivity {
         dsPhimYeuThich.kiemTraYeuThich();
         // Thêm sự kiện nhấn cho nút thêm vào danh sách yêu thích
         binding.btnAddToFavorites.setOnClickListener(v -> dsPhimYeuThich.themYeuThich());
+        String movieSlug = this.movieSlug;
+        // Xử lý khi người dùng đánh giá phim
+        binding.ratingBar.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
+            if (fromUser) {
+                danhGiaPhim.luuDanhGia(movieSlug, idUser, rating);  // Lưu đánh giá
+            }
+        });
+        danhGiaPhim = new DanhGiaPhim(this,binding,movieSlug);
+        // Tính và hiển thị trung bình sao và số lượt đánh giá
+        danhGiaPhim.tinhTrungBinhDanhGia();
+        // Kiểm tra xem người dùng đã đánh giá phim hay chưa
+        danhGiaPhim.kiemTraDanhGia();
     }
 
 
