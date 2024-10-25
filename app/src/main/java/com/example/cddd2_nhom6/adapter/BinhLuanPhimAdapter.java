@@ -65,7 +65,7 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
                 public void onClick(View view) {
                     int position = getAdapterPosition(); // Lấy vị trí hiện tại của ViewHolder
                     if (position != RecyclerView.NO_POSITION) { // Kiểm tra vị trí hợp lệ
-                        deleteListener.onCommentDelete(position); // Gọi hàm xóa bình luận
+                        deleteListener.xoaBinhLuan(position); // Gọi hàm xóa bình luận
                     }
                 }
             });
@@ -73,7 +73,7 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
     }
     // Khai báo interface
     public interface OnCommentDeleteListener {
-        void onCommentDelete(int position);
+        void xoaBinhLuan(int position);
     }
 
 }

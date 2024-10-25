@@ -105,7 +105,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         laythongtinUser();
         // Gọi hàm này sau khi người dùng nhấn vào phim hoặc sau khi thêm bình luận
-        loadCommentsForMovie(this.movieSlug);
+        taiBinhLuan(this.movieSlug);
         // Giả sử bạn đã đăng nhập và lấy ID người dùng từ Firebase Auth
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -131,7 +131,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         danhGiaPhim.kiemTraDanhGia();
         binding.btnSubmitComment.setOnClickListener(v -> {
             String comment = binding.commentInput.getText().toString();
-            addCommentToMovie(comment);
+            themBinhLuan(comment);
         });
     }
 
@@ -275,7 +275,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
     }
-    private void addCommentToMovie(String comment) {
+    private void themBinhLuan(String comment) {
         String userId = idUser; // ID của người dùng hiện tại
         String movieSlug = this.movieSlug; // Slug của phim
 
@@ -337,7 +337,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     }
 
     //Binh luan phim
-    private void loadCommentsForMovie(String movieSlug) {
+    private void taiBinhLuan(String movieSlug) {
         DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
         commentsRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -392,7 +392,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     }
 
     @Override
-    public void onCommentDelete(int position) {
+    public void xoaBinhLuan(int position) {
         // Lấy thông tin người dùng và phim
         String userId = binhLuanPhimAdapter.getCommentUserId(position);
         String movieSlug = this.movieSlug; // Slug của phim
