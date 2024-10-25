@@ -9,4 +9,5 @@
     <color name="btn_free_bg">#00FB21</color> <!-- Màu nút Free -->
     <color name="btn_vip_bg">#ff66b2</color>  <!-- Màu nút VIP -->
     <color name="btn_disabled_bg">#B0BEC5</color> <!-- Màu nút khi disabled -->
+    <color name="color_your_rating">#FFEB3B</color>
 </resources>
