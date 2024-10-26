@@ -33,7 +33,7 @@ public class ThanhToanActivity extends AppCompatActivity {
     private String nameUser;
     private String emailUser;
     private int idLoaiND;
-    private DatabaseReference paymentRef;
+    private DatabaseReference yeuCauRef;
     private ActivityThanhToanBinding binding;
 
     @Override
@@ -46,7 +46,7 @@ public class ThanhToanActivity extends AppCompatActivity {
         Toast.makeText(ThanhToanActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
 
         // Khởi tạo Firebase database reference
-        paymentRef = FirebaseDatabase.getInstance().getReference("YeuCau");
+        yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
         // Tạo nội dung thanh toán
         TaoNoiDungThanhToan(idUser);
 
@@ -96,7 +96,7 @@ public class ThanhToanActivity extends AppCompatActivity {
 
     // Phương thức kiểm tra và tạo mã thanh toán mới nếu mã đã tồn tại
     private void kiemTraNoiDung(String content) {
-        Query query = paymentRef.orderByChild("content").equalTo(content);
+        Query query = yeuCauRef.orderByChild("content").equalTo(content);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -129,25 +129,20 @@ public class ThanhToanActivity extends AppCompatActivity {
 
     private void luuThongTinYeuCau() {
         String content = binding.tvNoiDungThanhToan.getText().toString();
-        if (TextUtils.isEmpty(content)) {
-            Toast.makeText(this, "Nội dung thanh toán không hợp lệ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         // Định dạng ngày và giờ thanh toán theo dd-MM-yyyy HH:mm:ss
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
         String formattedDate = dateFormat.format(new Date()); // Lấy ngày và giờ hiện tại và định dạng
 
-        String idLichSuTT = paymentRef.push().getKey(); // Tạo id lịch sử thanh toán mới
-        YeuCau yeuCauInfo = new YeuCau(idLichSuTT, idUser, content, 99000, formattedDate, 0); // Sử dụng ngày và giờ đã định dạng
+        String idYeuCau = yeuCauRef.push().getKey(); // Tạo id lịch sử thanh toán mới
+        YeuCau yeuCauInfo = new YeuCau(idYeuCau, idUser, content, 99000, formattedDate, 0); // Sử dụng ngày và giờ đã định dạng
 
-        paymentRef.child(idLichSuTT).setValue(yeuCauInfo)
+        yeuCauRef.child(idYeuCau).setValue(yeuCauInfo)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(ThanhToanActivity.this, "Thanh toán thành công", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ThanhToanActivity.this, "Yêu cầu lên Vip thành công, chúng tôi sẽ phản hồi bạn trong 24h tới", Toast.LENGTH_LONG).show();
                         finish();
                     } else {
-                        Toast.makeText(ThanhToanActivity.this, "Thanh toán thất bại", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ThanhToanActivity.this, "Yêu cầu lên Vip thất bại, vui lòng liên hệ admin để được hỗ trợ", Toast.LENGTH_LONG).show();
                     }
                 });
     }
