@@ -110,6 +110,15 @@ public class CaNhanActivity extends AppCompatActivity {
                 }
             }
         });
+        binding.caiDat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(CaNhanActivity.this, CaiDatActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         binding.dsYeuThich.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,13 +128,7 @@ public class CaNhanActivity extends AppCompatActivity {
                 finish();
             }
         });
-        binding.caiDat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-
-            }
-        });
         binding.tvXemtatca.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
