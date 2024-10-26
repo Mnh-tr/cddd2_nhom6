@@ -87,15 +87,8 @@
 
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="✔️ 1 lần tải video về xem offline"
-                            android:textColor="#fff" />
-
-                        <TextView
-
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             android:text="✔️ Xem các bộ phim không thuộc gói Vip"
-                            android:textColor="#fff"
+                            android:textColor="#000000"
                             android:layout_marginTop="4dp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -159,14 +152,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="✔️ Tải video xem offline không giới hạn"
-                            android:textColor="#fff" />
+                            android:textColor="#000000" />
 
                         <TextView
                             android:id="@+id/vip_plan_feature2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="✔️ Xem các bộ phim thuộc gói vip"
-                            android:textColor="#fff"
+                            android:textColor="#000000"
                             android:layout_marginTop="4dp" />
 
                         <TextView
@@ -174,16 +167,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="✔️ Không quảng cáo"
-                            android:textColor="#fff"
+                            android:textColor="#000000"
                             android:layout_marginTop="4dp" />
 
-                        <TextView
-                            android:id="@+id/vip_plan_feature4"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="✔️ Chế độ ưu tiên"
-                            android:textColor="#fff"
-                            android:layout_marginTop="4dp" />
+
                     </LinearLayout>
                 </LinearLayout>
 
