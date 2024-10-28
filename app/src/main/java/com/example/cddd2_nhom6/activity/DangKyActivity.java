@@ -3,8 +3,12 @@ package com.example.cddd2_nhom6.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -33,10 +37,9 @@ import java.util.Random;
 public class DangKyActivity extends AppCompatActivity {
 
     private ActivityDangKyBinding binding;
-
     // Firebase Database and Auth
     private FirebaseAuth mAuth;
-    private DatabaseReference usersRef;
+    private DatabaseReference usersRef;// Flag for mật khẩu 2
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +47,9 @@ public class DangKyActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         binding = ActivityDangKyBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        // Thiết lập sự kiện xem mật khẩu
+        setupPasswordToggle(binding.edtMk);
+        setupPasswordToggle(binding.edtNLMK);
 
         // Khởi tạo Firebase
         mAuth = FirebaseAuth.getInstance();
@@ -61,6 +66,33 @@ public class DangKyActivity extends AppCompatActivity {
             }
         });
 
+    }
+    private void setupPasswordToggle(EditText editText) {
+        editText.setOnTouchListener(new View.OnTouchListener() {
+            boolean isPasswordVisible = false; // Trạng thái mặc định là ẩn mật khẩu
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final int DRAWABLE_END = 2; // DrawableEnd (icon con mắt)
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (event.getRawX() >= (editText.getRight() - editText.getCompoundDrawables()[DRAWABLE_END].getBounds().width())) {
+                        if (isPasswordVisible) {
+                            // Ẩn mật khẩu
+                            editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                            editText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_lock_outline_24, 0, R.drawable.baseline_visibility_off_24, 0);
+                        } else {
+                            // Hiển thị mật khẩu
+                            editText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                            editText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_lock_outline_24, 0, R.drawable.baseline_visibility_24, 0);
+                        }
+                        isPasswordVisible = !isPasswordVisible; // Đổi trạng thái
+                        editText.setSelection(editText.getText().length()); // Đặt lại vị trí con trỏ
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     private void xulyDangKy() {

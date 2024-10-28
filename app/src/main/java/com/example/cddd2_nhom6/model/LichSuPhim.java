@@ -37,7 +37,7 @@ public class LichSuPhim {
         idUser = sharedPreferences.getString("id_user", null);
     }
 
-    public void luuLichSuXem(String movieSlug, String episodeName, List<ChiTietPhim.Episode.ServerData> serverDataList) {
+    public void luuLichSuXem(String movieSlug, String episodeName, List<ChiTietPhim.TapPhim.DuLieuServer> serverDataList) {
         if (movieSlug == null) {
             Toast.makeText(context, "Không thể lưu lịch sử, thiếu thông tin", Toast.LENGTH_SHORT).show();
             return;
@@ -101,8 +101,8 @@ public class LichSuPhim {
                 });
     }
 
-    private String layTenTapPhim(String episodeName, List<ChiTietPhim.Episode.ServerData> serverDataList) {
-        for (ChiTietPhim.Episode.ServerData episode : serverDataList) {
+    private String layTenTapPhim(String episodeName, List<ChiTietPhim.TapPhim.DuLieuServer> serverDataList) {
+        for (ChiTietPhim.TapPhim.DuLieuServer episode : serverDataList) {
             if (episode.getName().equals(episodeName)) {
                 return episode.getLinkM3u8();
             }

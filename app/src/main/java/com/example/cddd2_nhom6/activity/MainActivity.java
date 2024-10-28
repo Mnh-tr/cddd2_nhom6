@@ -3,6 +3,7 @@ package com.example.cddd2_nhom6.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,12 +28,21 @@ import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
 import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.Phim;
+import com.example.cddd2_nhom6.model.TruyCap;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -48,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private  String nameUser;
     private String emailUser;
     private int idLoaiND;
+    // bien de kiểm tra người dùng có đang ỏ trong ứng dụng hay không
+    public static Boolean truycap = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
         laythongtinUser();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         updateUser();
+        // Kiểm tra và thêm thông tin truy cập
+        kiemTraTruyCap(idUser);
 
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
@@ -99,6 +113,56 @@ public class MainActivity extends AppCompatActivity {
         loadPhimHoatHinh();
         navigationBottom();
 
+    }
+    public static void kiemTraTruyCap(String idUser) {
+        // Kiểm tra xem id_user có null hay không và xem ngày truy cập đã tồn tại hay chưa
+        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
+        long currentTime = System.currentTimeMillis();
+
+        // Lấy ngày hiện tại (không bao gồm giờ, phút, giây)
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String currentDate = sdf.format(new Date(currentTime));
+
+        // Tìm kiếm bản ghi theo id_user và ngày truy cập
+        truyCapRef.orderByChild("id_user").equalTo(idUser).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // neu truycap == false thì sẽ thêm vào TruyCap trên firebase
+                if (truycap == false){
+                    themTruyCap(idUser);
+                    truycap = true;
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("TruyCap", "Lỗi khi kiểm tra truy cập: " + databaseError.getMessage());
+            }
+        });
+    }
+
+
+    public static void themTruyCap(String idUser) {
+        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
+        // Định dạng ngày và giờ thanh toán theo dd-MM-yyyy HH:mm:ss
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+        String formattedDate = dateFormat.format(new Date()); // Lấy ngày và giờ hiện tại và định dạng
+
+        // Tạo một ID mới cho bản ghi truy cập
+        String truyCapId = truyCapRef.push().getKey();
+        TruyCap truyCap = new TruyCap(idUser, formattedDate);
+
+        // Thêm thông tin truy cập vào Firebase
+        truyCapRef.child(truyCapId).setValue(truyCap)
+                .addOnSuccessListener(aVoid -> {
+                    // Xử lý thành công
+                    Log.d("TruyCap", "Thêm truy cập thành công cho người dùng: " + idUser);
+                })
+                .addOnFailureListener(e -> {
+                    // Xử lý lỗi
+                    Log.e("TruyCap", "Lỗi khi thêm truy cập: " + e.getMessage());
+                });
     }
     private void laythongtinUser(){
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);

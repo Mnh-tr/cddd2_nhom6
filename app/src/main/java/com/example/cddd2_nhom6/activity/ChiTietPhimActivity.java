@@ -41,7 +41,7 @@ import retrofit2.Response;
 
 public class ChiTietPhimActivity extends AppCompatActivity {
     private String movieSlug;
-    private List<ChiTietPhim.Episode.ServerData> serverDataList = new ArrayList<>();
+    private List<ChiTietPhim.TapPhim.DuLieuServer> serverDataList = new ArrayList<>();
     private ActivityChiTietPhimBinding binding;
     private ApiService apiService;
     private String movieLink;
@@ -225,12 +225,12 @@ public class ChiTietPhimActivity extends AppCompatActivity {
                             .into(binding.imageViewPoster);  // Sử dụng đúng ID binding
 
                     // Lấy danh sách các tập phim
-                    List<ChiTietPhim.Episode> tapPhim = response.body().getEpisodes();
+                    List<ChiTietPhim.TapPhim> tapPhim = response.body().getEpisodes();
                     if (tapPhim != null  && !tapPhim.isEmpty()) {
                         // Lưu danh sách các tập phim
                         serverDataList.clear(); // Xóa danh sách cũ
-                        for (ChiTietPhim.Episode episode : tapPhim) {
-                            List<ChiTietPhim.Episode.ServerData> data = episode.getServerData();
+                        for (ChiTietPhim.TapPhim episode : tapPhim) {
+                            List<ChiTietPhim.TapPhim.DuLieuServer> data = episode.getServerData();
                             if (data != null) {
                                 serverDataList.addAll(data); // Thêm tất cả các tập phim vào danh sách
                             }
@@ -242,7 +242,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
                             public void onItemClick(View view, int position) {
                                 // Lấy thông tin chi tiết phim từ slug truyền đến màn hình chi tiết phim
                                 Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
-                                ChiTietPhim.Episode.ServerData tapphim = serverDataList.get(position);
+                                ChiTietPhim.TapPhim.DuLieuServer tapphim = serverDataList.get(position);
                                 intent.putExtra("movie_link", tapphim.getLinkM3u8());
                                 intent.putExtra("slug", tapphim.getSlug());
                                 view.getContext().startActivity(intent);
@@ -250,7 +250,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
                         });
 
                         // Lấy link của tập đầu tiên
-                        ChiTietPhim.Episode.ServerData firstServerData = serverDataList.get(0);
+                        ChiTietPhim.TapPhim.DuLieuServer firstServerData = serverDataList.get(0);
                         if (firstServerData != null) {
                             movieLink = firstServerData.getLinkM3u8();
                             Log.d("MovieDetailActivity", "Link phim tập 1: " + movieLink);

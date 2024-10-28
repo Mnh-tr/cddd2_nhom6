@@ -41,7 +41,7 @@ public class LichSuXemActivity extends AppCompatActivity {
     private ActivityLichSuXemBinding binding;
     private LichSuAdapter lichSuAdapter;
     private List<ChiTietPhim.MovieItem> watchedMoviesList;
-    private List<ChiTietPhim.Episode.ServerData> tapPhimList = new ArrayList<>();
+    private List<ChiTietPhim.TapPhim.DuLieuServer> tapPhimList = new ArrayList<>();
     private DatabaseReference lichSuXemRef;
     private String idUser;
     private ApiService apiService;
