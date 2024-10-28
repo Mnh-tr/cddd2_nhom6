@@ -3,15 +3,15 @@ package com.example.cddd2_nhom6.model;
 import java.util.Date;
 
 public class YeuCau {
-    public String idLichSuTT;
+    public String idYeuCau;
     public String idUser;
     public String content;
     public int amount;
     public String  paymentDate;
     public int idTrangThai;
 
-    public YeuCau(String idLichSuTT, String idUser, String content, int amount, String  paymentDate, int idTrangThai) {
-        this.idLichSuTT = idLichSuTT;
+    public YeuCau(String idYeuCau, String idUser, String content, int amount, String  paymentDate, int idTrangThai) {
+        this.idYeuCau = idYeuCau;
         this.idUser = idUser;
         this.content = content;
         this.amount = amount;
