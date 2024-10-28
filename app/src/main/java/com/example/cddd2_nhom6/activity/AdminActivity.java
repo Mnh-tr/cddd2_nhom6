@@ -117,6 +117,7 @@ public class AdminActivity extends AppCompatActivity {
         }
     }
     //xu ly button menu
+    //xu ly button menu
     private void xulybuttonMenu() {
         binding.ivButtonMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,16 +135,6 @@ public class AdminActivity extends AppCompatActivity {
                 // Show the PopupWindow at the desired location
                 popupWindow.showAsDropDown(binding.ivButtonMenu, 0, 0);
 
-                // Handle Quản lý phim button click
-                popupView.findViewById(R.id.btn_quanly_phim).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Chuyển sang trang Quản lý phim
-
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-
                 // Handle Doanh thu button click
                 popupView.findViewById(R.id.btn_doanh_thu).setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -155,62 +146,16 @@ public class AdminActivity extends AppCompatActivity {
                     }
                 });
 
-                // Handle Quản lý User button click
-                popupView.findViewById(R.id.btn_ql_user).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Chuyển sang trang Quản lý User
-
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-
-                // Handle Quản lý Thể loại button click
-                popupView.findViewById(R.id.btn_ql_theloai).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Chuyển sang trang Quản lý Thể loại
-
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-
-                // Handle Quản lý Quốc gia button click
-                popupView.findViewById(R.id.btn_ql_quocgia).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Chuyển sang trang Quản lý Quốc gia
-
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
                 popupView.findViewById(R.id.btn_ThongBao).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        Intent intent = new Intent(AdminActivity.this, DSThongBaoActivity.class);
+                        startActivity(intent);
                         popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
                     }
                 });
 
-                // Handle Hỗ trợ button click
-                popupView.findViewById(R.id.btn_hotro).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Chuyển sang trang Hỗ trợ
 
-                        popupWindow.dismiss();
-                    }
-                });
-
-                // Handle Quản lý API button click
-                popupView.findViewById(R.id.btn_ql_api).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Chuyển sang trang Quản lý API
-
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
             }
         });
     }

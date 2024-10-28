@@ -47,6 +47,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activity.DSThongBaoActivity" />
+        <activity android:name=".activity.QLThongBaoActivity" />
         <activity android:name=".activity.DangKyActivity" />
         <activity android:name=".activity.DangNhapActivity" />
         <activity android:name=".activity.LichSuXemActivity" />

@@ -1,11 +1,11 @@
 package com.example.cddd2_nhom6.adapter;
 
 import android.app.Activity;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ItemThongbaoBinding;
@@ -13,9 +13,11 @@ import com.example.cddd2_nhom6.model.ThongBao;
 
 import java.util.List;
 
+
 public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongBaoViewHolder> {
     private Activity context;
     private List<ThongBao> thongBaoList; // Danh sách thông báo
+    private OnRecyclerViewItemClickListener recyclerViewItemClickListener;
 
     public ThongBaoAdapter(Activity context, List<ThongBao> thongBaoList) {
         this.context = context;
@@ -41,6 +43,10 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
         holder.binding.tvTime.setText(thongBao.getTime());
         holder.binding.tvContent.setText(thongBao.getContent());
         holder.binding.imgIcon.setImageResource(R.drawable.ic_notification); // Cài đặt icon tạm thời
+
+        /// Luu Position mới cho Holder
+        final int pos = position;
+        holder.position = pos;
     }
 
     @Override
@@ -57,6 +63,16 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
         public ThongBaoViewHolder(@NonNull ItemThongbaoBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ThongBao thongBao = thongBaoList.get(position);
+                    recyclerViewItemClickListener.onItemClick(view, thongBao);
+                }
+            });
         }
+    }
+    public interface OnRecyclerViewItemClickListener {
+        void onItemClick(View view, ThongBao thongBao);
     }
 }
