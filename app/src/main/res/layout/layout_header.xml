@@ -9,7 +9,7 @@
     <ImageView
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:background="@drawable/ma"/>
+        android:background="@drawable/ic_person_24"/>
     <TextView
         android:id="@+id/tvTenNguoiDung"
         android:layout_width="wrap_content"

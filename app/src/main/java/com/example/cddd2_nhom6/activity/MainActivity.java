@@ -32,6 +32,7 @@ import com.example.cddd2_nhom6.response.PhimResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private  String nameUser;
     private String emailUser;
     private int idLoaiND;
+    private List<DSPhim> seriesKkphimPhimLe, seriesKkphimPhimBo, seriesKkphimPhimHoatHinh, seriesKkphimTvShow;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         apiService = ApiClient.getClient().create(ApiService.class);
-
+        seriesKkphimPhimBo = new ArrayList<>();
 
         setupRecyclerViews();
         loadMovies();
@@ -98,6 +100,32 @@ public class MainActivity extends AppCompatActivity {
         loadPhimLe();
         loadPhimHoatHinh();
         navigationBottom();
+
+        binding.xemThemPhimBo.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "series"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemPhimLe.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "phimle"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemTVshow.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "tvshow"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemHoatHinh.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "hoathinh"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemPhimMoiNhat.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "moinhat"); // truyền loại phim
+            startActivity(intent);
+        });
 
     }
     private void laythongtinUser(){
@@ -249,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadSeries() {
-        apiService.getSeries().enqueue(new Callback<DSPhimResponse>() {
+        apiService.getSeries(1).enqueue(new Callback<DSPhimResponse>() {
             @Override
             public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
                 // Ẩn ProgressBar và hiển thị nội dung chính
@@ -277,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadPhimLe() {
 
-        apiService.getPhimLe().enqueue(new Callback<DSPhimResponse>() {
+        apiService.getPhimLe(1).enqueue(new Callback<DSPhimResponse>() {
             @Override
             public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
                 // Ẩn ProgressBar và hiển thị nội dung chính
@@ -305,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadTVShow() {
 
 
-        apiService.getTVShow().enqueue(new Callback<DSPhimResponse>() {
+        apiService.getTVShow(1).enqueue(new Callback<DSPhimResponse>() {
             @Override
             public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
                 // Ẩn ProgressBar và hiển thị nội dung chính
@@ -333,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadPhimHoatHinh() {
 
 
-        apiService.getHoatHinh().enqueue(new Callback<DSPhimResponse>() {
+        apiService.getHoatHinh(1).enqueue(new Callback<DSPhimResponse>() {
             @Override
             public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
                 // Ẩn ProgressBar và hiển thị nội dung chính

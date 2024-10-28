@@ -14,15 +14,15 @@ public interface ApiService {
     @GET("danh-sach/phim-moi-cap-nhat")
     Call<PhimResponse> getMovies(@Query("page") int page);
     @GET("v1/api/danh-sach/phim-bo")
-    Call<DSPhimResponse> getSeries();
+    Call<DSPhimResponse> getSeries(@Query("page") int page);
     @GET("v1/api/danh-sach/tv-shows")
-    Call<DSPhimResponse> getTVShow();
+    Call<DSPhimResponse> getTVShow(@Query("page") int page);
 
     @GET("v1/api/danh-sach/phim-le")
-    Call<DSPhimResponse> getPhimLe();
+    Call<DSPhimResponse> getPhimLe(@Query("page") int page);
 
     @GET("v1/api/danh-sach/hoat-hinh")
-    Call<DSPhimResponse> getHoatHinh();
+    Call<DSPhimResponse> getHoatHinh(@Query("page") int page);
 
     @GET("v1/api/the-loai/tinh-cam")
     Call<DSPhimResponse> getTheLoai();
