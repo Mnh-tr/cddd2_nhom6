@@ -24,7 +24,8 @@ public class VipActivity extends AppCompatActivity {
         binding = ActivityVipBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
+// Đặt item mặc định được chọn là màn hình Vip
+        binding.bottomNavigation.setSelectedItemId(R.id.nav_vip);
         // Xử lý sự kiện chọn item của Bottom Navigation
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
