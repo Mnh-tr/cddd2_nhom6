@@ -182,6 +182,8 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
             params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250, getResources().getDisplayMetrics());
             binding.playerView.setLayoutParams(params);
+
+            isFullScreen = false;
         } else {
             // Chuyển sang chế độ landscape
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -196,9 +198,9 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             params.height = ViewGroup.LayoutParams.MATCH_PARENT;
             params.width = ViewGroup.LayoutParams.MATCH_PARENT;
             binding.playerView.setLayoutParams(params);
-        }
 
-        isFullScreen = !isFullScreen; // Đổi trạng thái fullscreen
+            isFullScreen = true;
+        }
     }
 
 

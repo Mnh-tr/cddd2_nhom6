@@ -35,7 +35,8 @@
             android:windowSoftInputMode="adjustPan|stateHidden"/>
         <activity
             android:name=".activity.XemPhimActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:configChanges="orientation|screenSize"/>
         <activity
             android:name=".activity.ChiTietPhimActivity"
             android:exported="false" />
