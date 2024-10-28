@@ -63,13 +63,13 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
         public ThongBaoViewHolder(@NonNull ItemThongbaoBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ThongBao thongBao = thongBaoList.get(position);
-                    recyclerViewItemClickListener.onItemClick(view, thongBao);
-                }
-            });
+//            itemView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    ThongBao thongBao = thongBaoList.get(position);
+//                    recyclerViewItemClickListener.onItemClick(view, thongBao);
+//                }
+//            });
         }
     }
     public interface OnRecyclerViewItemClickListener {

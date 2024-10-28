@@ -175,12 +175,12 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
 
             // Hiện thanh trạng thái và thanh điều hướng
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            View decorView = getWindow().getDecorView(); // Lấy View của cửa sổ
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE); // Hiển thị thanh trạng thái và thanh điều hướng
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
 
             // Thiết lập chiều cao của PlayerView về 250dp
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();// Lấy LayoutParams của PlayerView
-            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250, getResources().getDisplayMetrics());// Đặt chiều cao mới
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250, getResources().getDisplayMetrics());
             binding.playerView.setLayoutParams(params);
         } else {
             // Chuyển sang chế độ landscape

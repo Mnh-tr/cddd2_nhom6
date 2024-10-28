@@ -1,5 +1,6 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.WindowManager;
@@ -77,7 +78,16 @@ public class ThongBaoActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        // Tạo Intent để chuyển về MainActivity (trang chủ)
+        Intent intent = new Intent(ThongBaoActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // Đảm bảo không tạo lại nhiều Activity
 
+        // Bắt đầu MainActivity
+        startActivity(intent);
+        finish();
+    }
 
     @Override
     protected void onResume() {

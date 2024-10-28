@@ -28,11 +28,15 @@ import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
 import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.Phim;
+import com.example.cddd2_nhom6.model.ThongBaoKhiUngDungTat;
+import com.example.cddd2_nhom6.model.ThongBaoTrenManHinh;
 import com.example.cddd2_nhom6.model.TruyCap;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -74,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
-        // Write a message to the database
 
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -112,6 +115,21 @@ public class MainActivity extends AppCompatActivity {
         loadPhimLe();
         loadPhimHoatHinh();
         navigationBottom();
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            // Khởi tạo ThongBaoTrenManHinh
+            ThongBaoTrenManHinh thongBao = new ThongBaoTrenManHinh(getApplicationContext());
+            // Bắt đầu dịch vụ để lắng nghe thông báo
+            thongBao.batDichVuThongBao();
+            // Lấy ID người dùng và bắt đầu lắng nghe
+            thongBao.layIdNguoiDungHienTai();
+            // Khởi động dịch vụ khi nhận được thông báo
+            Intent serviceIntent = new Intent(MainActivity.this, ThongBaoKhiUngDungTat.class);
+            MainActivity.this.startForegroundService(serviceIntent);
+        } else {
+            Toast.makeText(this, "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
+        }
 
     }
     public static void kiemTraTruyCap(String idUser) {
