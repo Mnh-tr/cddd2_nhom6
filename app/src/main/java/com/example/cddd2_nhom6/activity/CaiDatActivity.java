@@ -57,7 +57,7 @@ public class CaiDatActivity extends AppCompatActivity {
                 // Lấy ID người dùng
                 String userId = user.getUid();
                 DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("status");
-
+                MainActivity.truycap = false;
                 // Đặt trạng thái là "offline"
                 userStatusRef.setValue("offline");
                 FirebaseAuth.getInstance().signOut();

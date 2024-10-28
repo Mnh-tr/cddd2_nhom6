@@ -10,4 +10,8 @@
     <color name="btn_vip_bg">#ff66b2</color>  <!-- Màu nút VIP -->
     <color name="btn_disabled_bg">#B0BEC5</color> <!-- Màu nút khi disabled -->
     <color name="color_your_rating">#FFEB3B</color>
+    <color name="colorDefault">#E0E0E0</color> <!-- Màu mặc định cho nút -->
+    <color name="defaultTextColor">#000000</color> <!-- Màu chữ mặc định -->
+    <color name="colorSelected">#F06292</color> <!-- Màu cho nút đã chọn -->
+    <color name="selectedTextColor">#FFFFFF</color> <!-- Màu chữ cho nút đã chọn -->
 </resources>

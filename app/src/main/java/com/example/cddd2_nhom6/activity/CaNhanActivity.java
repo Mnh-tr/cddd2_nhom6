@@ -80,36 +80,33 @@ public class CaNhanActivity extends AppCompatActivity {
         // Kiểm tra trạng thái đăng nhập
         //FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (idUser != null) {
-            isUserLoggedIn = true; // Người dùng đã đăng nhập
-            binding.btnDangNhap.setText("Đăng Xuất"); // Đổi văn bản nút thành "Đăng Xuất"
-        } else {
+            if (idLoaiND == 3 || idLoaiND == 2){
+                isUserLoggedIn = true;
+                binding.btnDangNhap.setVisibility(View.VISIBLE);
+                binding.btnDangNhap.setText("Admin");
+            }else{
+                isUserLoggedIn = true; // Người dùng đã đăng nhập
+                binding.btnDangNhap.setVisibility(View.GONE);
+            }
+        }
+        else {
             isUserLoggedIn = false; // Người dùng chưa đăng nhập
+            binding.btnDangNhap.setVisibility(View.VISIBLE);
             binding.btnDangNhap.setText("Đăng Nhập"); // Đổi văn bản nút thành "Đăng Nhập"
         }
 
         binding.btnDangNhap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isUserLoggedIn) {// Nếu người dùng đã đăng nhập, tiến hành đăng xuất
-
-                    FirebaseAuth.getInstance().signOut();
-                    SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.clear(); // Xóa tất cả thông tin
-                    editor.apply();
-
-                    Intent intent = new Intent(CaNhanActivity.this, MainActivity.class);
+                if (binding.btnDangNhap.getText().equals("Admin")){
+                    Intent intent = new Intent(CaNhanActivity.this, AdminActivity.class );
                     startActivity(intent);
-                    finish();
-                    Toast.makeText(CaNhanActivity.this, "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Nếu người dùng chưa đăng nhập, chuyển đến màn hình đăng nhập
+                }
+                else {
                     Intent intent = new Intent(CaNhanActivity.this, DangNhapActivity.class);
                     startActivity(intent);
-                    finish();
                 }
-            }
-        });
+        }});
         binding.caiDat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

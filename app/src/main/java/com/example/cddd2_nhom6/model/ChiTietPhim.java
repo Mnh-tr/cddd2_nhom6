@@ -15,7 +15,7 @@ public class ChiTietPhim {
     private MovieItem movie;
 
     @SerializedName("episodes")
-    private List<Episode> episodes;
+    private List<TapPhim> episodes;
 
     public ChiTietPhim(String movieId, String movieTitle, String episodeCurrent, String posterUrl, String linkM3u8) {
         this.movie = new MovieItem();
@@ -52,11 +52,11 @@ public class ChiTietPhim {
         this.movie = movie;
     }
 
-    public List<Episode> getEpisodes() {
+    public List<TapPhim> getEpisodes() {
         return episodes;
     }
 
-    public void setEpisodes(List<Episode> episodes) {
+    public void setEpisodes(List<TapPhim> episodes) {
         this.episodes = episodes;
     }
 
@@ -516,12 +516,12 @@ public class ChiTietPhim {
         }
     }
 
-    public static class Episode {
+    public static class TapPhim {
         @SerializedName("server_name")
         private String serverName;
 
         @SerializedName("server_data")
-        private List<ServerData> serverData;
+        private List<DuLieuServer> serverData;
 
         public String getServerName() {
             return serverName;
@@ -531,15 +531,15 @@ public class ChiTietPhim {
             this.serverName = serverName;
         }
 
-        public List<ServerData> getServerData() {
+        public List<DuLieuServer> getServerData() {
             return serverData;
         }
 
-        public void setServerData(List<ServerData> serverData) {
+        public void setServerData(List<DuLieuServer> serverData) {
             this.serverData = serverData;
         }
 
-        public static class ServerData {
+        public static class DuLieuServer {
             @SerializedName("name")
             private String name;
 

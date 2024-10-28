@@ -58,7 +58,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private ExoPlayer exoPlayer; // ExoPlayer để phát video
     private boolean isFullScreen = false;
     private TapPhimAdapter tapPhimAdapter;
-    private List<ChiTietPhim.Episode.ServerData> serverDataList = new ArrayList<>();
+    private List<ChiTietPhim.TapPhim.DuLieuServer> serverDataList = new ArrayList<>();
     private String movieLink;
     private ApiService apiService;
     private String movieSlug;
@@ -101,7 +101,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
 
         binding.playerView.findViewById(R.id.btnFullScreen).setOnClickListener(v -> phongToPhim());
         apiService = ApiClient.getClient().create(ApiService.class);
-        loadMovieDetails();
+        hienThiChiTietPhim();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         laythongtinUser();
         // Gọi hàm này sau khi người dùng nhấn vào phim hoặc sau khi thêm bình luận
@@ -124,6 +124,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                 danhGiaPhim.luuDanhGia(movieSlug, idUser, rating);  // Lưu đánh giá
             }
         });
+        // Khởi tạo đối tượng DanhGiaPhim
         danhGiaPhim = new DanhGiaPhim(this,binding,movieSlug);
         // Tính và hiển thị trung bình sao và số lượt đánh giá
         danhGiaPhim.tinhTrungBinhDanhGia();
@@ -157,7 +158,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             exoPlayer.prepare();
         }
     }
-
+    // Hàm phát video
     private void phatPhim(String episodeLink) {
         if (exoPlayer != null) {
             MediaItem mediaItem = MediaItem.fromUri(episodeLink);
@@ -166,7 +167,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             exoPlayer.play();
         }
     }
-
+    // Hàm phong to
     private void phongToPhim() {
         if (isFullScreen) {
             // Quay về chế độ portrait
@@ -181,6 +182,8 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
             params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250, getResources().getDisplayMetrics());
             binding.playerView.setLayoutParams(params);
+
+            isFullScreen = false;
         } else {
             // Chuyển sang chế độ landscape
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -195,63 +198,69 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             params.height = ViewGroup.LayoutParams.MATCH_PARENT;
             params.width = ViewGroup.LayoutParams.MATCH_PARENT;
             binding.playerView.setLayoutParams(params);
-        }
 
-        isFullScreen = !isFullScreen; // Đổi trạng thái fullscreen
+            isFullScreen = true;
+        }
     }
 
 
-    private void loadMovieDetails() {
+    private void hienThiChiTietPhim() {
         Call<ChiTietPhim> call = apiService.getChiTietPhim(movieSlug);
         call.enqueue(new Callback<ChiTietPhim>() {
             @Override
             public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                // Xử lý kết quả trả về từ API
                 if (response.isSuccessful() && response.body() != null) {
-                    ChiTietPhim movieDetails = response.body();
-                    List<ChiTietPhim.Episode> tapPhim = movieDetails.getEpisodes();
-                    String movieTitle = movieDetails.getMovie().getName();
+                    // Lấy thông tin từ phản hồi
+                    ChiTietPhim chiTietPhim = response.body();
+                    List<ChiTietPhim.TapPhim> tapPhim = chiTietPhim.getEpisodes();
+                    String tenPhim = chiTietPhim.getMovie().getName();
+                    String tenTapPhim;
 
-                    //
-                    String episodeName;
+                    // Lấy tên tập phim từ Intent
                     if (getIntent().getBooleanExtra("lichsu", false)) {
-                        // Get episode name from the watch history
-                        episodeName = getIntent().getStringExtra("episode");
+                        tenTapPhim = getIntent().getStringExtra("episode");
                     } else {
-                        // Get episode name from the details screen
-                        episodeName = getIntent().getStringExtra("episodeCurrent");
+                        tenTapPhim = getIntent().getStringExtra("episodeCurrent");
                     }
 
-                    binding.tvMovieTitle.setText(movieTitle + " - " + episodeName);
+                    // Đặt tiêu đề phim và tên tập phim
+                    binding.tvMovieTitle.setText(tenPhim + " - " + tenTapPhim);
 
+                    // Thiết lập RecyclerView cho các tập phim
                     if (tapPhim != null && !tapPhim.isEmpty()) {
                         serverDataList.clear();
-                        for (ChiTietPhim.Episode episode : tapPhim) {
-                            List<ChiTietPhim.Episode.ServerData> data = episode.getServerData();
+
+                        // Lấy danh sách các tập phim
+                        for (ChiTietPhim.TapPhim episode : tapPhim) {
+                            // Lấy danh sách các server
+                            List<ChiTietPhim.TapPhim.DuLieuServer> data = episode.getServerData();
                             if (data != null) {
                                 serverDataList.addAll(data);
                             }
                         }
+
                         tapPhimAdapter = new TapPhimAdapter(XemPhimActivity.this, serverDataList);
 
-                        // Set up click listener for episodes
+                        // Thiết lập click listener cho các tập phim
                         tapPhimAdapter.setRecyclerViewItemClickListener(new TapPhimAdapter.OnRecyclerViewItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
-                                ChiTietPhim.Episode.ServerData selectedEpisode = serverDataList.get(position);
-                                String newMovieLink = selectedEpisode.getLinkM3u8();
+                                ChiTietPhim.TapPhim.DuLieuServer tapPhimDaChon = serverDataList.get(position);
+                                String linkPhimMoi = tapPhimDaChon.getLinkM3u8();
 
-                                // Display the name of the episode being watched
-                                binding.tvMovieTitle.setText(movieTitle + " - " + selectedEpisode.getName());
-                                lichSuPhim.luuLichSuXem(movieSlug, selectedEpisode.getName(), serverDataList);
-                                phatPhim(newMovieLink);
+                                // Hiển thị tên tập phim đang xem
+                                binding.tvMovieTitle.setText(tenPhim + " - " + tapPhimDaChon.getName());
+                                lichSuPhim.luuLichSuXem(movieSlug, tapPhimDaChon.getName(), serverDataList);
+                                phatPhim(linkPhimMoi);
                             }
                         });
 
                         binding.rcvTapPhim.setAdapter(tapPhimAdapter);
 
-                        // Play the first episode automatically
+                        // Tự động phát tập phim đầu tiên
                         movieLink = serverDataList.get(0).getLinkM3u8();
-                        KhoiTaoPhim(); // Initialize player with the first episode
+                        KhoiTaoPhim(); // Khởi tạo trình phát với tập đầu tiên
                     } else {
                         Toast.makeText(XemPhimActivity.this, "Không có tập phim nào", Toast.LENGTH_SHORT).show();
                     }
@@ -260,14 +269,16 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
 
             @Override
             public void onFailure(Call<ChiTietPhim> call, Throwable t) {
-                Toast.makeText(XemPhimActivity.this, "Failed to load movie details", Toast.LENGTH_SHORT).show();
+                Toast.makeText(XemPhimActivity.this, "Không thể tải chi tiết phim", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
 
 
+
     private void laythongtinUser() {
+        // Lấy thông tin người dùng từ SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
@@ -351,10 +362,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                         String userName = snapshot.child("userName").getValue(String.class); // Lấy tên người dùng từ bình luận
                         long timestamp = snapshot.child("timestamp").getValue(Long.class);
 
-
-                        Log.d("LoadComments", "Current comment UserId: " + userId); // Log userId
-                        Log.d("LoadComments", "Current comment Text: " + commentText); // Log commentText
-
                         if (userId != null && commentText != null) {
                             // Lấy tên người dùng từ bảng users
                             usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -380,7 +387,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                         }
                     }
                 } else {
-                    Log.d("LoadComments", "No comments found for this movie.");
+                    Log.d("LoadComments", "Không tìm thấy bình luận");
                 }
             }
 
