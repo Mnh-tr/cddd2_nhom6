@@ -31,11 +31,13 @@ public class DanhGiaPhim {
         this.binding = binding;
         this.movieSlug = movieSlug;
         laythongtinUser();
+        // Khởi tạo tham chiếu đến bảng Ratings
         ratingsRef = FirebaseDatabase.getInstance().getReference("Ratings");
     }
 
 
     public void luuDanhGia(String movieSlug, String userId, float rating) {
+        // Lưu đánh giá vào Firebase
         Map<String, Object> ratingData = new HashMap<>();
         ratingData.put("userId", userId);
         ratingData.put("rating", rating);
@@ -67,20 +69,24 @@ public class DanhGiaPhim {
         ratingsRef.child(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                int totalRatings = 0;
-                float sumRatings = 0;
-
+                int luot = 0;
+                float tongDanhGia = 0;
+                // Lặp qua tất cả các đánh giá của phim
                 for (DataSnapshot ratingSnapshot : snapshot.getChildren()) {
+                    // Lấy thông tin đánh giá
                     float rating = ratingSnapshot.child("rating").getValue(Float.class);
-                    sumRatings += rating;
-                    totalRatings++;
+                    // Tính tổng điểm và số lượng đánh giá
+                    tongDanhGia += rating; // Tổng điểm
+                    luot++; // Đếm số lượng đánh giá
                 }
 
-                if (totalRatings > 0) {
-                    float averageRating = sumRatings / totalRatings;
+                if (luot > 0) {
+                    // Tính trung bình sao
+                    float diemDanhGia = tongDanhGia / luot;
                     // Cập nhật giao diện với tổng số đánh giá và trung bình sao
-                    binding.tvAverageRating.setText("( " + averageRating + " điểm / " + totalRatings + " lượt)");
+                    binding.tvAverageRating.setText("( " + diemDanhGia + " điểm / " + luot + " lượt)");
                 } else {
+                    // Nếu không có đánh giá, hiển thị thông báo và đặt điểm trung bình là 0
                     binding.tvAverageRating.setText("( 0 điểm / 0 lượt )");
                     binding.ratingBar.setRating(0); // Reset ratingBar nếu không có đánh giá
                 }
@@ -107,15 +113,15 @@ public class DanhGiaPhim {
             ratingRef = FirebaseDatabase.getInstance().getReference("Ratings")
                     .child(movieSlug)  // slug của phim
                     .child(userId);  // ID người dùng
-
+            // Kiểm tra nếu người dùng đã đánh giá phim
             ratingRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         // Người dùng đã đánh giá, lấy rating
-                        int userRating = dataSnapshot.child("rating").getValue(Integer.class);
+                        int nguoiDungDanhGia = dataSnapshot.child("rating").getValue(Integer.class);
                         // Highlight sao đã đánh giá với màu sắc tương ứng
-                        binding.ratingBar.setRating(userRating);
+                        binding.ratingBar.setRating(nguoiDungDanhGia);
                         binding.ratingBar.setIsIndicator(false); // Cho phép người dùng chỉnh sửa
                         binding.ratingBar.setProgressTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.color_your_rating))); // Đặt màu sao theo rating
                     } else {
@@ -142,6 +148,7 @@ public class DanhGiaPhim {
     }
 
     private void laythongtinUser() {
+        // Lấy thông tin người dùng từ SharedPreferences
         SharedPreferences sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         idUser = sharedPreferences.getString("id_user", null);
     }

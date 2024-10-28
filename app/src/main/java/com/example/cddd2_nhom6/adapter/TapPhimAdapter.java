@@ -14,10 +14,10 @@ import java.util.List;
 
 public class TapPhimAdapter extends RecyclerView.Adapter<TapPhimAdapter.ViewHolder> {
     private Activity context;
-    private List<ChiTietPhim.Episode.ServerData> listTapPhim;
+    private List<ChiTietPhim.TapPhim.DuLieuServer> listTapPhim;
     private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
 
-    public TapPhimAdapter(Activity context, List<ChiTietPhim.Episode.ServerData> listTapPhim) {
+    public TapPhimAdapter(Activity context, List<ChiTietPhim.TapPhim.DuLieuServer> listTapPhim) {
         this.listTapPhim = listTapPhim;
         this.context = context;
     }
@@ -33,7 +33,7 @@ public class TapPhimAdapter extends RecyclerView.Adapter<TapPhimAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ChiTietPhim.Episode.ServerData tapphim = listTapPhim.get(position);
+        ChiTietPhim.TapPhim.DuLieuServer tapphim = listTapPhim.get(position);
         holder.binding.tvTapPhim.setText(tapphim.getName()); // Thiết lập tên tập phim cho đúng mục
 
         /// Luu Position mới cho Holder
