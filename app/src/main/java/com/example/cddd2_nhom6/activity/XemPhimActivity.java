@@ -360,10 +360,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                         String userName = snapshot.child("userName").getValue(String.class); // Lấy tên người dùng từ bình luận
                         long timestamp = snapshot.child("timestamp").getValue(Long.class);
 
-
-                        Log.d("LoadComments", "Current comment UserId: " + userId); // Log userId
-                        Log.d("LoadComments", "Current comment Text: " + commentText); // Log commentText
-
                         if (userId != null && commentText != null) {
                             // Lấy tên người dùng từ bảng users
                             usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -389,7 +385,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                         }
                     }
                 } else {
-                    Log.d("LoadComments", "No comments found for this movie.");
+                    Log.d("LoadComments", "Không tìm thấy bình luận");
                 }
             }
 
