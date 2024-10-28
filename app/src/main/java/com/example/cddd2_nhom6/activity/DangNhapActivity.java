@@ -42,7 +42,7 @@ public class DangNhapActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         binding = ActivityDangNhapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        MainActivity.truycap = false;
         // Khởi tạo FirebaseAuth và DatabaseReference
         mAuth = FirebaseAuth.getInstance();
         usersRef = FirebaseDatabase.getInstance().getReference("Users"); // Đảm bảo rằng bạn đã khởi tạo đúng đường dẫn
