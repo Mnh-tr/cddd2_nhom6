@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -9,14 +10,12 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+
+import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -31,6 +30,8 @@ import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -43,11 +44,20 @@ public class MainActivity extends AppCompatActivity {
     private PhimAdapter movieAdapter;
     private ApiService apiService;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private String idUser;
+    private  String nameUser;
+    private String emailUser;
+    private int idLoaiND;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        laythongtinUser();
+        Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
+        updateUser();
+
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
         // Write a message to the database
@@ -90,7 +100,31 @@ public class MainActivity extends AppCompatActivity {
         navigationBottom();
 
     }
+    private void laythongtinUser(){
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        idUser = sharedPreferences.getString("id_user", null);
+        nameUser = sharedPreferences.getString("name", null);
+        emailUser  = sharedPreferences.getString("email", null);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
+    }
+    private void updateUser(){
+        // Tham chiếu đến NavigationView
+        NavigationView navigationView = findViewById(R.id.navigationView);  // Giả sử NavigationView có id là nav_view
+
+        // Lấy header view từ NavigationView
+        View headerView = navigationView.getHeaderView(0);
+
+        // Tham chiếu đến TextView trong header view
+        TextView textView = headerView.findViewById(R.id.tvTenNguoiDung); // Thay bằng id của TextView trong layout_header
+
+        if(nameUser != null){
+            // Thay đổi nội dung TextView
+            textView.setText(nameUser);
+        }else{
+            textView.setText("Khách");
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Nạp menu
@@ -336,9 +370,11 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 Intent intent = null;
                 if (item.getItemId() == R.id.nav_home) {
-                    intent = new Intent(MainActivity.this, MainActivity.class);
+                    return true;
                 } else if (item.getItemId() == R.id.nav_vip) {
                     intent = new Intent(MainActivity.this, VipActivity.class);
+                }else if(item.getItemId() == R.id.nav_profile) {
+                    intent = new Intent(MainActivity.this, CaNhanActivity.class);
                 }
                 // Pass the selected item to the new Activity
                 if (intent != null) {
