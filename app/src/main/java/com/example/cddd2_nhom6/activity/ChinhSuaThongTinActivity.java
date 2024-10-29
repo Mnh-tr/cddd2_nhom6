@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.R;
@@ -43,71 +44,78 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
         if (user != null) {
             userId = user.getUid(); // Lấy ID người dùng từ Firebase Authentication
         } else {
-            // Xử lý trường hợp người dùng chưa đăng nhập
-            Log.w("UpdateUserActivity", "Người dùng chưa đăng nhập.");
             finish(); // Đóng Activity nếu người dùng chưa đăng nhập
             return;
         }
 
         // Thiết lập sự kiện cho nút Lưu
-        binding.btnLuu.setOnClickListener(view -> updateUserInfo());
+        binding.btnLuu.setOnClickListener(view -> thayDoiMatKhau());
         binding.btnThoat.setOnClickListener(view -> finish()); // Đóng activity nếu nhấn Huỷ
         xemMatKhauCu();
         xemMatKhauMoi();
     }
 
-    private void updateUserInfo() {
-        String currentPassword = binding.edtMkCu.getText().toString().trim(); // Mật khẩu hiện tại
-        String newPassword = binding.edtMkMoi.getText().toString().trim(); // Mật khẩu mới
+    private void thayDoiMatKhau() {
+        String mkCu = binding.edtMkCu.getText().toString().trim(); // Mật khẩu hiện tại
+        String mkMoi = binding.edtMkMoi.getText().toString().trim(); // Mật khẩu mới
 
         // Kiểm tra nếu các trường rỗng
-        if (currentPassword.isEmpty() || newPassword.isEmpty()) {
-            Log.w("UpdateUserActivity", "Vui lòng điền đầy đủ thông tin.");
+        if (mkCu.isEmpty() || mkMoi.isEmpty()) {
+            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
             return; // Dừng nếu có trường rỗng
         }
 
         // Kiểm tra nếu userId không null
         if (userId == null) {
-            Log.w("UpdateUserActivity", "Không tìm thấy ID người dùng, không thể cập nhật thông tin.");
+            Toast.makeText(this, "Không tìm thấy ID người dùng, không thể cập nhật thông tin.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        reauthenticateAndChangePassword(currentPassword, newPassword);
+        xacThucMatKhau(mkCu, mkMoi);
     }
 
-    private void reauthenticateAndChangePassword(String currentPassword, String newPassword) {
+    private void xacThucMatKhau(String mkCu, String mkMoi) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {
-            // Lấy email của người dùng (giả định người dùng đăng nhập bằng email và mật khẩu)
             String email = user.getEmail();
+            AuthCredential credential = EmailAuthProvider.getCredential(email, mkCu);
 
-            // Xác thực người dùng bằng mật khẩu hiện tại
-            AuthCredential credential = EmailAuthProvider.getCredential(email, currentPassword);
             user.reauthenticate(credential).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Log.d("UpdateUserActivity", "Xác thực thành công.");
+                    Toast.makeText(this, "Xác thực thành công.", Toast.LENGTH_SHORT).show();
+                    // Xóa nội dung các trường nhập mật khẩu
+                    binding.edtMkCu.setText("");
+                    binding.edtMkMoi.setText("");
 
-                    // Cập nhật mật khẩu sau khi xác thực thành công
-                    user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
+                    user.updatePassword(mkMoi).addOnCompleteListener(updateTask -> {
                         if (updateTask.isSuccessful()) {
-                            Log.d("UpdateUserActivity", "Đổi mật khẩu thành công.");
+                            // Hiển thị Dialog thông báo thành công
+                            new AlertDialog.Builder(this)
+                                    .setTitle("Thông báo")
+                                    .setMessage("Đổi mật khẩu thành công.")
+                                    .setPositiveButton("OK", (dialog, which) -> {
+                                        dialog.dismiss();
+                                        // Xóa nội dung các trường nhập mật khẩu
+                                        binding.edtMkCu.setText("");
+                                        binding.edtMkMoi.setText("");
+                                    })
+                                    .show();
 
                             // Lưu mật khẩu mới vào cơ sở dữ liệu (tùy chọn, không khuyến nghị lưu mật khẩu)
-                            databaseReference.child(userId).child("password").setValue(newPassword)
+                            databaseReference.child(userId).child("password").setValue(mkMoi)
                                     .addOnCompleteListener(passwordUpdateTask -> {
                                         if (passwordUpdateTask.isSuccessful()) {
-                                            Log.d("UpdateUserActivity", "Lưu mật khẩu mới vào cơ sở dữ liệu thành công.");
+                                            Toast.makeText(this, "Lưu mật khẩu mới vào cơ sở dữ liệu thành công.", Toast.LENGTH_SHORT).show();
                                         } else {
-                                            Log.w("UpdateUserActivity", "Lỗi khi lưu mật khẩu mới vào cơ sở dữ liệu.", passwordUpdateTask.getException());
+                                            Toast.makeText(this, "Lỗi khi lưu mật khẩu mới vào cơ sở dữ liệu.", Toast.LENGTH_SHORT).show();
                                         }
                                     });
                         } else {
-                            Log.w("UpdateUserActivity", "Lỗi khi cập nhật mật khẩu.", updateTask.getException());
+                            Toast.makeText(this, "Lỗi khi đổi mật khẩu.", Toast.LENGTH_SHORT).show();
                         }
                     });
                 } else {
-                    Log.w("UpdateUserActivity", "Xác thực thất bại. Kiểm tra lại mật khẩu hiện tại.", task.getException());
                     Toast.makeText(ChinhSuaThongTinActivity.this, "Mật khẩu cũ không trùng khớp.", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -115,6 +123,7 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
             Log.w("UpdateUserActivity", "Người dùng chưa đăng nhập, không thể xác thực.");
         }
     }
+
     private void xemMatKhauCu() {
         // Thiết lập sự kiện nhấn vào biểu tượng con mắt
         binding.edtMkCu.setOnTouchListener((v, event) -> {
