@@ -125,14 +125,17 @@ public class DangNhapActivity extends AppCompatActivity {
                                 String email = dataSnapshot.child("email").getValue(String.class);
                                 Integer idLoaiND = dataSnapshot.child("id_loaiND").getValue(Integer.class);
 
-                                // Lưu thông tin vào SharedPreferences
-                                SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putString("id_user", idUser);
-                                editor.putString("name", hoTen);
-                                editor.putString("email", email);
-                                editor.putInt("id_loaiND", idLoaiND);
-                                editor.apply();
+                                if (binding.rememberMeCheckBox.isChecked() == true){
+                                    // Lưu thông tin vào SharedPreferences
+                                    SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putString("id_user", idUser);
+                                    editor.putString("name", hoTen);
+                                    editor.putString("email", email);
+                                    editor.putInt("id_loaiND", idLoaiND);
+                                    editor.apply();
+                                }
+
 
                                 // Chuyển đến màn hình chính
                                 Intent intent = new Intent(DangNhapActivity.this, MainActivity.class);
