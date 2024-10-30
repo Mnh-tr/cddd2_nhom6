@@ -225,6 +225,7 @@ public class CaNhanActivity extends AppCompatActivity {
                                     chiTietPhim(movieSlug, movieItem); // Lấy chi tiết phim
                                 }
                             }
+                            swipeRefreshLayout.setRefreshing(false); // Ngừng loading
                         }
 
                         @Override

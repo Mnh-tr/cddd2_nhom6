@@ -2,6 +2,7 @@ package com.example.cddd2_nhom6.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ViewGroup;
@@ -74,6 +75,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private List<BinhLuanPhim> binhLuanPhimList = new ArrayList<>();
     private DSPhimYeuThich dsPhimYeuThich;
     private DanhGiaPhim danhGiaPhim;
+    private LinearLayout.LayoutParams originalPlayerViewParams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,23 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         apiService = ApiClient.getClient().create(ApiService.class);
         setControl();
         setEvent();
+
+        // Lưu LayoutParams ban đầu
+        originalPlayerViewParams = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+
+        PlayerView.ControllerVisibilityListener visibilityListener = visibility -> {
+            View btnFullScreen = binding.playerView.findViewById(R.id.btnFullScreen);
+
+            if (visibility == View.VISIBLE) {
+                btnFullScreen.setVisibility(View.VISIBLE);
+            } else {
+                btnFullScreen.setVisibility(View.GONE);
+            }
+        };
+
+// Áp dụng listener vào PlayerView
+        binding.playerView.setControllerVisibilityListener(visibilityListener);
+
     }
 
     public void setControl() {
@@ -169,37 +188,13 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     }
     // Hàm phong to
     private void phongToPhim() {
+        isFullScreen = !isFullScreen; // Cập nhật trạng thái trước khi chuyển đổi
         if (isFullScreen) {
-            // Quay về chế độ portrait
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-            // Hiện thanh trạng thái và thanh điều hướng
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-
-            // Thiết lập chiều cao của PlayerView về 250dp
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
-            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250, getResources().getDisplayMetrics());
-            binding.playerView.setLayoutParams(params);
-
-            isFullScreen = false;
-        } else {
             // Chuyển sang chế độ landscape
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-            // Ẩn thanh trạng thái và thanh điều hướng
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-
-            // Thiết lập chiều cao của PlayerView để chiếm toàn bộ chiều cao màn hình
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
-            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            binding.playerView.setLayoutParams(params);
-
-            isFullScreen = true;
+        } else {
+            // Chuyển về chế độ portrait
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
     }
 
@@ -450,6 +445,37 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         }
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // Vào fullscreen
+            binding.playerView.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+            ));
+
+            // Ẩn thanh trạng thái và thanh điều hướng
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+
+            isFullScreen = true;
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            // Thoát fullscreen và khôi phục LayoutParams ban đầu
+            binding.playerView.setLayoutParams(originalPlayerViewParams);
+
+            // Hiển thị lại thanh trạng thái và điều hướng
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+
+            isFullScreen = false;
+        }
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();

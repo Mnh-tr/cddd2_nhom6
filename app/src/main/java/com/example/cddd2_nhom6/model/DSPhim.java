@@ -94,7 +94,7 @@ public class DSPhim {
     }
 
     public String getPosterUrl() {
-        return APP_DOMAIN_CDN_IMAGE + thumb_url; // Kết hợp để tạo URL đầy đủ
+        return APP_DOMAIN_CDN_IMAGE + poster_url; // Kết hợp để tạo URL đầy đủ
     }
 
     public int getYear() {

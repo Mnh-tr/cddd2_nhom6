@@ -109,6 +109,8 @@ public class DangKyActivity extends AppCompatActivity {
                     Toast.makeText(DangKyActivity.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
                 } else if (!matKhau.equals(nhapLaiMatKhau)) {
                     Toast.makeText(DangKyActivity.this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
+                }else if (!isValidGmail(email)) {
+                    Toast.makeText(DangKyActivity.this, "Email phải theo định dạng ...@gmail.com", Toast.LENGTH_SHORT).show();
                 } else {
                     kiemtraEmailDaCoChua(email, hoTen, matKhau);
                 }
@@ -116,6 +118,11 @@ public class DangKyActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    private boolean isValidGmail(String email) {
+        // Kiểm tra xem email có kết thúc bằng @gmail.com không
+        return email.endsWith("@gmail.com");
     }
  //kiem tra email đã có trong firebase chưa
     private void kiemtraEmailDaCoChua(final String email, final String hoTen, final String matKhau) {
@@ -187,8 +194,11 @@ public class DangKyActivity extends AppCompatActivity {
     }
 
     private void dangKyTaiKhoan(final String email, final String hoTen, String matKhau, final String maKH) {
+        //Gọi phương thức từ Firebase Authentication để tạo tài khoản mới với email và mật khẩu đã cung cấp
         mAuth.createUserWithEmailAndPassword(email, matKhau).addOnCompleteListener(task -> {
+            //Kiểm tra xem thao tác đăng ký có thành công hay không
             if (task.isSuccessful()) {
+                //Lấy thông tin của người dùng hiện tại (người vừa đăng ký)
                 FirebaseUser user = mAuth.getCurrentUser();
                 if (user != null) {
                     // Tạo một Map để lưu thông tin người dùng
