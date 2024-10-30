@@ -35,9 +35,9 @@ public class VipActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         laythongtinUser();
         Toast.makeText(VipActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
-// Kết nối tới Firebase
+        // Kết nối tới Firebase
         yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
-// Đặt item mặc định được chọn là màn hình Home
+        // Đặt item mặc định được chọn là màn hình Home
         binding.bottomNavigation.setSelectedItemId(R.id.nav_vip);
 
         // Kiểm tra xem idUser có trong bảng YeuCau hay chưa

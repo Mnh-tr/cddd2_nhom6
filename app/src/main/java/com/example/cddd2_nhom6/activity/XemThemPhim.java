@@ -69,8 +69,11 @@ public class XemThemPhim extends AppCompatActivity {
                 GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
 
                 if (layoutManager != null && !isLoading) {
+                    // Số lượng mục hiện tại đang hiển thị trên màn hình.
                     int visibleItemCount = layoutManager.getChildCount();
+                    //Tổng số lượng mục trong danh sách.
                     int totalItemCount = layoutManager.getItemCount();
+                    //Vị trí của mục đầu tiên đang được hiển thị.
                     int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
 
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
@@ -86,7 +89,6 @@ public class XemThemPhim extends AppCompatActivity {
     private void loadXemThemPhim(int page, String type) {
         isLoading = true;
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        Log.e("AllMovie", "Error loading movies: "+type);
         if ("moinhat".equals(type)) {
             Call<PhimResponse> call = apiService.getMovies(page);
             call.enqueue(new Callback<PhimResponse>() {
@@ -104,7 +106,6 @@ public class XemThemPhim extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<PhimResponse> call, Throwable t) {
-                    Log.e("AllMovie", "Error loading movies: " + t.getMessage());
                     isLoading = false;
                 }
             });
@@ -143,7 +144,6 @@ public class XemThemPhim extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                    Log.e("AllMovie", "Error loading movies: " + t.getMessage());
                     isLoading = false;
                 }
             });

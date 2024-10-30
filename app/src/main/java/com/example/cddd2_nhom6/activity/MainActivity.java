@@ -43,6 +43,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -130,6 +133,32 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
         }
 
+        binding.xemThemPhimBo.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "series"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemPhimLe.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "phimle"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemTVshow.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "tvshow"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemHoatHinh.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "hoathinh"); // truyền loại phim
+            startActivity(intent);
+        });
+        binding.xemThemPhimMoiNhat.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+            intent.putExtra("type", "moinhat"); // truyền loại phim
+            startActivity(intent);
+        });
+
     }
     public static void kiemTraTruyCap(String idUser) {
         // Kiểm tra xem id_user có null hay không và xem ngày truy cập đã tồn tại hay chưa
@@ -180,31 +209,7 @@ public class MainActivity extends AppCompatActivity {
                     // Xử lý lỗi
                     Log.e("TruyCap", "Lỗi khi thêm truy cập: " + e.getMessage());
                 });
-        binding.xemThemPhimBo.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "series"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemPhimLe.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "phimle"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemTVshow.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "tvshow"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemHoatHinh.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "hoathinh"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemPhimMoiNhat.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "moinhat"); // truyền loại phim
-            startActivity(intent);
-        });
+
 
     }
     private void laythongtinUser(){
@@ -217,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void updateUser(){
         // Tham chiếu đến NavigationView
-        NavigationView navigationView = findViewById(R.id.navigationView);  // Giả sử NavigationView có id là nav_view
+        NavigationView navigationView = findViewById(R.id.navigationView);
 
         // Lấy header view từ NavigationView
         View headerView = navigationView.getHeaderView(0);
@@ -354,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadSeries() {
-        apiService.getSeries().enqueue(new Callback<DSPhimResponse>() {
+        apiService.getSeries(1).enqueue(new Callback<DSPhimResponse>() {
             @Override
             public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
                 // Ẩn ProgressBar và hiển thị nội dung chính
