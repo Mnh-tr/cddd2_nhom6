@@ -29,7 +29,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="2dp"
-                    android:visibility="visible">
+                    android:visibility="gone">
 
                     <!-- Thêm Toolbar vào đây -->
                     <com.google.android.material.appbar.AppBarLayout
