@@ -53,14 +53,15 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
         binding.btnThoat.setOnClickListener(view -> finish()); // Đóng activity nếu nhấn Huỷ
         xemMatKhauCu();
         xemMatKhauMoi();
+        xemMatKhauMoiNhapLai();
     }
 
     private void thayDoiMatKhau() {
         String mkCu = binding.edtMkCu.getText().toString().trim(); // Mật khẩu hiện tại
         String mkMoi = binding.edtMkMoi.getText().toString().trim(); // Mật khẩu mới
-
+        String mkMoi2 = binding.edtMkMoi2.getText().toString().trim(); //Mật khẩu mới nhập lại
         // Kiểm tra nếu các trường rỗng
-        if (mkCu.isEmpty() || mkMoi.isEmpty()) {
+        if (mkCu.isEmpty() || mkMoi.isEmpty() || mkMoi2.isEmpty()) {
             Toast.makeText(this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
             return; // Dừng nếu có trường rỗng
         }
@@ -71,12 +72,16 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
             return;
         }
 
-        xacThucMatKhau(mkCu, mkMoi);
+        xacThucMatKhau(mkCu, mkMoi, mkMoi2);
     }
 
-    private void xacThucMatKhau(String mkCu, String mkMoi) {
+    private void xacThucMatKhau(String mkCu, String mkMoi, String mkMoi2) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
+        // Kiểm tra xem mật khẩu mới và mật khẩu nhập lại có trùng nhau không
+        if (!mkMoi.equals(mkMoi2)) {
+            Toast.makeText(this, "Mật khẩu mới và mật khẩu nhập lại không trùng khớp.", Toast.LENGTH_SHORT).show();
+            return; // Dừng hàm nếu không trùng
+        }
         if (user != null) {
             String email = user.getEmail();
             AuthCredential credential = EmailAuthProvider.getCredential(email, mkCu);
@@ -87,7 +92,7 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
                     // Xóa nội dung các trường nhập mật khẩu
                     binding.edtMkCu.setText("");
                     binding.edtMkMoi.setText("");
-
+                    binding.edtMkMoi2.setText("");
                     user.updatePassword(mkMoi).addOnCompleteListener(updateTask -> {
                         if (updateTask.isSuccessful()) {
                             // Hiển thị Dialog thông báo thành công
@@ -168,6 +173,31 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
                     // Thay đổi trạng thái
                     isPasswordVisible = !isPasswordVisible;
                     binding.edtMkMoi.setSelection(binding.edtMkMoi.getText().length()); // Để con trỏ vẫn ở cuối EditText
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+    private void xemMatKhauMoiNhapLai() {
+        // Thiết lập sự kiện nhấn vào biểu tượng con mắt
+        binding.edtMkMoi2.setOnTouchListener((v, event) -> {
+            final int DRAWABLE_RIGHT = 2;  // Vị trí của drawableEnd (con mắt) là vị trí thứ 2 (bên phải)
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getRawX() >= (binding.edtMkMoi2.getRight() - binding.edtMkMoi2.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                    // Kiểm tra trạng thái hiện tại của mật khẩu
+                    if (isPasswordVisible) {
+                        // Nếu mật khẩu đang hiển thị, chuyển sang ẩn
+                        binding.edtMkMoi2.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                        binding.edtMkMoi2.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_lock_outline_24, 0, R.drawable.baseline_visibility_off_24, 0);
+                    } else {
+                        // Nếu mật khẩu đang ẩn, chuyển sang hiển thị
+                        binding.edtMkMoi2.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                        binding.edtMkMoi2.setCompoundDrawablesWithIntrinsicBounds(R.drawable.baseline_lock_outline_24, 0, R.drawable.baseline_visibility_24, 0);
+                    }
+                    // Thay đổi trạng thái
+                    isPasswordVisible = !isPasswordVisible;
+                    binding.edtMkMoi2.setSelection(binding.edtMkMoi2.getText().length()); // Để con trỏ vẫn ở cuối EditText
                     return true;
                 }
             }

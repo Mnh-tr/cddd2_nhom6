@@ -50,6 +50,13 @@ public class CaiDatActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        binding.troGiup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent a = new Intent(CaiDatActivity.this, HoTroActivity.class);
+                startActivity(a);
+            }
+        });
         binding.ivdangxuat.setOnClickListener(new View.OnClickListener() {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             @Override
