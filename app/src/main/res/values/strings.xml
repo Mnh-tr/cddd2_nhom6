@@ -6,6 +6,7 @@
     <string name="favorite_button_label">Yêu thích</string>
     <string name="fullscreen">fullscreen</string>
     <string name="episode">Tập phim</string>
+
     <string-array name="genre_array">
         <item>Thể loại</item> <!-- Giá trị mặc định -->
         <item>Hành động</item>
