@@ -46,6 +46,11 @@
                             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
                         </androidx.appcompat.widget.Toolbar>
                     </com.google.android.material.appbar.AppBarLayout>
+                    <androidx.viewpager.widget.ViewPager
+                        android:id="@+id/viewPagerBanner"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:layout_marginBottom="3dp"/>
 
                     <!-- Nội dung chính: TextView và RecyclerView -->
                     <!-- Phim mới nhất -->
@@ -60,43 +65,18 @@
                             android:layout_marginTop="16dp"
                             android:orientation="horizontal"
                             android:background="@drawable/border_title"
-                            android:padding="5dp">
+                            android:padding="5dp"
+                            android:visibility="gone" >
 
                             <TextView
+                                android:id="@+id/tvDanhSachTimKiem"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Phim Mới Nhất"
+                                android:text="Danh sách Phim"
                                 android:textColor="@color/white"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="end">
-
-                                <TextView
-                                    android:id="@+id/xemThemPhimMoiNhat"
-                                    android:clickable="true"
-                                    android:focusable="true"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Xem thêm"
-                                    android:textColor="@color/white"
-                                    android:textSize="16sp"
-                                    android:layout_gravity="center_vertical" />
-
-                                <ImageView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:src="@drawable/ic_right_24"
-                                    android:layout_gravity="center_vertical"
-                                    android:layout_marginStart="4dp" />
-
-                            </LinearLayout>
-
                         </LinearLayout>
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -111,7 +91,8 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:orientation="horizontal" />
+                                android:orientation="horizontal"
+                                android:visibility="gone"/>
 
                             <!-- Phim bộ -->
                             <LinearLayout

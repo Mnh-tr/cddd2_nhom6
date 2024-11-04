@@ -3,6 +3,7 @@ package com.example.cddd2_nhom6.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,19 +21,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.cddd2_nhom6.adapter.BannerAdapter;
+import com.example.cddd2_nhom6.adapter.BannerOphimAdapter;
 import com.example.cddd2_nhom6.adapter.DSPhimAdapter;
+import com.example.cddd2_nhom6.adapter.DSPhimAdapterOphim;
 import com.example.cddd2_nhom6.adapter.PhimAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
 import com.example.cddd2_nhom6.model.DSPhim;
+import com.example.cddd2_nhom6.model.DSPhimAPiOphim;
 import com.example.cddd2_nhom6.model.Phim;
+import com.example.cddd2_nhom6.model.PhimAPiOphim;
 import com.example.cddd2_nhom6.model.ThongBaoKhiUngDungTat;
 import com.example.cddd2_nhom6.model.ThongBaoTrenManHinh;
 import com.example.cddd2_nhom6.model.TruyCap;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
+import com.example.cddd2_nhom6.response.DSResponseOphim;
 import com.example.cddd2_nhom6.response.PhimResponse;
+import com.example.cddd2_nhom6.response.PhimResponseOphim;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -65,7 +73,10 @@ public class MainActivity extends AppCompatActivity {
     private int idLoaiND;
     // bien de kiểm tra người dùng có đang ỏ trong ứng dụng hay không
     public static Boolean truycap = false;
-    private List<DSPhim> seriesKkphimPhimLe, seriesKkphimPhimBo, seriesKkphimPhimHoatHinh, seriesKkphimTvShow;
+    private List<DSPhim> DSKkphimPhimLe, DSKkphimBo, DSKkphimHoatHinh, DSKkphimTvShow;
+    private List<DSPhimAPiOphim> DSOphimLe, DSOphimBo, DSOphimHoatHinh, DSOphimTvShow;
+    private Handler bannerHandler = new Handler();
+    private Runnable bannerRunnable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
         }
         swipeRefreshLayout = binding.swipeRefreshLayout; // Khởi tạo SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            loadMovies(); // Tải lại danh sách phim
             loadSeries(); // Tải lại danh sach phim bo
             loadTVShow();// Tải lại danh sách tvshow
             loadPhimLe();
@@ -108,10 +118,81 @@ public class MainActivity extends AppCompatActivity {
         });
 
         apiService = ApiClient.getClient().create(ApiService.class);
-        seriesKkphimPhimBo = new ArrayList<>();
+        // Khởi tạo danh sách phim
+        DSKkphimPhimLe = new ArrayList<>();
+        DSKkphimBo = new ArrayList<>();
+        DSKkphimHoatHinh = new ArrayList<>();
+        DSKkphimTvShow = new ArrayList<>();
+        // Khởi tạo danh sách phim
+        DSOphimLe = new ArrayList<>();
+        DSOphimBo = new ArrayList<>();
+        DSOphimHoatHinh = new ArrayList<>();
+        DSOphimTvShow = new ArrayList<>();
+
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            @Override
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    binding.xemThemPhimBo.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSKkphimBo)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "series"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+                    binding.xemThemPhimLe.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSKkphimPhimLe)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "movie"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+                    binding.xemThemHoatHinh.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSKkphimHoatHinh)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "tvShow"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+                    binding.xemThemTVshow.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSKkphimTvShow)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "hoathinh"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+
+                } else if ("Ophim".equals(name)) {
+                    binding.xemThemPhimBo.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSOphimBo)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "series"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+                    binding.xemThemPhimLe.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSOphimLe)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "movie"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+                    binding.xemThemHoatHinh.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSOphimHoatHinh)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "hoathinh"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+                    binding.xemThemTVshow.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                        intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSOphimTvShow)); // Chuyển danh sách phim bộ
+                        intent.putExtra("type", "tvShow"); // Thêm loại phim bộ
+                        startActivity(intent);
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, MainActivity.this); // Thêm MainActivity.this làm Context);
 
         setupRecyclerViews();
-        loadMovies();
         loadSeries();
         loadTVShow();
         loadPhimLe();
@@ -132,32 +213,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
         }
-        binding.xemThemPhimBo.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "series"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemPhimLe.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "phimle"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemTVshow.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "tvshow"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemHoatHinh.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "hoathinh"); // truyền loại phim
-            startActivity(intent);
-        });
-        binding.xemThemPhimMoiNhat.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-            intent.putExtra("type", "moinhat"); // truyền loại phim
-            startActivity(intent);
-        });
-
+        // Khởi tạo và chạy banner
+        loaDuLieuApiKhiThayDoi();
     }
     public static void kiemTraTruyCap(String idUser) {
         // Kiểm tra xem id_user có null hay không và xem ngày truy cập đã tồn tại hay chưa
@@ -243,46 +300,135 @@ public class MainActivity extends AppCompatActivity {
         SearchView searchView = (SearchView) searchItem.getActionView();
 
         // Thiết lập listener cho sự kiện tìm kiếm
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                // Khi người dùng nhấn vào nút tìm kiếm trên bàn phím
-                // Hiển thị nội dung tìm kiếm qua Toast
-                Toast.makeText(MainActivity.this, "Tìm kiếm: " + query, Toast.LENGTH_SHORT).show();
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Thiết lập listener cho sự kiện tìm kiếm
+                    searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                        @Override
+                        public boolean onQueryTextSubmit(String query) {
+                            // Khi người dùng nhấn vào nút tìm kiếm trên bàn phím
+                            // Hiển thị nội dung tìm kiếm qua Toast
+                            Toast.makeText(MainActivity.this, "Tìm kiếm: " + query, Toast.LENGTH_SHORT).show();
 
-                // Gọi API tìm kiếm với từ khóa và giới hạn 10 kết quả
-                apiService.searchMovies(query, 10).enqueue(new Callback<DSPhimResponse>() {
-                    @Override
-                    public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            List<DSPhim> series = response.body().getData().getItems();
-                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, series));
+                            // Gọi API tìm kiếm với từ khóa và giới hạn 10 kết quả
+                            apiService.searchMovies(query, 10).enqueue(new Callback<DSPhimResponse>() {
+                                @Override
+                                public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                                    if (response.isSuccessful() && response.body() != null) {
+                                        List<DSPhim> seriesKkphims = response.body().getData().getItems();
+                                        // Nếu có kết quả, hiển thị kết quả tìm kiếm
+                                        if (!seriesKkphims.isEmpty()) {
+                                            // Show the search results section
+                                            binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                                            binding.recyclerViewMovies.setVisibility(View.VISIBLE);
 
-                            // Đóng SearchView sau khi tìm kiếm
-                            searchView.clearFocus();
-                        } else {
-                            Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
+                                            // Set up the adapter with search results
+                                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, seriesKkphims));
+                                        } else {
+                                            // If no results, hide the search results section
+                                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                        // Đóng SearchView sau khi tìm kiếm
+                                        searchView.clearFocus();
+                                    } else {
+                                        binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                        binding.recyclerViewMovies.setVisibility(View.GONE);
+                                        Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                    binding.recyclerViewMovies.setVisibility(View.GONE);
+                                    Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            //searchView.clearFocus();
+                            searchItem.collapseActionView();
+
+                            return true;
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        @Override
+                        public boolean onQueryTextChange(String newText) {
+                            // Xử lý khi nội dung tìm kiếm thay đổi (nếu cần)
+                            return false;
+                        }
+                    });
+                } else if ("Ophim".equals(name)) {
+                    // Thiết lập listener cho sự kiện tìm kiếm
+                    searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                        @Override
+                        public boolean onQueryTextSubmit(String query) {
+                            // Khi người dùng nhấn vào nút tìm kiếm trên bàn phím
+                            // Hiển thị nội dung tìm kiếm qua Toast
+                            Toast.makeText(MainActivity.this, "Tìm kiếm: " + query, Toast.LENGTH_SHORT).show();
 
-                //searchView.clearFocus();
-                searchItem.collapseActionView();
+                            // Gọi API tìm kiếm với từ khóa và giới hạn 10 kết quả
+                            apiService.searchMoviesOphim(query, 10).enqueue(new Callback<DSResponseOphim>() {
+                                @Override
+                                public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
+                                    if (response.isSuccessful() && response.body() != null) {
+                                        List<DSPhimAPiOphim> seriesOphim = response.body().getData().getItems();
+                                        // Nếu có kết quả, hiển thị kết quả tìm kiếm
+                                        if (!seriesOphim.isEmpty()) {
+                                            // Show the search results section
+                                            binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                                            binding.recyclerViewMovies.setVisibility(View.VISIBLE);
 
-                return true;
+                                            // Set up the adapter with search results
+                                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, seriesOphim));
+                                        } else {
+                                            // If no results, hide the search results section
+                                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                        // Đóng SearchView sau khi tìm kiếm
+                                        searchView.clearFocus();
+                                    } else {
+                                        binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                        binding.recyclerViewMovies.setVisibility(View.GONE);
+                                        Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<DSResponseOphim> call, Throwable t) {
+                                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                    binding.recyclerViewMovies.setVisibility(View.GONE);
+                                    Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            //searchView.clearFocus();
+                            searchItem.collapseActionView();
+
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onQueryTextChange(String newText) {
+                            // Xử lý khi nội dung tìm kiếm thay đổi (nếu cần)
+                            return false;
+                        }
+                    });
+                }
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                // Xử lý khi nội dung tìm kiếm thay đổi (nếu cần)
-                return false;
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, MainActivity.this); // Thêm MainActivity.this làm Context);
 
         return true;
     }
@@ -311,156 +457,173 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerViewphimle.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recyclerViewphimhoathinh.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
     }
-    private void loadMovies() {
-        // Hiển thị ProgressBar và ẩn nội dung chính
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.mainContent.setVisibility(View.GONE);
+    private void loadSeries() {
+        int page = 1;
 
-        apiService.getMovies(1).enqueue(new Callback<PhimResponse>() {
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
             @Override
-            public void onResponse(Call<PhimResponse> call, Response<PhimResponse> response) {
-
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
-
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Phim> movies = response.body().getItems();
-                    // Khởi tạo MovieAdapter
-                    movieAdapter = new PhimAdapter(MainActivity.this, movies);
-                    // Thiết lập sự kiện click cho từng item
-                    movieAdapter.setRecyclerViewItemClickListener(new PhimAdapter.OnRecyclerViewItemClickListener() {
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Gọi API của Kkphim
+                    apiService.getSeries(page).enqueue(new Callback<DSPhimResponse>() {
                         @Override
-                        public void onItemClick(View view, int position) {
-                            //Lay thong tin chi tiet phim tu slug truyen den man hinh chi tiet phim
-                            Intent intent = new Intent(view.getContext(), ChiTietPhimActivity.class);
-                            Phim movie = movies.get(position);
-                            intent.putExtra("slug", movie.getSlug());
-                            view.getContext().startActivity(intent);
+                        public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                            handleKkphimResponse(response, "Series");
+                        }
+
+                        @Override
+                        public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                            handleError();
                         }
                     });
-                    binding.recyclerViewMovies.setAdapter(movieAdapter);
+                } else if ("Ophim".equals(name)) {
+                    // Gọi API của Ophim
+                    apiService.getSeriesOphim(page).enqueue(new Callback<DSResponseOphim>() {
+                        @Override
+                        public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
+                            handleOphimResponse(response, "Series");
+                        }
+
+                        @Override
+                        public void onFailure(Call<DSResponseOphim> call, Throwable t) {
+                            handleError();
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onFailure(Call<PhimResponse> call, Throwable t) {
-                // Ẩn ProgressBar và thông báo lỗi
-                binding.progressBar.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
-                binding.mainContent.setVisibility(View.VISIBLE); // Hiển thị lại nội dung chính
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
-    }
-
-    private void loadSeries() {
-        apiService.getSeries(1).enqueue(new Callback<DSPhimResponse>() {
-            @Override
-            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
-
-                if (response.isSuccessful() && response.body() != null) {
-                    List<DSPhim> dsPhims = response.body().getData().getItems();
-                    binding.recyclerViewSeries.setAdapter(new DSPhimAdapter(MainActivity.this, dsPhims));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
-
-            }
-        });
-    }
-
-    private void loadPhimLe() {
-
-        apiService.getPhimLe(1).enqueue(new Callback<DSPhimResponse>() {
-            @Override
-            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
-
-                if (response.isSuccessful() && response.body() != null) {
-                    List<DSPhim> series = response.body().getData().getItems();
-                    binding.recyclerViewphimle.setAdapter(new DSPhimAdapter(MainActivity.this, series));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
-            }
-        });
+        }, MainActivity.this); // Thêm MainActivity.this làm Context);
     }
 
     private void loadTVShow() {
+        int page = 1;
 
-
-        apiService.getTVShow(1).enqueue(new Callback<DSPhimResponse>() {
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
             @Override
-            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Gọi API của Kkphim
+                    apiService.getTVShow(page).enqueue(new Callback<DSPhimResponse>() {
+                        @Override
+                        public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                            handleKkphimResponse(response, "TVShow");
+                        }
 
-                if (response.isSuccessful() && response.body() != null) {
-                    List<DSPhim> series = response.body().getData().getItems();
-                    binding.recyclerViewtvShow.setAdapter(new DSPhimAdapter(MainActivity.this, series));
+                        @Override
+                        public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                            handleError();
+                        }
+                    });
+                } else if ("Ophim".equals(name)) {
+                    // Gọi API của Ophim
+                    apiService.getTVShowOphim(page).enqueue(new Callback<DSResponseOphim>() {
+                        @Override
+                        public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
+                            handleOphimResponse(response, "TVShow");
+                        }
+
+                        @Override
+                        public void onFailure(Call<DSResponseOphim> call, Throwable t) {
+                            handleError();
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, MainActivity.this); // Thêm MainActivity.this làm Context);
     }
 
     private void loadPhimHoatHinh() {
-        apiService.getHoatHinh(1).enqueue(new Callback<DSPhimResponse>() {
-            @Override
-            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+        int page = 1;
 
-                if (response.isSuccessful() && response.body() != null) {
-                    List<DSPhim> series = response.body().getData().getItems();
-                    binding.recyclerViewphimhoathinh.setAdapter(new DSPhimAdapter(MainActivity.this, series));
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            @Override
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Gọi API của Kkphim
+                    apiService.getHoatHinh(page).enqueue(new Callback<DSPhimResponse>() {
+                        @Override
+                        public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                            handleKkphimResponse(response, "PhimHoatHinh");
+                        }
+
+                        @Override
+                        public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                            handleError();
+                        }
+                    });
+                } else if ("Ophim".equals(name)) {
+                    // Gọi API của Ophim
+                    apiService.getHoatHinhOphim(page).enqueue(new Callback<DSResponseOphim>() {
+                        @Override
+                        public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
+                            handleOphimResponse(response, "PhimHoatHinh");
+                        }
+
+                        @Override
+                        public void onFailure(Call<DSResponseOphim> call, Throwable t) {
+                            handleError();
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                // Ẩn ProgressBar và hiển thị nội dung chính
-                binding.progressBar.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
-                binding.mainContent.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, MainActivity.this); // Thêm MainActivity.this làm Context);
+    }
+
+    private void loadPhimLe() {
+        int page = 1;
+
+        // Kiểm tra API đã chọn từ Firebase hoặc SharedPreferences (tuỳ cách bạn lưu API đã chọn)
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            @Override
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Gọi API của Kkphim
+                    apiService.getPhimLe(page).enqueue(new Callback<DSPhimResponse>() {
+                        @Override
+                        public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                            handleKkphimResponse(response, "PhimLe");
+                        }
+
+                        @Override
+                        public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                            handleError();
+                        }
+                    });
+                } else if ("Ophim".equals(name)) {
+                    // Gọi API của Ophim
+                    apiService.getPhimLeOphim(page).enqueue(new Callback<DSResponseOphim>() {
+                        @Override
+                        public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
+                            handleOphimResponse(response, "PhimLe");
+                        }
+
+                        @Override
+                        public void onFailure(Call<DSResponseOphim> call, Throwable t) {
+                            handleError();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, MainActivity.this); // Thêm MainActivity.this làm Context);
     }
 
     private void navigationBottom() {
@@ -493,6 +656,212 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    // Hàm cập nhật URL và tải lại dữ liệu
+    public void loaDuLieuApiKhiThayDoi() {
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("api_sources/selected_source/url");
+
+        databaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String newUrl = dataSnapshot.getValue(String.class);
+                    // Lưu URL mới vào SharedPreferences
+                    SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("url", newUrl);
+                    editor.apply();
+
+                    loadBaseUrl(newUrl); // Tải lại dữ liệu với URL mới
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("FirebaseError", "Error fetching URL: ", databaseError.toException());
+            }
+        });
+    }
+    // Hàm lấy URL từ SharedPreferences
+    private void loadBaseUrl(String url) {
+        ApiClient.setBaseUrl(url); // Update base URL for the API
+        apiService = ApiClient.createService(ApiService.class); // Reinitialize apiService
+
+        // Reload all sections with the new API
+        loadSeries();
+        loadTVShow();
+        loadPhimLe();
+        loadPhimHoatHinh();
+
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            @Override
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    hienThiBanner(); // Gọi hàm Banner
+                } else if ("Ophim".equals(name)) {
+                    hienThiBannerOphim(); // Gọi hàm BannerOphim
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, MainActivity.this); // Thêm MainActivity.this làm Context);
+
+    }
+    // Xử lý response của Kkphim
+    private void handleKkphimResponse(Response<DSPhimResponse> response, String phimType) {
+        binding.progressBar.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+        if (response.isSuccessful() && response.body() != null) {
+            List<DSPhim> items = response.body().getData().getItems();
+
+            switch (phimType) {
+                case "PhimLe":
+                    DSKkphimPhimLe = items;
+                    binding.recyclerViewphimle.setAdapter(new DSPhimAdapter(MainActivity.this, DSKkphimPhimLe));
+                    break;
+                case "Series":
+                    DSKkphimBo = items;
+                    binding.recyclerViewSeries.setAdapter(new DSPhimAdapter(MainActivity.this,DSKkphimBo));
+                    break;
+                case "TVShow":
+                    DSKkphimTvShow = items;
+                    binding.recyclerViewtvShow.setAdapter(new DSPhimAdapter(MainActivity.this,DSKkphimTvShow));
+                    break;
+                case "PhimHoatHinh":
+                    DSKkphimHoatHinh = items;
+                    binding.recyclerViewphimhoathinh.setAdapter(new DSPhimAdapter(MainActivity.this, DSKkphimHoatHinh));
+                    break;
+            }
+        }
+    }
+
+    private void handleOphimResponse(Response<DSResponseOphim> response, String phimType) {
+        binding.progressBar.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+
+        if (response.isSuccessful() && response.body() != null) {
+            List<DSPhimAPiOphim> items = response.body().getData().getItems();
+
+            switch (phimType) {
+                case "PhimLe":
+                    DSOphimLe = items;
+                    binding.recyclerViewphimle.setAdapter(new DSPhimAdapterOphim(MainActivity.this, DSOphimLe));
+                    break;
+                case "Series":
+                    DSOphimBo = items;
+                    binding.recyclerViewSeries.setAdapter(new DSPhimAdapterOphim(MainActivity.this, DSOphimBo));
+                    break;
+                case "TVShow":
+                    DSOphimTvShow = items;
+                    binding.recyclerViewtvShow.setAdapter(new DSPhimAdapterOphim(MainActivity.this, DSOphimTvShow));
+                    break;
+                case "PhimHoatHinh":
+                    DSOphimHoatHinh = items;
+                    binding.recyclerViewphimhoathinh.setAdapter(new DSPhimAdapterOphim(MainActivity.this, DSOphimHoatHinh));
+                    break;
+            }
+        }
+    }
+
+    private void handleError() {
+        binding.progressBar.setVisibility(View.GONE);
+        Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
+        binding.mainContent.setVisibility(View.VISIBLE); // Hiển thị lại nội dung chính
+        swipeRefreshLayout.setRefreshing(false); // Ngừng loading
+    }
+
+    private void hienThiBanner() {
+        dungBanner();
+        apiService.getMovies(1).enqueue(new Callback<PhimResponse>() {
+            @Override
+            public void onResponse(Call<PhimResponse> call, Response<PhimResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Phim> movies = response.body().getItems();
+                    Log.d("API Response", "Đã lấy được danh sách phim: " + movies.size());
+
+                    // Thiết lập banner với danh sách phim
+                    thietLapBannerViewPager(movies);
+                } else {
+                    Log.e("API Error", "Phản hồi không thành công hoặc nội dung là null");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PhimResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu banner", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void hienThiBannerOphim() {
+        dungBanner();
+        apiService.getMoviesOphim(1).enqueue(new Callback<PhimResponseOphim>() {
+            @Override
+            public void onResponse(Call<PhimResponseOphim> call, Response<PhimResponseOphim> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<PhimAPiOphim> movie = response.body().getItems();
+                    Log.d("API Response", "Đã lấy được danh sách phim: " + movie.size());
+
+                    // Thiết lập banner với danh sách phim
+                    thietLapBannerViewPagerOphim(movie);
+                } else {
+                    Log.e("API Error", "Phản hồi không thành công hoặc nội dung là null");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PhimResponseOphim> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu banner", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void thietLapBannerViewPager(List<Phim> movies) {
+        binding.viewPagerBanner.setAdapter(new BannerAdapter(this, movies));
+        bannerRunnable = new Runnable() {
+            private int trangHienTai = 0;
+
+            @Override
+            public void run() {
+                if (movies != null && !movies.isEmpty()) {
+                    binding.viewPagerBanner.setCurrentItem(trangHienTai, true);
+                    trangHienTai = (trangHienTai + 1) % movies.size();
+                }
+                bannerHandler.postDelayed(this, 4000); // Lặp lại mỗi 4 giây
+            }
+        };
+        bannerHandler.postDelayed(bannerRunnable, 4000);
+    }
+
+    private void thietLapBannerViewPagerOphim(List<PhimAPiOphim> movies) {
+        binding.viewPagerBanner.setAdapter(new BannerOphimAdapter(this, movies));
+        bannerRunnable = new Runnable() {
+            private int trangHienTai = 0;
+
+            @Override
+            public void run() {
+                if (movies != null && !movies.isEmpty()) {
+                    binding.viewPagerBanner.setCurrentItem(trangHienTai, true);
+                    trangHienTai = (trangHienTai + 1) % movies.size();
+                }
+                bannerHandler.postDelayed(this, 4000); // Lặp lại mỗi 4 giây
+            }
+        };
+        bannerHandler.postDelayed(bannerRunnable, 4000);
+    }
+
+    private void dungBanner() {
+        // Xóa runnable hiện tại khỏi handler nếu có
+        if (bannerRunnable != null) {
+            bannerHandler.removeCallbacks(bannerRunnable);
+        }
+    }
+
 
     @Override
     protected void onResume() {
