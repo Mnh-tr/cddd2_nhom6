@@ -66,6 +66,7 @@
         <activity android:name=".activity.CaiDatActivity" />
         <activity android:name=".activity.ChinhSuaThongTinActivity" />
         <activity android:name=".activity.ThongBaoActivity" />
+        <activity android:name=".activity.DownLoadActivity" />
     </application>
 
 </manifest>

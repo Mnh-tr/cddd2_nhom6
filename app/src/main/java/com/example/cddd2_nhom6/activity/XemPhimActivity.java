@@ -35,6 +35,7 @@ import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.example.cddd2_nhom6.model.DSPhimYeuThich;
 import com.example.cddd2_nhom6.model.DanhGiaPhim;
 import com.example.cddd2_nhom6.model.LichSuPhim;
+import com.example.cddd2_nhom6.model.MovieDownloader;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -76,6 +77,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private DSPhimYeuThich dsPhimYeuThich;
     private DanhGiaPhim danhGiaPhim;
     private LinearLayout.LayoutParams originalPlayerViewParams;
+    private MovieDownloader movieDownloader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
         setContentView(binding.getRoot()); // Đặt layout cho Activity
         apiService = ApiClient.getClient().create(ApiService.class);
+        movieDownloader = new MovieDownloader(apiService, this);
         setControl();
         setEvent();
 
@@ -98,6 +101,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                 btnFullScreen.setVisibility(View.GONE);
             }
         };
+
 
 // Áp dụng listener vào PlayerView
         binding.playerView.setControllerVisibilityListener(visibilityListener);
@@ -152,6 +156,17 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         binding.btnSubmitComment.setOnClickListener(v -> {
             String comment = binding.commentInput.getText().toString();
             themBinhLuan(comment);
+        });
+        binding.btnDowload.setOnClickListener(v -> {
+            String movieName = binding.tvMovieTitle.getText().toString();
+            if (movieLink != null && !movieLink.isEmpty()) {
+                // Hiện thông báo "Đang tải..."
+                Toast.makeText(XemPhimActivity.this, "Đang tải...", Toast.LENGTH_SHORT).show();
+                // Gọi phương thức download từ movieDownloader
+                movieDownloader.loadPosterAndDownloadMovie(movieSlug, movieLink, movieName);
+            } else {
+                Toast.makeText(XemPhimActivity.this, "Liên kết phim không hợp lệ!", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
