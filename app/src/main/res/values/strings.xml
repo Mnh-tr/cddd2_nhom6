@@ -14,7 +14,11 @@
         <item>Viễn tưởng</item>
         <item>Hoạt hình</item>
     </string-array>
-
+    <string-array name="trang_thai">
+        <item>All</item>
+        <item>Đã xử lý</item>
+        <item>Chưa xử lý</item>
+    </string-array>
     <string-array name="country_array">
         <item>Chọn quốc gia</item> <!-- Giá trị mặc định -->
         <item>Việt Nam</item>

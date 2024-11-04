@@ -130,7 +130,7 @@ public class ThanhToanActivity extends AppCompatActivity {
     private void luuThongTinYeuCau() {
         String content = binding.tvNoiDungThanhToan.getText().toString();
         // Định dạng ngày và giờ thanh toán theo dd-MM-yyyy HH:mm:ss
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
         String formattedDate = dateFormat.format(new Date()); // Lấy ngày và giờ hiện tại và định dạng
 
         String idYeuCau = yeuCauRef.push().getKey(); // Tạo id lịch sử thanh toán mới
