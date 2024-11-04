@@ -21,12 +21,14 @@ import java.util.List;
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     private List<User> userList;
     private Context context; // Giả sử bạn có một lớp User để đại diện cho người dùng
-
+    private static OnRecyclerViewItemClickListener  recyclerViewItemClickListener;
     public UserAdapter(List<User> userList, Context context) {
         this.userList = userList;
         this.context = context;
     }
-
+    public void setRecyclerViewItemClickListener(OnRecyclerViewItemClickListener listener) {
+        recyclerViewItemClickListener = listener;
+    }
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -68,6 +70,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.black));  // Màu đen mặc định
                 break;
         }
+        /// Luu Position mới cho Holder
+        final int pos = position;
+        holder.position = pos;
     }
 
     @Override
@@ -77,17 +82,31 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         ItemUserBinding binding;
-
+        int position;
         public UserViewHolder(@NonNull ItemUserBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
 
+            // Thiết lập sự kiện click cho item
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (recyclerViewItemClickListener != null) {
+                        recyclerViewItemClickListener.onItemClick(view, getAdapterPosition());
+                    }
+                }
+            });
         }
     }
 
+    // Phương thức để cập nhật dữ liệu và thông báo RecyclerView
     public void updateData(List<User> filteredList) {
         this.userList = filteredList;
         notifyDataSetChanged(); // Thông báo cho RecyclerView cập nhật dữ liệu
+    }
+    // Interface để xử lý sự kiện click
+    public interface OnRecyclerViewItemClickListener {
+        void onItemClick(View view, int position);
     }
 }
 

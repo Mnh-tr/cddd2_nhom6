@@ -26,6 +26,9 @@
             android:name=".activity.QLPhimActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.QLYeuCauActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.QLUserActivity"
             android:exported="false" />
         <activity
@@ -74,6 +77,8 @@
         <activity android:name=".activity.CaiDatActivity" />
         <activity android:name=".activity.ChinhSuaThongTinActivity" />
         <activity android:name=".activity.ThongBaoActivity" />
+        <activity android:name=".activity.TaiPhimActivity" />
+        <activity android:name=".activity.XemPhimTaixuongActivity" />
     </application>
 
 </manifest>

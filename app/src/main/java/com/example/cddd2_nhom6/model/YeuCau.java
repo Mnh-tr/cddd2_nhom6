@@ -19,4 +19,52 @@ public class YeuCau {
         this.idTrangThai = idTrangThai;
     }
     public YeuCau() {}
+
+    public String getIdYeuCau() {
+        return idYeuCau;
+    }
+
+    public void setIdYeuCau(String idYeuCau) {
+        this.idYeuCau = idYeuCau;
+    }
+
+    public String getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(String idUser) {
+        this.idUser = idUser;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
+
+    public String getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(String paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    public int getIdTrangThai() {
+        return idTrangThai;
+    }
+
+    public void setIdTrangThai(int idTrangThai) {
+        this.idTrangThai = idTrangThai;
+    }
 }
