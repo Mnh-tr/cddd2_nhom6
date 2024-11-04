@@ -481,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
                 }else if(item.getItemId() == R.id.nav_profile) {
                     intent = new Intent(MainActivity.this, CaNhanActivity.class);
                 }else if (item.getItemId() == R.id.nav_download) {
-                    intent = new Intent(MainActivity.this, DownLoadActivity.class);
+                    intent = new Intent(MainActivity.this, TaiPhimActivity.class);
                 }
 
                 // Pass the selected item to the new Activity

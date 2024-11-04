@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/meBlack"
-    tools:context=".activity.DownLoadActivity">
+    tools:context=".activity.TaiPhimActivity">
 
     <!-- Phần giao diện chính của ứng dụng -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

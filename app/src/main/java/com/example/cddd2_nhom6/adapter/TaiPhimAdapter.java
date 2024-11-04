@@ -15,11 +15,11 @@ import com.example.cddd2_nhom6.model.MovieItem;
 
 import java.util.List;
 
-public class DownloadedMoviesAdapter extends RecyclerView.Adapter<DownloadedMoviesAdapter.ViewHolder> {
+public class TaiPhimAdapter extends RecyclerView.Adapter<TaiPhimAdapter.ViewHolder> {
     private List<MovieItem> movies;
     private OnMovieClickListener listener;
 
-    public DownloadedMoviesAdapter(List<MovieItem> movies, OnMovieClickListener listener) {
+    public TaiPhimAdapter(List<MovieItem> movies, OnMovieClickListener listener) {
         this.movies = movies;
         this.listener = listener;
     }

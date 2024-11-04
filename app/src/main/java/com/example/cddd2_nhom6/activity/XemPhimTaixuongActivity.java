@@ -20,7 +20,7 @@ import com.example.cddd2_nhom6.R;
 import java.io.File;
 
 @OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
-public class PlayDownload extends AppCompatActivity {
+public class XemPhimTaixuongActivity extends AppCompatActivity {
     private ExoPlayer player;
     private PlayerView playerView;
 

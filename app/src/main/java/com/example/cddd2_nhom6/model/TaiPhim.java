@@ -34,7 +34,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MovieDownloader {
+public class TaiPhim {
     private static final int MAX_RETRY_COUNT = 3;
     private static final int MAX_RECURSIVE_DEPTH = 5;
     private int recursiveDepth = 0;
@@ -47,7 +47,7 @@ public class MovieDownloader {
     private String movieName;
 
 
-    public MovieDownloader(ApiService apiService, Context context) {
+    public TaiPhim(ApiService apiService, Context context) {
         this.apiService = apiService;
         this.context = context;
         this.okHttpClient = new OkHttpClient.Builder()

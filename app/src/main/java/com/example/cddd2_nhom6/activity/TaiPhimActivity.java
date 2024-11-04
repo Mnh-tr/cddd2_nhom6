@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.cddd2_nhom6.R;
-import com.example.cddd2_nhom6.adapter.DownloadedMoviesAdapter;
+import com.example.cddd2_nhom6.adapter.TaiPhimAdapter;
 import com.example.cddd2_nhom6.databinding.ActivityDownLoadBinding;
 import com.example.cddd2_nhom6.model.MovieItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -23,10 +23,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownLoadActivity extends AppCompatActivity {
+public class TaiPhimActivity extends AppCompatActivity {
     private boolean doubleBackToExitPressedOnce = false;
     private ActivityDownLoadBinding binding; // Sử dụng Binding
-    private DownloadedMoviesAdapter adapter;
+    private TaiPhimAdapter adapter;
     private List<MovieItem> downloadedMovies = new ArrayList<>(); // Danh sách phim đã tải
 
     @Override
@@ -45,7 +45,7 @@ public class DownLoadActivity extends AppCompatActivity {
         loadDownloadedMovies();
 
         // Thiết lập adapter cho RecyclerView
-        adapter = new DownloadedMoviesAdapter(downloadedMovies, new DownloadedMoviesAdapter.OnMovieClickListener() {
+        adapter = new TaiPhimAdapter(downloadedMovies, new TaiPhimAdapter.OnMovieClickListener() {
             @Override
             public void onMovieClick(MovieItem movieItem) {
                 playDownloadedMovie(movieItem);
@@ -68,11 +68,11 @@ public class DownLoadActivity extends AppCompatActivity {
             Intent intent = null;
 
             if (item.getItemId() == R.id.nav_home) {
-                intent = new Intent(DownLoadActivity.this, MainActivity.class);
+                intent = new Intent(TaiPhimActivity.this, MainActivity.class);
             } else if (item.getItemId() == R.id.nav_vip) {
-                intent = new Intent(DownLoadActivity.this, VipActivity.class);
+                intent = new Intent(TaiPhimActivity.this, VipActivity.class);
             } else if (item.getItemId() == R.id.nav_profile) {
-                intent = new Intent(DownLoadActivity.this, CaNhanActivity.class);
+                intent = new Intent(TaiPhimActivity.this, CaNhanActivity.class);
             } else if (item.getItemId() == R.id.nav_download) {
                 return true; // Không khởi tạo lại Activity
             }
@@ -142,7 +142,7 @@ public class DownLoadActivity extends AppCompatActivity {
     }
     // Phát phim đã tải khi nhấn vào
     private void playDownloadedMovie(MovieItem movieItem) {
-        Intent intent = new Intent(this, PlayDownload.class);
+        Intent intent = new Intent(this, XemPhimTaixuongActivity.class);
         intent.putExtra("movie_name", movieItem.getName());
         startActivity(intent);
     }
