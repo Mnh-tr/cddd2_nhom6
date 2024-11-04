@@ -28,7 +28,6 @@
         <activity
             android:name=".activity.AdminActivity"
             android:exported="false" />
-            android:windowSoftInputMode="adjustPan|stateHidden" />
         <activity
             android:name=".activity.ThanhToanActivity"
             android:exported="false" />
