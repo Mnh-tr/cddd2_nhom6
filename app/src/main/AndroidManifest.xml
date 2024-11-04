@@ -18,6 +18,9 @@
         android:theme="@style/Theme.Cddd2_nhom6"
         tools:targetApi="31">
         <activity
+            android:name=".activity.QLYeuCauActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.QLUserActivity"
             android:exported="false" />
         <activity
@@ -66,9 +69,8 @@
         <activity android:name=".activity.CaiDatActivity" />
         <activity android:name=".activity.ChinhSuaThongTinActivity" />
         <activity android:name=".activity.ThongBaoActivity" />
-        <activity android:name=".activity.QLHoTroActivity"/>
-        <activity android:name=".activity.HoTroActivity"/>
-        <activity android:name=".activity.DSHoTroActivity"/>
+        <activity android:name=".activity.TaiPhimActivity" />
+        <activity android:name=".activity.XemPhimTaixuongActivity" />
     </application>
 
 </manifest>

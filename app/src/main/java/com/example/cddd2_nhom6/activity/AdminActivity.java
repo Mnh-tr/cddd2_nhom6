@@ -500,6 +500,14 @@ public class AdminActivity extends AppCompatActivity {
                         popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
                     }
                 });
+                popupView.findViewById(R.id.btn_ql_user).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(AdminActivity.this, QLUserActivity.class);
+                        startActivity(intent);
+                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
+                    }
+                });
 
             }
         });
