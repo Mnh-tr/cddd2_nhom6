@@ -4,10 +4,12 @@ import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponse;
 
 
+import okhttp3.ResponseBody;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.GET;
 import retrofit2.Call;
+import retrofit2.http.Url;
 
 public interface ApiService {
 
@@ -32,4 +34,7 @@ public interface ApiService {
 
     @GET("v1/api/tim-kiem")
     Call<DSPhimResponse> searchMovies(@Query("keyword") String keyword, @Query("limit") int limit);
+
+    @GET
+    Call<ResponseBody> downloadMovie(@Url String movieLink);
 }
