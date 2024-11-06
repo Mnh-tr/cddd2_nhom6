@@ -44,7 +44,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.binding.tvMaUser.setText(user.getId_user());
         holder.binding.tvUserStatus.setText(user.getStatus());
         holder.binding.tvGoi.setText(user.getGoi());
-
+        Log.d("UserAdapter", "Binding user: " + user.getGoi());
         // Đổi màu dựa trên trạng thái (online/offline)
         if (user.getStatus().equals("online")) {
             holder.binding.tvUserStatus.setTextColor(ContextCompat.getColor(context, R.color.green));  // Màu xanh lá cho online
