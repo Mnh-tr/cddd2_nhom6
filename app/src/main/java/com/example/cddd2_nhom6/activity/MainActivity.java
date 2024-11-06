@@ -25,6 +25,7 @@ import com.example.cddd2_nhom6.adapter.BannerAdapter;
 import com.example.cddd2_nhom6.adapter.BannerOphimAdapter;
 import com.example.cddd2_nhom6.adapter.DSPhimAdapter;
 import com.example.cddd2_nhom6.adapter.DSPhimAdapterOphim;
+import com.example.cddd2_nhom6.adapter.MyExpandableListAdapter;
 import com.example.cddd2_nhom6.adapter.PhimAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
@@ -51,11 +52,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -77,6 +81,13 @@ public class MainActivity extends AppCompatActivity {
     private List<DSPhimAPiOphim> DSOphimLe, DSOphimBo, DSOphimHoatHinh, DSOphimTvShow;
     private Handler bannerHandler = new Handler();
     private Runnable bannerRunnable;
+    private MyExpandableListAdapter adapter;
+    private List<String> listHeaders;
+    private HashMap<String, List<String>> listChildren;
+    private Map<String, String> theLoaiSlugMap = new HashMap<>();
+    private Map<String, String> quocGiaSlugMap = new HashMap<>();
+    private String theLoaiSlug = null;
+    private String quocGiaSlug = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         laythongtinUser();
+        loc();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         updateUser();
         // Kiểm tra và thêm thông tin truy cập
@@ -115,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
             loadTVShow();// Tải lại danh sách tvshow
             loadPhimLe();
             loadPhimHoatHinh();
+            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+            binding.recyclerViewMovies.setVisibility(View.GONE);
         });
 
         apiService = ApiClient.getClient().create(ApiService.class);
@@ -145,13 +159,13 @@ public class MainActivity extends AppCompatActivity {
                         intent.putExtra("type", "movie"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
-                    binding.xemThemHoatHinh.setOnClickListener(v -> {
+                    binding.xemThemTVshow.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
                         intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSKkphimHoatHinh)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "tvShow"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
-                    binding.xemThemTVshow.setOnClickListener(v -> {
+                    binding.xemThemHoatHinh.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
                         intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSKkphimTvShow)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "hoathinh"); // Thêm loại phim bộ
@@ -244,6 +258,279 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void loc(){
+        listHeaders = new ArrayList<>();
+        listChildren = new HashMap<>();
+        hienThiThongTinBoLoc();
+        adapter = new MyExpandableListAdapter(this, listHeaders, listChildren);
+        binding.expandableListView.setAdapter(adapter);
+        binding.expandableListView.setGroupIndicator(null);
+        binding.expandableListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
+            String header = (String) adapter.getGroup(groupPosition);
+            String selectedItem = (String) adapter.getChild(groupPosition, childPosition);
+
+            if ("Thể Loại".equals(header)) {
+                theLoaiSlug = theLoaiSlugMap.get(selectedItem); // Lấy slug cho thể loại
+            } else if ("Quốc Gia".equals(header)) {
+                quocGiaSlug = quocGiaSlugMap.get(selectedItem); // Lấy slug cho quốc gia
+            }
+
+            if (theLoaiSlug != null) {
+                // Nếu chỉ có slug thể loại
+                ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+                    @Override
+                    public void onBaseUrlFetched(String name, String url) {
+                        if ("Kkphim".equals(name)) {
+                            // Tải dữ liệu ban đầu
+                            hienThiPhimKKPhim(theLoaiSlug, null); // Hoặc xử lý theo cách bạn muốn
+                        } else if ("Ophim".equals(name)) {
+                            hienThiPhimOPhim(theLoaiSlug, null); // Hoặc xử lý theo cách bạn muốn
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }, MainActivity.this); // Thêm MainActivity.this làm Context);
+            } else if (quocGiaSlug != null) {
+                // Nếu chỉ có slug quốc gia
+                ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+                    @Override
+                    public void onBaseUrlFetched(String name, String url) {
+                        if ("Kkphim".equals(name)) {
+                            // Tải dữ liệu ban đầu
+                            hienThiPhimKKPhim(null, quocGiaSlug); // Hoặc xử lý theo cách bạn muốn
+                        } else if ("Ophim".equals(name)) {
+                            hienThiPhimOPhim(null, quocGiaSlug); // Hoặc xử lý theo cách bạn muốn
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }, MainActivity.this); // Thêm MainActivity.this làm Context);
+            }
+
+            return false;
+        });
+    }
+
+    private void hienThiThongTinBoLoc() {
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+        // Khởi tạo danh sách con
+        List<String> theLoaiItems = new ArrayList<>();
+        List<String> quocGiaItems = new ArrayList<>();
+
+        // Thêm các tiêu đề một lần duy nhất
+        listHeaders.add("Thể Loại");
+        listHeaders.add("Quốc Gia");
+        listHeaders.add("Cài Đặt");
+
+        // Thêm các mục tĩnh khác
+        List<String> caiDat = new ArrayList<>();
+        caiDat.add("Giao diện sáng");
+        caiDat.add("Giao diện tối");
+        listChildren.put("Cài Đặt", caiDat);
+
+        listHeaders.add("Thông tin cá nhân");
+        listHeaders.add("Đăng Nhập");
+
+        // Lấy dữ liệu "Thể Loại" từ Firebase
+        database.child("theLoai").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                theLoaiItems.clear();
+                theLoaiSlugMap.clear();
+                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
+                    String categoryName = itemSnapshot.child("name").getValue(String.class);
+                    if (categoryName != null) {
+                        String slug = convertToSlug(categoryName); // Chuyển đổi tên sang slug
+                        theLoaiItems.add(categoryName);
+                        theLoaiSlugMap.put(categoryName, slug); // Lưu slug theo tên thể loại
+                    }
+                }
+                listChildren.put("Thể Loại", theLoaiItems);
+
+                checkAndNotifyAdapter();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý lỗi nếu có
+            }
+        });
+
+        // Lấy dữ liệu "Quốc Gia" từ Firebase
+        database.child("quocGia").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                quocGiaItems.clear(); // Xóa dữ liệu cũ nếu cần
+                quocGiaSlugMap.clear();
+                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
+                    String countryName = itemSnapshot.child("name").getValue(String.class);
+                    if (countryName != null) {
+                        String slug = convertToSlug(countryName); // Chuyển đổi tên sang slug
+                        quocGiaItems.add(countryName);
+                        quocGiaSlugMap.put(countryName, slug); // Lưu slug theo tên thể loại
+                    }
+                }
+                listChildren.put("Quốc Gia", quocGiaItems);
+
+                checkAndNotifyAdapter();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý lỗi nếu có
+            }
+        });
+    }
+    private void hienThiPhimKKPhim(String theLoaiSlug, String quocGiaSlug) {
+        int page = 1; // Hoặc thay đổi theo nhu cầu của bạn
+        // Kiểm tra xem cả hai slug đều không null
+        if (theLoaiSlug != null) {
+            apiService.getTheLoaiKKPhim(theLoaiSlug, page).enqueue(new Callback<DSPhimResponse>() {
+                @Override
+                public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<DSPhim> theLoaiKkphim = response.body().getData().getItems();
+
+                        if (theLoaiKkphim.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho thể loại này.", Toast.LENGTH_SHORT).show();
+                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, theLoaiKkphim));
+                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.recyclerViewMovies.setVisibility(View.GONE);
+                    Toast.makeText(MainActivity.this, "Không thể tải dữ liệu thể loại", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else if (quocGiaSlug != null) {
+            apiService.getQuocGiaKKPhim(quocGiaSlug, page).enqueue(new Callback<DSPhimResponse>() {
+                @Override
+                public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<DSPhim> quocGiaKkphim = response.body().getData().getItems();
+
+                        if (quocGiaKkphim.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho quốc gia này.", Toast.LENGTH_SHORT).show();
+                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, quocGiaKkphim));
+                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.recyclerViewMovies.setVisibility(View.GONE);
+                    Toast.makeText(MainActivity.this, "Không thể tải dữ liệu quốc gia", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void hienThiPhimOPhim(String theLoaiSlug, String quocGiaSlug) {
+        int page = 1; // Hoặc thay đổi theo nhu cầu của bạn
+        // Kiểm tra xem cả hai slug đều không null
+        if (theLoaiSlug != null) {
+            apiService.getTheLoaiOPhim(theLoaiSlug, page).enqueue(new Callback<DSResponseOphim>() {
+                @Override
+                public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<DSPhimAPiOphim> theLoaiOphim = response.body().getData().getItems();
+
+                        if (theLoaiOphim.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho thể loại này.", Toast.LENGTH_SHORT).show();
+                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, theLoaiOphim));
+                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<DSResponseOphim> call, Throwable t) {
+                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.recyclerViewMovies.setVisibility(View.GONE);
+                    Toast.makeText(MainActivity.this, "Không thể tải dữ liệu thể loại", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else if (quocGiaSlug != null) {
+            apiService.getQuocGiaOPhim(quocGiaSlug, page).enqueue(new Callback<DSResponseOphim>() {
+                @Override
+                public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<DSPhimAPiOphim> quocGiaOphim = response.body().getData().getItems();
+
+                        if (quocGiaOphim.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho quốc gia này.", Toast.LENGTH_SHORT).show();
+                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, quocGiaOphim));
+                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<DSResponseOphim> call, Throwable t) {
+                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.recyclerViewMovies.setVisibility(View.GONE);
+                    Toast.makeText(MainActivity.this, "Không thể tải dữ liệu quốc gia", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+
+
+
+
+    private String convertToSlug(String input) {
+        // Chuẩn hóa văn bản để tách dấu khỏi các ký tự cơ bản
+        String slug = Normalizer.normalize(input, Normalizer.Form.NFD)
+                .replaceAll("[Đđ]", "d")   // Thay thế Đ và đ bằng d
+                .replaceAll("[^\\p{ASCII}]", "")         // Xóa dấu và các ký tự đặc biệt
+                .replaceAll("[^a-zA-Z0-9\\s]", "")       // Xóa các ký tự không phải chữ-số ngoại trừ khoảng trắng
+                .trim()                                  // Xóa khoảng trắng đầu và cuối chuỗi
+                .replaceAll("\\s+", "-")                 // Thay thế khoảng trắng bằng dấu gạch ngang
+                .toLowerCase();                          // Chuyển sang chữ thường để tạo dạng slug
+
+        return slug;
+    }
+
+    // Phương thức kiểm tra nếu dữ liệu đã sẵn sàng và thông báo adapter
+    private void checkAndNotifyAdapter() {
+        // Đảm bảo danh sách tiêu đề và danh sách con đã có đủ dữ liệu
+        if (listHeaders.size() >= 3 && listChildren.size() >= 3) {
+            adapter.notifyDataSetChanged(); // Cập nhật adapter
+        }
+    }
 
     public static void themTruyCap(String idUser) {
         DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");

@@ -26,9 +26,6 @@ public interface ApiService {
     @GET("v1/api/danh-sach/hoat-hinh")
     Call<DSPhimResponse> getHoatHinh(@Query("page") int page);
 
-    @GET("v1/api/the-loai/tinh-cam")
-    Call<DSPhimResponse> getTheLoai();
-
     @GET("phim/{slug}")
     Call<ChiTietPhim> getChiTietPhim(@Path("slug") String slug);
 
@@ -52,5 +49,17 @@ public interface ApiService {
     Call<DSResponseOphim> getHoatHinhOphim(@Query("page") int page);
     @GET("danh-sach/phim-moi-cap-nhat")
     Call<PhimResponseOphim> getMoviesOphim(@Query("page") int page);
+
+    @GET("v1/api/quoc-gia/{slug}")
+    Call<DSPhimResponse> getQuocGiaKKPhim(@Path("slug") String slug,@Query("page") int page);
+
+    @GET("v1/api/the-loai/{slug}")
+    Call<DSPhimResponse> getTheLoaiKKPhim(@Path("slug") String slug, @Query("page") int page);
+
+    @GET("v1/api/quoc-gia/{slug}")
+    Call<DSResponseOphim> getQuocGiaOPhim(@Path("slug") String slug,@Query("page") int page);
+
+    @GET("v1/api/the-loai/{slug}")
+    Call<DSResponseOphim> getTheLoaiOPhim(@Path("slug") String slug, @Query("page") int page);
 
 }
