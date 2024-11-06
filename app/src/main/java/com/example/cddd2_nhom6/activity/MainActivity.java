@@ -373,7 +373,7 @@ public class MainActivity extends AppCompatActivity {
                             //Lay thong tin chi tiet phim tu slug truyen den man hinh chi tiet phim
                             Intent intent = new Intent(view.getContext(), ChiTietPhimActivity.class);
                             Phim movie = movies.get(position);
-                            intent.putExtra("slug", movie.getSlug());
+                            //intent.putExtra("slug", movie.getSlug());
                             view.getContext().startActivity(intent);
                         }
                     });

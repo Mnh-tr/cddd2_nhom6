@@ -10,9 +10,12 @@ import android.util.Log;
 import android.view.View;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,13 +41,12 @@ import java.util.Locale;
 import java.util.Map;
 
 public class ThemPhimActivity extends AppCompatActivity {
-    private static final int PICK_POSTER_IMAGE_REQUEST = 1;
-    private static final int PICK_THUMB_IMAGE_REQUEST = 2;
     private ActivityThemPhimBinding binding;
     private String[] genres;
     private boolean[] selectedGenres;
     private ArrayList<String> selectedGenresList = new ArrayList<>();
     private HashMap<String, String> goiMap = new HashMap<>();
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,22 +54,27 @@ public class ThemPhimActivity extends AppCompatActivity {
         binding = ActivityThemPhimBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        genres = getResources().getStringArray(R.array.genre_array);
-        selectedGenres = new boolean[genres.length];
-
-        String posterUrl = binding.posterUrl.getText().toString().trim();
-
-
-
-        // xu ly hien thi ảnh Poster
-        xulyHienThiAnh();
-
-
-        binding.selectGenresButton.setOnClickListener(v -> showGenreDialog());
-        binding.submitButton.setOnClickListener(v -> themPhimVaoFirebase());
-
         // Lấy dữ liệu từ Firebase
         layDuLieuGoi();
+        // xu ly hien thi ảnh Poster
+        xulyHienThiAnh();
+        layDuLieuTheLoai();
+
+        // Nhận ID phim từ Intent
+        String idMovie = getIntent().getStringExtra("id_movie");
+        if (idMovie != null) {
+            // Nếu ID phim không null, thực hiện chức năng cập nhật
+            layDuLieuPhim(idMovie);
+            binding.submitButton.setText("Cập nhật");
+            binding.submitButton.setOnClickListener(v -> themPhimVaoFirebase());
+        } else {
+            // Nếu không, đây là chức năng thêm phim
+            binding.submitButton.setOnClickListener(v -> themPhimVaoFirebase());
+        }
+// Khởi tạo danh sách thể loại và các biến liên quan
+        genres = getResources().getStringArray(R.array.genre_array); // Lấy danh sách thể loại từ resources
+        selectedGenres = new boolean[genres.length]; // Khởi tạo mảng trạng thái cho các thể loại
+
 
         binding.resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +82,7 @@ public class ThemPhimActivity extends AppCompatActivity {
                 resetForm();
             }
         });
+
 
     }
 
@@ -111,6 +119,7 @@ public class ThemPhimActivity extends AppCompatActivity {
                     .into(binding.posterImage);
         }
     }
+
     private void layDuLieuGoi() {
         DatabaseReference goiRef = FirebaseDatabase.getInstance().getReference("Goi");
         goiRef.addValueEventListener(new ValueEventListener() {
@@ -148,6 +157,56 @@ public class ThemPhimActivity extends AppCompatActivity {
         });
     }
 
+    private void layDuLieuTheLoai() {
+        DatabaseReference theLoaiRef = FirebaseDatabase.getInstance().getReference("theLoai");
+        theLoaiRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String[] genresArray = new String[(int) dataSnapshot.getChildrenCount()];
+                boolean[] selectedGenres = new boolean[genresArray.length];
+                ArrayList<String> selectedGenresList = new ArrayList<>();
+
+                int index = 0;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    // Lấy giá trị của cột "name" trong bảng theLoai
+                    String theLoaiName = snapshot.child("name").getValue(String.class);
+                    if (theLoaiName != null) {
+                        genresArray[index] = theLoaiName;
+                        index++;
+                    }
+                }
+
+                Button selectGenresButton = findViewById(R.id.select_genres_button);
+                TextView selectedGenresText = findViewById(R.id.selected_genres_text);
+
+                selectGenresButton.setOnClickListener(v -> {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ThemPhimActivity.this);
+                    builder.setTitle("Chọn thể loại")
+                            .setMultiChoiceItems(genresArray, selectedGenres, (dialog, which, isChecked) -> {
+                                if (isChecked) {
+                                    selectedGenresList.add(genresArray[which]);
+                                } else {
+                                    selectedGenresList.remove(genresArray[which]);
+                                }
+                            })
+                            .setPositiveButton("OK", (dialog, which) -> {
+                                if (selectedGenresList.isEmpty()) {
+                                    selectedGenresText.setText("Bạn chưa chọn thể loại nào");
+                                } else {
+                                    selectedGenresText.setText("Thể loại đã chọn: " + String.join(", ", selectedGenresList));
+                                }
+                            })
+                            .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                            .show();
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(ThemPhimActivity.this, "Lỗi khi tải dữ liệu thể loại", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     private void showGenreDialog() {
         String selectedText = binding.selectedGenresText.getText().toString();
@@ -322,6 +381,7 @@ public class ThemPhimActivity extends AppCompatActivity {
 
     private void layDuLieuPhim(String idMovie) {
         DatabaseReference movieRef = FirebaseDatabase.getInstance().getReference("Movies").child(idMovie);
+        DatabaseReference goi = FirebaseDatabase.getInstance().getReference("Goi").child(idMovie);
         movieRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -352,7 +412,9 @@ public class ThemPhimActivity extends AppCompatActivity {
                     binding.movieUrl.setText(movieUrl);
 
                     // Đặt vị trí cho Spinner dựa trên ID
+//
                     binding.goiSpinner.setSelection(getSpinnerPosition(binding.goiSpinner, goiId));
+                    // cho them vao firebase
                     binding.countrySpinner.setSelection(getSpinnerPosition(binding.countrySpinner, quocGia));
                     binding.selectedGenresText.setText("Thể loại đã chọn: " + theLoai);
                 }
@@ -364,6 +426,7 @@ public class ThemPhimActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private int getSpinnerPosition(Spinner spinner, String id) {
         for (int i = 0; i < spinner.getCount(); i++) {

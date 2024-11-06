@@ -71,29 +71,19 @@
                 android:layout_margin="2dp"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:text="Ngày tạo"
 
                 android:textColor="@color/white"/>
 
-            <Button
-                android:id="@+id/btnnamphathanh"
-                android:layout_margin="2dp"
+            <Spinner
+                android:id="@+id/spinnerTimGoi"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Năm phát hành"/>
-
-
-            <Button
-                android:id="@+id/btntrangthai"
                 android:layout_margin="2dp"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="Trạng thái"
+                android:backgroundTint="@color/white" />
 
-                android:textColor="@color/white"/>
         </LinearLayout>
 
 

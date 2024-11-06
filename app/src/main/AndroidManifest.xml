@@ -24,7 +24,7 @@
             android:exported="true" />
         <activity
             android:name=".activity.QLPhimActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activity.QLYeuCauActivity"
             android:exported="false" />
