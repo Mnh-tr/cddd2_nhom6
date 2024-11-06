@@ -212,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
         loadPhimLe();
         loadPhimHoatHinh();
         navigationBottom();
+        ghiLaiTrangThai();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
@@ -578,6 +579,42 @@ public class MainActivity extends AppCompatActivity {
             textView.setText("Khách");
         }
     }
+    private void ghiLaiTrangThai() {
+        // Lấy user hiện tại
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) { // Kiểm tra user có phải là null hay không
+            String userId = user.getUid();
+            DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("status");
+
+            // Theo dõi trạng thái kết nối Firebase
+            DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+            connectedRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    boolean connected = snapshot.getValue(Boolean.class);
+                    if (connected) {
+                        // Khi người dùng kết nối với Firebase, đặt trạng thái là "online"
+                        userStatusRef.setValue("online");
+
+                        // Khi người dùng ngắt kết nối, đặt trạng thái là "offline"
+                        userStatusRef.onDisconnect().setValue("offline");
+                    } else {
+                        // Khi không kết nối, bạn cũng có thể cập nhật lại "offline" nếu cần
+                        userStatusRef.setValue("offline");
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.w("Firebase", "Không thể lấy trạng thái kết nối.", error.toException());
+                }
+            });
+        } else {
+            // Nếu không có user (trạng thái khách)
+            updateUser(); // Cập nhật thông tin người dùng để hiển thị trạng thái "Khách"
+            Log.w("Firebase", "Trạng thái Khách");
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Nạp menu
@@ -930,7 +967,10 @@ public class MainActivity extends AppCompatActivity {
                     intent = new Intent(MainActivity.this, VipActivity.class);
                 }else if(item.getItemId() == R.id.nav_profile) {
                     intent = new Intent(MainActivity.this, CaNhanActivity.class);
+                }else if (item.getItemId() == R.id.nav_download) {
+                    intent = new Intent(MainActivity.this, TaiPhimActivity.class);
                 }
+
                 // Pass the selected item to the new Activity
                 if (intent != null) {
                     intent.putExtra("selected_item_id", item.getItemId());

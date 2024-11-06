@@ -173,6 +173,8 @@ public class CaNhanActivity extends AppCompatActivity {
                     intent = new Intent(CaNhanActivity.this, VipActivity.class);
                 } else if(item.getItemId() == R.id.nav_profile) {
                     return  true;
+                }else if (item.getItemId() == R.id.nav_download) {
+                    intent = new Intent(CaNhanActivity.this, TaiPhimActivity.class);
                 }
                 // Pass the selected item to the new Activity
                 if (intent != null) {

@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -77,6 +76,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private DSPhimYeuThich dsPhimYeuThich;
     private DanhGiaPhim danhGiaPhim;
     private LinearLayout.LayoutParams originalPlayerViewParams;
+    private TaiPhim taiPhim;
     private DatabaseReference commentsRef;
 
     @Override
@@ -85,6 +85,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
         setContentView(binding.getRoot()); // Đặt layout cho Activity
         apiService = ApiClient.getClient().create(ApiService.class);
+        taiPhim = new TaiPhim(apiService, this);
         setControl();
         setEvent();
 
@@ -101,6 +102,8 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             }
         };
 
+
+// Áp dụng listener vào PlayerView
         // Áp dụng listener vào PlayerView
         binding.playerView.setControllerVisibilityListener(visibilityListener);
 
@@ -165,6 +168,17 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                 }
             }
             return false;
+        });
+        binding.btnDowload.setOnClickListener(v -> {
+            String movieName = binding.tvMovieTitle.getText().toString();
+            if (movieLink != null && !movieLink.isEmpty()) {
+                // Hiện thông báo "Đang tải..."
+                Toast.makeText(XemPhimActivity.this, "Đang tải...", Toast.LENGTH_SHORT).show();
+                // Gọi phương thức download từ movieDownloader
+                taiPhim.loadPosterAndDownloadMovie(movieSlug, movieLink, movieName);
+            } else {
+                Toast.makeText(XemPhimActivity.this, "Liên kết phim không hợp lệ!", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

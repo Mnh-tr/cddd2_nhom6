@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#7B6262"
+    android:background="@color/white"
     tools:context=".activity.CaNhanActivity">
 
-
-    <!-- Phần giao diện chính của ứng dụng -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
+        android:layout_marginBottom="100dp"
         android:layout_height="match_parent">
 
-        <!-- Thêm NestedScrollView để cuộn được -->
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="Nội dung chính của ứng dụng"
+            android:layout_height="wrap_content"
             android:fillViewport="true">
 
             <LinearLayout
@@ -28,192 +25,251 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/btnDangNhap"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Dang Nhap"
-                    android:backgroundTint="#FF66B2"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginTop="50dp"
-                    android:layout_gravity="end"/>
-
-                <!-- User Avatar -->
-                <ImageView
-                    android:id="@+id/userAvatar"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:src="@drawable/canhan"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="50dp" />
-
-                <!-- Personal Info Button -->
-                <TextView
-                    android:id="@+id/personalInfoButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Thông tin cá nhân"
-                    android:textColor="#FFFFFF"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="16dp" />
-
-                <!-- Name and Phone Number Fields -->
-                <LinearLayout
+                <!-- Header Section with Gradient Background -->
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:padding="10dp">
-                    <TextView
-                        android:textColor="@color/white"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Họ tên: "
-                        android:textSize="20sp" />
-                    <TextView
-                        android:gravity="start"
-                        android:id="@+id/tvTenNguoiDung"
-                        android:padding="7dp"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="3"
-                        android:text="Huỳnh Văn Duy"
-                        android:textSize="20sp"
-                        android:background="@drawable/rounded_search_bar"
-                        />
+                    android:layout_height="200dp"
+                    android:background="@drawable/profile_header_gradient">
 
-                </LinearLayout>
-
-
-                <!-- Name and Phone Number Fields -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:padding="5dp">
-                    <TextView
-                        android:textColor="@color/white"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Email: "
-                        android:textSize="20sp"
-                        />
-                    <TextView
-                        android:gravity="start"
-                        android:id="@+id/tvEmail"
-                        android:padding="7dp"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="3"
-                        android:text="abc@gmail.com"
-                        android:textSize="20sp"
-                        android:background="@drawable/rounded_search_bar"
-                        />
-
-                </LinearLayout>
-
-                <!-- Watched Movies Section -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:orientation="horizontal"
-                    android:layout_marginLeft="20dp">
-                    <TextView
-                        android:id="@+id/watchedMoviesLabel"
+                    <Button
+                        android:id="@+id/btnDangNhap"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lịch sử đã xem 🎬"
-                        android:textColor="#FFFFFF"
+                        android:layout_margin="16dp"
+                        android:backgroundTint="#FF437E"
+                        android:fontFamily="sans-serif-medium"
+                        android:paddingHorizontal="20dp"
+                        android:text="Đăng nhập"
+                        android:textAllCaps="false"
+                        app:cornerRadius="25dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:visibility="gone"
                         />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/userAvatar"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:padding="3dp"
+                        android:background="@color/white"
+                        app:shapeAppearanceOverlay="@style/CircleImageView"
+                        android:src="@drawable/canhan"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
                     <TextView
-                        android:id="@+id/tvXemtatca"
-                        android:layout_width="match_parent"
+                        android:id="@+id/personalInfoButton"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Xem tất cả"
-                        android:gravity="end"
-                        android:textColor="#e21b5e"
-                        android:layout_marginRight="20dp"/>
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Thông tin cá nhân"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        app:layout_constraintEnd_toEndOf="@id/userAvatar"
+                        app:layout_constraintStart_toStartOf="@id/userAvatar"
+                        app:layout_constraintTop_toBottomOf="@id/userAvatar" />
 
-                </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-                <!-- RecyclerView for Watched Movies -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rcvLichSu"
+                <!-- User Info Cards -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:scrollbars="horizontal"
-                    android:layout_marginTop="5dp"
-                    android:clipToPadding="false"
-                    android:padding="5dp"
-                    />
+                    android:layout_margin="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp">
 
-                <!-- Favorite List, Support, and Settings Section -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_person_24"
+                                app:tint="#FF437E" />
+
+                            <TextView
+                                android:id="@+id/tvTenNguoiDung"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:text="Huỳnh Văn Duy"
+                                android:textColor="#333333"
+                                android:textSize="16sp" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#E0E0E0" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingVertical="8dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/baseline_email_24"
+                                app:tint="#FF437E" />
+
+                            <TextView
+                                android:id="@+id/tvEmail"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:text="abc@gmail.com"
+                                android:textColor="#333333"
+                                android:textSize="16sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Watch History Section -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="5dp"
-                    android:layout_marginTop="5dp">
+                    android:padding="16dp">
 
                     <LinearLayout
-                        android:background="#c3bcbf"
-                        android:padding="5dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal">
+
                         <TextView
-                            android:id="@+id/dsYeuThich"
-                            android:textColor="@color/white"
+                            android:id="@+id/watchedMoviesLabel"
                             android:layout_width="0dp"
-                            android:layout_weight="10"
                             android:layout_height="wrap_content"
-                            android:text="Danh sách yêu thích"
-                            />
-                        <ImageView
-                            android:layout_width="0dp"
-                            android:layout_height="20sp"
                             android:layout_weight="1"
-                            android:src="@drawable/img_1"
-                            />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_marginTop="7sp"
-                        android:background="#c3bcbf"
-                        android:padding="5sp"
-                        android:layout_marginBottom="200dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                            android:text="Lịch sử đã xem"
+                            android:textColor="#333333"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
                         <TextView
-                            android:id="@+id/caiDat"
-                            android:textColor="@color/white"
-                            android:layout_width="0dp"
-                            android:layout_weight="10"
+                            android:id="@+id/tvXemtatca"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Cài đặt"
-                            />
-                        <ImageView
-                            android:layout_width="0dp"
-                            android:layout_height="20sp"
-                            android:layout_weight="1"
-                            android:src="@drawable/img_1"
-                            />
+                            android:text="Xem tất cả"
+                            android:textColor="#FF437E"
+                            android:textSize="14sp" />
                     </LinearLayout>
 
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rcvLichSu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:clipToPadding="false"
+                        android:padding="4dp"
+                        />
                 </LinearLayout>
+
+                <!-- Menu Options -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/baseline_favorite_24"
+                                app:tint="#FF437E" />
+
+                            <TextView
+                                android:id="@+id/dsYeuThich"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:text="Danh sách yêu thích"
+                                android:textColor="#333333"
+                                android:textSize="16sp" />
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_arrow_righ"
+                                app:tint="#757575" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/settings"
+                                app:tint="#FF437E" />
+
+                            <TextView
+                                android:id="@+id/caiDat"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:text="Cài đặt"
+                                android:textColor="#333333"
+                                android:textSize="16sp" />
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_arrow_righ"
+                                app:tint="#757575" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-
-    <!-- Bottom Navigation nằm ở dưới cùng -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
@@ -222,5 +278,6 @@
         android:layout_gravity="bottom"
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="selected"
-        android:background="@color/bottom_nav_unselected" />
-</FrameLayout>
+        android:background="@color/bottom_nav_unselected"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -6,10 +6,12 @@ import com.example.cddd2_nhom6.response.DSResponseOphim;
 import com.example.cddd2_nhom6.response.PhimResponseOphim;
 
 
+import okhttp3.ResponseBody;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.GET;
 import retrofit2.Call;
+import retrofit2.http.Url;
 
 public interface ApiService {
 
@@ -62,4 +64,7 @@ public interface ApiService {
     @GET("v1/api/the-loai/{slug}")
     Call<DSResponseOphim> getTheLoaiOPhim(@Path("slug") String slug, @Query("page") int page);
 
+
+    @GET
+    Call<ResponseBody> downloadMovie(@Url String movieLink);
 }

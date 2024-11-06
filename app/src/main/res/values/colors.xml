@@ -14,4 +14,10 @@
     <color name="defaultTextColor">#000000</color> <!-- Màu chữ mặc định -->
     <color name="colorSelected">#F06292</color> <!-- Màu cho nút đã chọn -->
     <color name="selectedTextColor">#FFFFFF</color> <!-- Màu chữ cho nút đã chọn -->
+    <color name="colorPrimary">#FF5722</color>
+    <color name="gold">#FFD700</color>
+    <color name="gray">#D3D3D3</color>
+    <color name="green">#1eee5c</color>
+    <color name="red">#FF0000</color>
+    <color name="orange">#FFA500</color>
 </resources>
