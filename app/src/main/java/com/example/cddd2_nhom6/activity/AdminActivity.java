@@ -475,11 +475,28 @@ public class AdminActivity extends AppCompatActivity {
 //                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
                     }
                 });
+                popupView.findViewById(R.id.btn_hotro).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(AdminActivity.this, DSHoTroActivity.class);
+                        startActivity(intent);
+                        popupWindow.dismiss();
+                    }
+                });
 
                 popupView.findViewById(R.id.btn_ThongBao).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(AdminActivity.this, DSThongBaoActivity.class);
+                        startActivity(intent);
+                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
+                    }
+                });
+
+                popupView.findViewById(R.id.btn_ql_api).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(AdminActivity.this, QuanLyAPI.class);
                         startActivity(intent);
                         popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
                     }

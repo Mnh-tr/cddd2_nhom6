@@ -44,7 +44,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.binding.tvMaUser.setText(user.getId_user());
         holder.binding.tvUserStatus.setText(user.getStatus());
         holder.binding.tvGoi.setText(user.getGoi());
-
+        Log.d("kiểm tra gói", "gói: " + user.getGoi());
         // Đổi màu dựa trên trạng thái (online/offline)
         if (user.getStatus().equals("online")) {
             holder.binding.tvUserStatus.setTextColor(ContextCompat.getColor(context, R.color.green));  // Màu xanh lá cho online
@@ -55,19 +55,24 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         // Đổi màu dựa trên loại người dùng
         switch (user.getGoi()) {
             case "Thường":
-                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.gray));  // Màu xám cho người dùng thường
+                holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_normal);
+                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.normal_text));
                 break;
             case "VIP":
-                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.colorPrimary));  // Màu vàng cho VIP
+                holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_vip);
+                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.vip_text));
                 break;
             case "Admin":
-                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.red));  // Màu xanh dương cho admin
+                holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_admin);
+                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.admin_text));
                 break;
             case "Quản Lý":
-                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.green));  // Màu tím cho quản lý
+                holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_manager);
+                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.manager_text));
                 break;
             default:
-                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.black));  // Màu đen mặc định
+                holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_normal);
+                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.normal_text));
                 break;
         }
         /// Luu Position mới cho Holder
@@ -79,7 +84,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     public int getItemCount() {
         return userList.size();
     }
-
+    private int dpToPx(int dp) {
+        return (int) (dp * context.getResources().getDisplayMetrics().density);
+    }
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         ItemUserBinding binding;
         int position;
@@ -99,14 +106,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         }
     }
 
-    // Phương thức để cập nhật dữ liệu và thông báo RecyclerView
-    public void updateData(List<User> filteredList) {
-        this.userList = filteredList;
-        notifyDataSetChanged(); // Thông báo cho RecyclerView cập nhật dữ liệu
-    }
+
     // Interface để xử lý sự kiện click
     public interface OnRecyclerViewItemClickListener {
         void onItemClick(View view, int position);
     }
+    // Phương thức để cập nhật dữ liệu và thông báo RecyclerView
+    public void updateData(List<User> newList) {
+        userList.clear();
+        userList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
+
+
 }
 

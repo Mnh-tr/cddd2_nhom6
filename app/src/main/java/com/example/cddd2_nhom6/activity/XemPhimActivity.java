@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
@@ -76,6 +79,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private DanhGiaPhim danhGiaPhim;
     private LinearLayout.LayoutParams originalPlayerViewParams;
     private TaiPhim taiPhim;
+    private DatabaseReference commentsRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +106,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
 
 
 // Áp dụng listener vào PlayerView
+        // Áp dụng listener vào PlayerView
         binding.playerView.setControllerVisibilityListener(visibilityListener);
 
     }
@@ -151,9 +156,20 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         danhGiaPhim.tinhTrungBinhDanhGia();
         // Kiểm tra xem người dùng đã đánh giá phim hay chưa
         danhGiaPhim.kiemTraDanhGia();
-        binding.btnSubmitComment.setOnClickListener(v -> {
-            String comment = binding.commentInput.getText().toString();
-            themBinhLuan(comment);
+        commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
+        // Thêm sự kiện nhấn cho nút bình luận
+        binding.commentInput.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                // Kiểm tra xem người dùng có nhấn vào biểu tượng gửi (drawableEnd) không
+                if (event.getRawX() >= (binding.commentInput.getRight() - binding.commentInput.getCompoundDrawables()[2].getBounds().width())) {
+                    String comment = binding.commentInput.getText().toString();
+                    if (!comment.isEmpty()) {
+                        themBinhLuan(comment);// Gọi hàm thêm bình luận
+                    }
+                    return true; // Trả về true để xử lý sự kiện
+                }
+            }
+            return false;
         });
         binding.btnDowload.setOnClickListener(v -> {
             String movieName = binding.tvMovieTitle.getText().toString();
@@ -201,14 +217,38 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     }
     // Hàm phong to
     private void phongToPhim() {
-        isFullScreen = !isFullScreen; // Cập nhật trạng thái trước khi chuyển đổi
         if (isFullScreen) {
+            // Quay về chế độ portrait
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+            // Hiện thanh trạng thái và thanh điều hướng
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+
+            // Thiết lập chiều cao của PlayerView về 250dp
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250, getResources().getDisplayMetrics());
+            binding.playerView.setLayoutParams(params);
+            // Thoát fullscreen và khôi phục LayoutParams ban đầu
+            binding.playerView.setLayoutParams(originalPlayerViewParams);
+        } else {
             // Chuyển sang chế độ landscape
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else {
-            // Chuyển về chế độ portrait
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+            // Ẩn thanh trạng thái và thanh điều hướng
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+            // Thiết lập chiều cao của PlayerView để chiếm toàn bộ chiều cao màn hình
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            binding.playerView.setLayoutParams(params);
         }
+
+        isFullScreen = !isFullScreen; // Đổi trạng thái fullscreen
     }
 
 
@@ -331,7 +371,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                 BinhLuanPhim newComment = new BinhLuanPhim(userId, movieSlug, comment, System.currentTimeMillis(), name, formattedDate);
 
                 // Tham chiếu đến bảng Comments
-                DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
+                commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
                 // Lưu bình luận vào Firebase
                 commentsRef.push().setValue(newComment)
@@ -355,69 +395,20 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         });
     }
 
-    //Binh luan phim
-    private void taiBinhLuan(String movieSlug) {
-        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
-
-        commentsRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d("LoadComments", "Number of comments: " + dataSnapshot.getChildrenCount());
-                if (dataSnapshot.exists()) {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        String userId = snapshot.child("userId").getValue(String.class);
-                        String commentText = snapshot.child("commentText").getValue(String.class);
-                        String userName = snapshot.child("userName").getValue(String.class); // Lấy tên người dùng từ bình luận
-                        long timestamp = snapshot.child("timestamp").getValue(Long.class);
-
-                        if (userId != null && commentText != null) {
-                            // Lấy tên người dùng từ bảng users
-                            usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot userSnapshot) {
-
-                                    // Định dạng ngày giờ
-                                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
-                                    String formattedDate = sdf.format(new Date(timestamp));
-
-                                    // Tạo bình luận và thêm vào adapter
-                                    BinhLuanPhim comment = new BinhLuanPhim(userId, movieSlug, commentText, timestamp, userName, formattedDate);
-                                    binhLuanPhimList.add(0, comment);
-                                    binhLuanPhimAdapter.notifyItemInserted(0);
-                                    binhLuanPhimAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-                                    Toast.makeText(XemPhimActivity.this, "Lỗi khi lấy thông tin người dùng", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                    }
-                } else {
-                    Log.d("LoadComments", "Không tìm thấy bình luận");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(XemPhimActivity.this, "Lỗi khi tải bình luận", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     @Override
     public void xoaBinhLuan(int position) {
         // Lấy thông tin người dùng và phim
         String userId = binhLuanPhimAdapter.getCommentUserId(position);
         String movieSlug = this.movieSlug; // Slug của phim
+        // Lấy nội dung bình luận để hiển thị trong hộp thoại xác nhận
+        String commentText = binhLuanPhimAdapter.getCommentText(position); // Giả sử bạn đã có phương thức này trong adapter
 
         // Kiểm tra người dùng có quyền xóa bình luận
         if (userId.equals(idUser)) {
             // Tạo hộp thoại xác nhận
             new AlertDialog.Builder(XemPhimActivity.this)
                     .setTitle("Xóa bình luận")
-                    .setMessage("Bạn có chắc chắn muốn xóa bình luận này không?")
+                    .setMessage("Bạn có chắc chắn muốn xóa bình luận " + commentText + " không?")
                     .setPositiveButton("Có", (dialog, which) -> {
                         DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
@@ -431,8 +422,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                                         // Xóa bình luận khỏi Firebase
                                         snapshot.getRef().removeValue()
                                                 .addOnSuccessListener(aVoid -> {
-                                                    // Xóa bình luận khỏi adapter
-                                                    binhLuanPhimAdapter.removeComment(position);
                                                     Toast.makeText(XemPhimActivity.this, "Bình luận đã được xóa!", Toast.LENGTH_SHORT).show();
                                                 })
                                                 .addOnFailureListener(e -> {
@@ -458,37 +447,45 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         }
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+    private void taiBinhLuan(String movieSlug) {
+        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            // Vào fullscreen
-            binding.playerView.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT
-            ));
+        // Dọn dẹp danh sách bình luận trước khi thêm mới
+        binhLuanPhimList.clear();
 
-            // Ẩn thanh trạng thái và thanh điều hướng
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            );
+        // Sử dụng addValueEventListener để lắng nghe thay đổi
+        commentsRef.orderByChild("slug").equalTo(movieSlug).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                binhLuanPhimList.clear(); // Dọn dẹp danh sách mỗi lần dữ liệu thay đổi
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String userId = snapshot.child("userId").getValue(String.class);
+                    String commentText = snapshot.child("commentText").getValue(String.class);
+                    String userName = snapshot.child("userName").getValue(String.class);
+                    long timestamp = snapshot.child("timestamp").getValue(Long.class);
 
-            isFullScreen = true;
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            // Thoát fullscreen và khôi phục LayoutParams ban đầu
-            binding.playerView.setLayoutParams(originalPlayerViewParams);
+                    if (userId != null && commentText != null) {
+                        // Định dạng ngày giờ
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+                        String formattedDate = sdf.format(new Date(timestamp));
 
-            // Hiển thị lại thanh trạng thái và điều hướng
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                        // Tạo bình luận và thêm vào adapter
+                        BinhLuanPhim comment = new BinhLuanPhim(userId, movieSlug, commentText, timestamp, userName, formattedDate);
+                        binhLuanPhimList.add(0,comment);
+                        binhLuanPhimAdapter.notifyItemInserted(0);
+                    }
+                }
+                binhLuanPhimAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+            }
 
-            isFullScreen = false;
-        }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(XemPhimActivity.this, "Lỗi khi tải bình luận", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -513,5 +510,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         // Giữ màn hình sáng khi ứng dụng hoạt động
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+
 
 }

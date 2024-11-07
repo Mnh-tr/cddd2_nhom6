@@ -32,6 +32,9 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
     public String getCommentUserId(int position) {
         return binhLuanPhimList.get(position).getUserId();
     }
+    public String getCommentText(int position) {
+        return binhLuanPhimList.get(position).getCommentText(); // Giả sử bạn có phương thức getCommentText() trong lớp BinhLuanPhim
+    }
 
     @NonNull
     @Override
