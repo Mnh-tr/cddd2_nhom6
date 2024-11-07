@@ -6,17 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1A1A1A"
-    android:orientation="vertical"
-    tools:context=".activity.QLUserActivity">
+    android:orientation="vertical">
 
-    <!-- Nút quay lại và tiêu đề -->
+    <!-- Thanh tiêu đề -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="#1E1E1E"
         android:elevation="4dp">
 
-        <!-- Nút quay lại -->
         <ImageView
             android:id="@+id/btnBack"
             android:layout_width="48dp"
@@ -28,13 +26,12 @@
             android:padding="12dp"
             android:src="@drawable/ic_back" />
 
-        <!-- Tiêu đề -->
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Quản lý User"
+            android:text="Quản lý Doanh Thu"
             android:textColor="#FFFFFF"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -55,12 +52,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Thống Kê"
+                android:text="Thống Kê Doanh Thu"
                 android:textColor="#FF4081"
                 android:textSize="20sp"
                 android:textStyle="bold" />
+
+            <!-- Tổng quan doanh thu hôm nay -->
             <LinearLayout
-                android:id="@+id/btnYeuCau"
+                android:id="@+id/cardTongDoanhThu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rounded_corner"
@@ -74,22 +73,24 @@
                 <ImageView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_luot_dang_ky"
-                    android:layout_marginEnd="16dp"/>
+                    android:src="@drawable/ic_money"
+                    android:layout_marginEnd="16dp"
+                    app:tint="@color/white" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/tvLuotDangKy"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Gói Vip Hôm Nay"
+                        android:text="Doanh Thu Hôm Nay"
                         android:gravity="center"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:textColor="#FFFFFF" />
+
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content">
@@ -98,68 +99,45 @@
                             android:layout_height="wrap_content"
                             android:textSize="15sp"
                             android:textColor="#FFFFFF"
-                            android:layout_marginTop="1dp"
-                            android:text="Tổng số lượt đăng ký: "/>
+                            android:text="Tổng doanh thu: "/>
                         <TextView
-                            android:id="@+id/tvSLUserDangKy"
+                            android:id="@+id/tvTongDoanhThu"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="24sp"
-                            android:textColor="#FFFFFF"
-                            android:layout_marginTop="1dp" />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="1sp"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="15sp"
-                            android:textColor="#FFFFFF"
-                            android:textStyle="italic"
-                            android:text="Số lượt chưa xử lý: "/>
-                        <TextView
-                            android:id="@+id/tvSLUserChuaXL"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
+                            android:text="0 VNĐ"
                             android:textSize="24sp"
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
+
                     <LinearLayout
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="1dp"
-                        android:orientation="horizontal">
+                        android:layout_height="wrap_content">
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="15sp"
                             android:textColor="#FFFFFF"
-                            android:textStyle="italic"
-                            android:text="Số lượt đã xử lý: "/>
+                            android:text="Số giao dịch: "/>
                         <TextView
-                            android:id="@+id/tvSLUserDaXL"
+                            android:id="@+id/tvSoGiaoDich"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textSize="24sp"
-                            android:textStyle="bold"
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Grid thống kê theo gói -->
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="0dp"
                 android:columnCount="2"
                 android:rowCount="2">
-                <!-- Lượt đăng ký -->
+
+                <!-- Doanh thu gói Thường -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -178,7 +156,8 @@
                         android:layout_marginEnd="16dp"
                         android:background="#33FFFFFF"
                         android:padding="8dp"
-                        android:src="@drawable/ic_luot_dang_ky" />
+                        android:src="@drawable/ic_money"
+                        app:tint="@color/white" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -186,26 +165,25 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/tvGoiThuong"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="User dùng gói Thường"
+                            android:text="Doanh thu 7 ngày trước"
                             android:textColor="#FFFFFF"
                             android:textSize="14sp" />
 
                         <TextView
-                            android:id="@+id/tvSLGoiThuongDangKy"
+                            android:id="@+id/tvDoanhThu7Ngay"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="0"
+                            android:text="0 VNĐ"
                             android:textColor="#FFFFFF"
-                            android:textSize="24sp"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Gói VIP -->
+                <!-- Doanh thu gói VIP -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -224,7 +202,8 @@
                         android:layout_marginEnd="16dp"
                         android:background="#33FFFFFF"
                         android:padding="8dp"
-                        android:src="@drawable/ic_goi_vip" />
+                        android:src="@drawable/ic_money"
+                        app:tint="@color/white"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -232,26 +211,35 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/tvGoiVIP"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="User dùng gói VIP"
+                            android:text="Doanh thu 1 tháng qua"
                             android:textColor="#FFFFFF"
                             android:textSize="14sp" />
 
                         <TextView
-                            android:id="@+id/tvSLGoiVipDangKy"
+                            android:id="@+id/tvDoanhThu1Thang"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="0"
+                            android:text="0 VNĐ"
                             android:textColor="#FFFFFF"
-                            android:textSize="24sp"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </GridLayout>
 
+            <!-- Biểu đồ doanh thu -->
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/bieuDoDoanhThu"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_margin="16dp"
+                android:background="@drawable/rounded_corner"
+                android:padding="8dp"/>
+
+            <!-- Thanh tìm kiếm và bộ lọc -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -266,53 +254,51 @@
                     android:background="@drawable/rounded_search_bar"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
-                    <!-- Icon tìm kiếm -->
+
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:padding="8dp"
                         android:src="@drawable/ic_search_24" />
 
-                    <!-- EditText cho tìm kiếm -->
                     <EditText
                         android:id="@+id/searchEditText"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="Tìm kiếm user"
+                        android:hint="Tìm kiếm giao dịch"
                         android:inputType="text"
                         android:textColor="#ffffff"
                         android:textColorHint="#80FFFFFF"
                         android:textSize="15sp" />
                 </LinearLayout>
-                <!-- ComboBox (Spinner) để chọn trạng thái online/offline -->
+
                 <Spinner
-                    android:id="@+id/spinnerStatus"
+                    android:id="@+id/spinnerFilter"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:padding="5dp"
                     android:spinnerMode="dropdown" />
-
             </LinearLayout>
 
+            <!-- Danh sách giao dịch -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
+                android:id="@+id/rvTransactions"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:clipToPadding="false"
-                android:paddingBottom="16dp"
-                tools:listitem="@layout/item_user" />
-            <!-- ProgressBar để hiển thị quá trình tải dữ liệu -->
+                android:paddingBottom="16dp"/>
+
             <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:visibility="gone" />
-        </LinearLayout>
 
+        </LinearLayout>
     </ScrollView>
 </LinearLayout>
