@@ -43,7 +43,9 @@
                         android:textAllCaps="false"
                         app:cornerRadius="25dp"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:visibility="gone"
+                        />
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/userAvatar"
@@ -180,9 +182,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:clipToPadding="false"
-                        android:orientation="horizontal"
                         android:padding="4dp"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                        />
                 </LinearLayout>
 
                 <!-- Menu Options -->
@@ -230,11 +231,6 @@
                                 android:src="@drawable/ic_arrow_righ"
                                 app:tint="#757575" />
                         </LinearLayout>
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#E0E0E0" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
