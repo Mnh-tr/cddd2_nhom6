@@ -7,6 +7,7 @@ public class BinhLuanPhim {
     public long timestamp;
     private String userName; // Thêm trường tên người dùng
     private String formattedDate; // Thêm trường ngày giờ định dạng
+    private String commentId;
 
     // Constructor không đối số và có đối số
     public BinhLuanPhim() {}
@@ -42,4 +43,7 @@ public class BinhLuanPhim {
         return commentText;
     }
 
+    public String getCommentId() {
+        return commentId;
+    }
 }
