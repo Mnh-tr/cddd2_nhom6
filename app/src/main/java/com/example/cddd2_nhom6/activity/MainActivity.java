@@ -10,9 +10,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -88,12 +90,15 @@ public class MainActivity extends AppCompatActivity {
     private Map<String, String> quocGiaSlugMap = new HashMap<>();
     private String theLoaiSlug = null;
     private String quocGiaSlug = null;
+    private boolean doubleBackToExitPressedOnce = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
         loc();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
@@ -231,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         // Khởi tạo và chạy banner
         loaDuLieuApiKhiThayDoi();
     }
+
     public static void kiemTraTruyCap(String idUser) {
         // Kiểm tra xem id_user có null hay không và xem ngày truy cập đã tồn tại hay chưa
         DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
@@ -269,6 +275,21 @@ public class MainActivity extends AppCompatActivity {
         binding.expandableListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
             String header = (String) adapter.getGroup(groupPosition);
             String selectedItem = (String) adapter.getChild(groupPosition, childPosition);
+
+            // Kiểm tra nếu mục "Đăng Nhập" được nhấn
+            if ("Đăng Nhập".equals(selectedItem)) {
+                // Chuyển hướng đến màn hình đăng nhập
+                Intent intent = new Intent(MainActivity.this, DangNhapActivity.class);
+                startActivity(intent);
+                return true; // Đảm bảo không xử lý thêm các sự kiện khác
+            }
+            // Kiểm tra nếu mục "Thông tin cá nhân" được nhấn
+            if ("Thông tin cá nhân".equals(selectedItem)) {
+                // Chuyển hướng đến màn hình thông tin cá nhân
+                Intent intent = new Intent(MainActivity.this, CaNhanActivity.class);
+                startActivity(intent);
+                return true; // Đảm bảo không xử lý thêm các sự kiện khác
+            }
 
             if ("Thể Loại".equals(header)) {
                 theLoaiSlug = theLoaiSlugMap.get(selectedItem); // Lấy slug cho thể loại
@@ -313,9 +334,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, MainActivity.this); // Thêm MainActivity.this làm Context);
             }
-
             return false;
         });
+
     }
 
     private void hienThiThongTinBoLoc() {
@@ -1038,7 +1059,7 @@ public class MainActivity extends AppCompatActivity {
     }
     // Xử lý response của Kkphim
     private void handleKkphimResponse(Response<DSPhimResponse> response, String phimType) {
-        binding.progressBar.setVisibility(View.GONE);
+        binding.loadingLayout.setVisibility(View.GONE);
         binding.mainContent.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setRefreshing(false); // Ngừng loading
 
@@ -1067,7 +1088,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleOphimResponse(Response<DSResponseOphim> response, String phimType) {
-        binding.progressBar.setVisibility(View.GONE);
+        binding.loadingLayout.setVisibility(View.GONE);
         binding.mainContent.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setRefreshing(false); // Ngừng loading
 
@@ -1096,7 +1117,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleError() {
-        binding.progressBar.setVisibility(View.GONE);
+        binding.loadingLayout.setVisibility(View.GONE);
         Toast.makeText(MainActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
         binding.mainContent.setVisibility(View.VISIBLE); // Hiển thị lại nội dung chính
         swipeRefreshLayout.setRefreshing(false); // Ngừng loading
@@ -1189,7 +1210,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
 
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
     @Override
     protected void onResume() {
         super.onResume();

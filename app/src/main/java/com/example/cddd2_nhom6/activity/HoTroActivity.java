@@ -99,7 +99,7 @@ public class HoTroActivity extends AppCompatActivity {
         }
 
         // Tải ảnh lên Firebase Storage trước, rồi sau đó lưu thông tin vào Firebase Realtime Database
-        //uploadImageAndSubmitRequest(name, description,idUser);
+        uploadImageAndSubmitRequest(name, description,idUser);
     }
 
     // Tải ảnh lên Firebase Storage và lưu thông tin vào Realtime Database
