@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.model;
 
 public class BinhLuanPhim {
+    public String id;
     public String userId;
     public String slug;
     public String commentText;
@@ -45,5 +46,9 @@ public class BinhLuanPhim {
 
     public String getCommentId() {
         return commentId;
+    }
+
+    public String getId() {
+        return id;
     }
 }

@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
@@ -39,6 +40,7 @@ import com.example.cddd2_nhom6.model.LichSuPhim;
 import com.example.cddd2_nhom6.model.TaiPhim;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -336,53 +338,35 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     }
     private void themBinhLuan(String comment) {
         String userId = idUser; // ID của người dùng hiện tại
-        String movieSlug = this.movieSlug; // Slug của phim
+        String movieSlug = this.movieSlug;
 
-        // Kiểm tra nếu người dùng đã đăng nhập
         if (userId == null) {
-            // Nếu chưa đăng nhập, hiển thị thông báo yêu cầu đăng nhập
+            // Hiển thị thông báo yêu cầu đăng nhập nếu chưa đăng nhập
             new AlertDialog.Builder(this)
                     .setTitle("Cần đăng nhập")
                     .setMessage("Bạn cần đăng nhập để bình luận. Bạn có muốn đăng nhập ngay?")
                     .setPositiveButton("Có", (dialog, which) -> {
-                        // Chuyển đến màn hình đăng nhập
                         Intent intent = new Intent(XemPhimActivity.this, DangNhapActivity.class);
                         startActivity(intent);
                     })
                     .setNegativeButton("Không", null)
                     .show();
-            return; // Kết thúc hàm nếu chưa đăng nhập
+            return;
         }
 
-        // Nếu đã đăng nhập, tiếp tục xử lý bình luận
-        // Lấy tên người dùng
+        // Lấy tên người dùng từ Firestore
         usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot userSnapshot) {
-                String name = nameUser; // Lấy tên người dùng từ Firestore
-                if (name == null) {
-                    name = "Người dùng ẩn danh"; // Hoặc một tên mặc định
-                }
-
-                // Định dạng ngày giờ
+                String name = nameUser != null ? nameUser : "Người dùng ẩn danh";
                 String formattedDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
-
-                // Tạo một đối tượng Comment
                 BinhLuanPhim newComment = new BinhLuanPhim(userId, movieSlug, comment, System.currentTimeMillis(), name, formattedDate);
 
-                // Tham chiếu đến bảng Comments
-                commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
+                DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
-                // Lưu bình luận vào Firebase
                 commentsRef.push().setValue(newComment)
                         .addOnSuccessListener(aVoid -> {
-                            // Thêm bình luận vào adapter và cập nhật UI ngay lập tức
-                            binhLuanPhimList.add(0, newComment);
-                            binhLuanPhimAdapter.notifyItemInserted(0);
-                            binhLuanPhimAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
-
                             Toast.makeText(XemPhimActivity.this, "Bình luận đã được lưu!", Toast.LENGTH_SHORT).show();
-                            // Xóa nội dung bình luận trong EditText nếu cần
                             binding.commentInput.setText("");
                         })
                         .addOnFailureListener(e -> Toast.makeText(XemPhimActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
@@ -395,39 +379,46 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         });
     }
 
-    @Override
     public void xoaBinhLuan(int position) {
-        // Lấy thông tin người dùng và phim
         String userId = binhLuanPhimAdapter.getCommentUserId(position);
         String movieSlug = this.movieSlug; // Slug của phim
-        // Lấy nội dung bình luận để hiển thị trong hộp thoại xác nhận
-        String commentText = binhLuanPhimAdapter.getCommentText(position); // Giả sử bạn đã có phương thức này trong adapter
+        String commentText = binhLuanPhimAdapter.getCommentText(position); // Nội dung bình luận
 
-        // Kiểm tra người dùng có quyền xóa bình luận
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(XemPhimActivity.this, "Lỗi: Bình luận không hợp lệ!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Kiểm tra nếu người dùng hiện tại có quyền xóa bình luận
         if (userId.equals(idUser)) {
-            // Tạo hộp thoại xác nhận
             new AlertDialog.Builder(XemPhimActivity.this)
                     .setTitle("Xóa bình luận")
-                    .setMessage("Bạn có chắc chắn muốn xóa bình luận " + commentText + " không?")
+                    .setMessage("Bạn có chắc chắn muốn xóa bình luận \"" + commentText + "\" không?")
                     .setPositiveButton("Có", (dialog, which) -> {
                         DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
-                        // Xác định bình luận cần xóa
+                        // Truy vấn bình luận theo slug của phim
                         commentsRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    String commentId = snapshot.getKey(); // Lấy ID của bình luận
                                     String commentUserId = snapshot.child("userId").getValue(String.class);
+
+                                    // Kiểm tra người dùng có quyền xóa bình luận này không
                                     if (commentUserId != null && commentUserId.equals(userId)) {
                                         // Xóa bình luận khỏi Firebase
-                                        snapshot.getRef().removeValue()
+                                        commentsRef.child(commentId).removeValue()
                                                 .addOnSuccessListener(aVoid -> {
+                                                    // Cập nhật giao diện ngay lập tức
+                                                    binhLuanPhimList.remove(position);
+                                                    binhLuanPhimAdapter.notifyItemRemoved(position);
                                                     Toast.makeText(XemPhimActivity.this, "Bình luận đã được xóa!", Toast.LENGTH_SHORT).show();
                                                 })
                                                 .addOnFailureListener(e -> {
                                                     Toast.makeText(XemPhimActivity.this, "Lỗi khi xóa bình luận: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                                 });
-                                        break; // Đã xóa bình luận, không cần tiếp tục tìm kiếm
+                                        break;
                                     }
                                 }
                             }
@@ -438,48 +429,70 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                             }
                         });
                     })
-                    .setNegativeButton("Không", (dialog, which) -> {
-                        dialog.dismiss(); // Đóng hộp thoại nếu người dùng không muốn xóa
-                    })
-                    .show(); // Hiển thị hộp thoại
+                    .setNegativeButton("Không", (dialog, which) -> dialog.dismiss()) // Đóng dialog nếu người dùng hủy
+                    .show();
         } else {
             Toast.makeText(XemPhimActivity.this, "Bạn không có quyền xóa bình luận này!", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void taiBinhLuan(String movieSlug) {
         DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
         // Dọn dẹp danh sách bình luận trước khi thêm mới
         binhLuanPhimList.clear();
+        binhLuanPhimAdapter.notifyDataSetChanged();
 
-        // Sử dụng addValueEventListener để lắng nghe thay đổi
-        commentsRef.orderByChild("slug").equalTo(movieSlug).addValueEventListener(new ValueEventListener() {
+        // Sử dụng ChildEventListener để chỉ xử lý khi có sự thay đổi tại các con
+        commentsRef.orderByChild("slug").equalTo(movieSlug).addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                binhLuanPhimList.clear(); // Dọn dẹp danh sách mỗi lần dữ liệu thay đổi
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    String userId = snapshot.child("userId").getValue(String.class);
-                    String commentText = snapshot.child("commentText").getValue(String.class);
-                    String userName = snapshot.child("userName").getValue(String.class);
-                    long timestamp = snapshot.child("timestamp").getValue(Long.class);
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                String userId = snapshot.child("userId").getValue(String.class);
+                String commentText = snapshot.child("commentText").getValue(String.class);
+                String userName = snapshot.child("userName").getValue(String.class);
+                long timestamp = snapshot.child("timestamp").getValue(Long.class);
 
-                    if (userId != null && commentText != null) {
-                        // Định dạng ngày giờ
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
-                        String formattedDate = sdf.format(new Date(timestamp));
+                if (userId != null && commentText != null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+                    String formattedDate = sdf.format(new Date(timestamp));
 
-                        // Tạo bình luận và thêm vào adapter
-                        BinhLuanPhim comment = new BinhLuanPhim(userId, movieSlug, commentText, timestamp, userName, formattedDate);
-                        binhLuanPhimList.add(0,comment);
-                        binhLuanPhimAdapter.notifyItemInserted(0);
-                    }
+                    // Tạo bình luận mới và thêm vào danh sách
+                    BinhLuanPhim comment = new BinhLuanPhim(userId, movieSlug, commentText, timestamp, userName, formattedDate);
+                    binhLuanPhimList.add(0, comment);
+                    binhLuanPhimAdapter.notifyItemInserted(0);
                 }
-                binhLuanPhimAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Xử lý khi bình luận bị thay đổi (nếu cần thiết)
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                // Xử lý khi bình luận bị xóa (nếu cần thiết)
+                String commentId = snapshot.getKey();
+                if (commentId != null) {
+                    // Tìm bình luận tương ứng trong danh sách và loại bỏ
+                    for (int i = 0; i < binhLuanPhimList.size(); i++) {
+                        BinhLuanPhim comment = binhLuanPhimList.get(i);
+                        if (comment.getId() != null && comment.getId().equals(commentId)) {
+                            binhLuanPhimList.remove(i); // Loại bỏ bình luận khỏi danh sách
+                            binhLuanPhimAdapter.notifyItemRemoved(i); // Cập nhật giao diện
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Không cần xử lý ở đây
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(XemPhimActivity.this, "Lỗi khi tải bình luận", Toast.LENGTH_SHORT).show();
             }
         });
