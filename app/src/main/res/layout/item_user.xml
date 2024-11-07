@@ -5,6 +5,7 @@
     android:orientation="horizontal"
     android:background="@drawable/vienden"
     android:layout_marginBottom="3dp"
+    android:backgroundTint="#00405D"
     android:padding="16dp">
 
     <LinearLayout

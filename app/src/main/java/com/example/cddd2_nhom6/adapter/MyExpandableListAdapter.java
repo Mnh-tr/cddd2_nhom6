@@ -103,4 +103,8 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
     }
+
+    public Object getChildren(int groupPosition) {
+        return listChildren.get(listHeaders.get(groupPosition));
+    }
 }
