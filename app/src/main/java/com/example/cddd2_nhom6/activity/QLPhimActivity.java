@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
@@ -31,9 +32,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class QLPhimActivity extends AppCompatActivity {
@@ -43,20 +47,19 @@ public class QLPhimActivity extends AppCompatActivity {
     private List<KieuPhim> kieuPhimList = new ArrayList<>();
     private List<Goi> goiList = new ArrayList<>();
     private ActivityQlphimBinding binding;
+    private Button selectedButton = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityQlphimBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.btnAddPhim.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent a = new Intent(QLPhimActivity.this  ,ThemPhimActivity.class);
-                startActivity(a);
+        fetchGoiFromFirebase();
+        // Hiển thị tất cả phim khi mở ứng dụng
+        fetchMoviesFromFirebase("All");
+        updateSelectedButton(binding.btnChonTatCa);
 
-            }
-        });
+
         // Cài đặt RecyclerView
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new QLPhimAdapter(this, phimList, kieuPhimList, goiList, selectedCount -> {
@@ -74,27 +77,67 @@ public class QLPhimActivity extends AppCompatActivity {
             intent.putExtra("id_movie", selectedPhim.getId_movie()); // Truyền id_movie
             startActivity(intent);
         });
-
         binding.recyclerView.setAdapter(adapter);
 
+
+        xulyButton();
+    }
+
+    private void xulyButton() {
+
+        binding.btnAddPhim.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent a = new Intent(QLPhimActivity.this  ,ThemPhimActivity.class);
+                startActivity(a);
+
+            }
+        });
+
+
         // Xử lý sự kiện cho các nút
-        binding.btnngaytao.setOnClickListener(v -> showDatePickerDialog());
+        binding.btnngaytao.setOnClickListener(v ->{
+            showDatePickerDialog();
+            updateSelectedButton(binding.btnngaytao);
+        } );
         xulySpiner();
 
-        // Tải dữ liệu từ Firebase
 
-        fetchGoiFromFirebase();
-        fetchMoviesFromFirebase("All");
 
         // Xử lý sự kiện xóa phim khi nhấn vào icon xóa
         binding.deleteIcon.setOnClickListener(v -> {
             List<Phim> selectedMovies = adapter.getSelectedMovies();
+
+            // Kiểm tra nếu có phim được chọn
             if (!selectedMovies.isEmpty()) {
-                deleteSelectedMovies(selectedMovies);
+                // Tạo AlertDialog để xác nhận xóa
+                new AlertDialog.Builder(this)
+                        .setTitle("Xóa phim")
+                        .setMessage("Bạn có chắc chắn muốn xóa những phim đã chọn không?")
+                        .setPositiveButton("Có", (dialog, which) -> {
+                            // Thực hiện xóa phim khi người dùng chọn "Có"
+                            deleteSelectedMovies(selectedMovies);
+                        })
+                        .setNegativeButton("Không", (dialog, which) -> {
+                            // Đóng hộp thoại khi người dùng chọn "Không"
+                            dialog.dismiss();
+                        })
+                        .show();
             } else {
+                // Hiển thị thông báo nếu không có phim nào được chọn
                 Toast.makeText(this, "Không có phim nào được chọn", Toast.LENGTH_SHORT).show();
             }
         });
+
+        // Xử lý sự kiện khi nhấn nút chọn tất cả
+        binding.btnChonTatCa.setOnClickListener(v -> {
+            // Lọc lại tất cả các phim không có bộ lọc theo ngày
+            updateSelectedButton(binding.btnChonTatCa);
+            fetchMoviesFromFirebase("All");
+            binding.btnngaytao.setText("Chọn ngày"); // Xóa tiêu đề ngày nếu có
+
+        });
+
     }
 
     private void xulySpiner() {
@@ -109,23 +152,25 @@ public class QLPhimActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedGoi = parent.getItemAtPosition(position).toString();
                 // Gọi lại fetchMoviesFromFirebase() để tải lại dữ liệu phim từ Firebase
-                fetchMoviesFromFirebase(selectedGoi); // Truyền loại gói phim vào đây
+                fetchMoviesFromFirebase(selectedGoi);  // Truyền loại gói phim vào đây
             }
-
-
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 // Không cần xử lý gì ở đây
             }
         });
+
     }
 
     private void filterMoviesByGoi(String goiType) {
+        filterMoviesByGoi(goiType, phimList);  // Lọc theo gói và sử dụng danh sách phim đã lọc
+    }
+
+    private void filterMoviesByGoi(String goiType, List<Phim> phimListToFilter) {
         List<Phim> filteredList = new ArrayList<>();
 
-        for (Phim phim : phimList) {
-            // Kiểm tra giá trị của goiType và so sánh với giá trị số trong Firebase
+        for (Phim phim : phimListToFilter) {
             if (goiType.equals("All") ||
                     (goiType.equals("Thường") && "0".equals(phim.getGoi())) ||
                     (goiType.equals("Vip") && "1".equals(phim.getGoi()))) {
@@ -133,9 +178,9 @@ public class QLPhimActivity extends AppCompatActivity {
             }
         }
 
-        adapter.updateMovieList(filteredList); // Cập nhật danh sách phim của adapter
+        Log.d("QLPhimActivity", "Filtered list size by goi: " + filteredList.size());
+        adapter.updateMovieList(filteredList);  // Cập nhật lại adapter với danh sách phim đã lọc
     }
-
 
     private void deleteSelectedMovies(List<Phim> selectedMovies) {
         for (Phim phim : selectedMovies) {
@@ -148,7 +193,7 @@ public class QLPhimActivity extends AppCompatActivity {
         adapter.getSelectedMovies().clear(); // Xóa danh sách phim đã chọn
         adapter.notifyDataSetChanged(); // Cập nhật RecyclerView
         binding.deleteIcon.setVisibility(View.GONE); // Ẩn icon xóa sau khi xóa
-        Toast.makeText(this, "Đã xóa " + selectedMovies.size() + " phim", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Đã xóa phim", Toast.LENGTH_SHORT).show();
     }
 
     private void fetchMoviesFromFirebase(String goiType) {
@@ -163,8 +208,17 @@ public class QLPhimActivity extends AppCompatActivity {
                         phimList.add(movie);
                     }
                 }
-                // Sau khi tải xong dữ liệu từ Firebase, gọi lại phương thức lọc phim
+
+                // Sau khi tải xong dữ liệu từ Firebase, lọc theo gói
                 filterMoviesByGoi(goiType);
+
+                // Nếu người dùng đã chọn ngày, lọc theo ngày
+                if (binding.btnngaytao.getText().toString().trim().length() > 0) {
+                    String selectedDate = binding.btnngaytao.getText().toString();
+                    filterMoviesByDate(selectedDate);
+                }
+                String a = binding.spinnerTimGoi.getSelectedItem().toString().trim();
+                filterMoviesByGoi(a, phimList);  // Lọc theo gói sau khi lọc theo ngày
             }
 
             @Override
@@ -173,8 +227,6 @@ public class QLPhimActivity extends AppCompatActivity {
             }
         });
     }
-
-
 
 
     private void showDatePickerDialog() {
@@ -188,10 +240,57 @@ public class QLPhimActivity extends AppCompatActivity {
                 (view, selectedYear, selectedMonth, selectedDay) -> {
                     String selectedDate = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
                     binding.btnngaytao.setText(selectedDate);
+
+                    // Lọc lại danh sách phim theo ngày
+                    fetchMoviesFromFirebase("All"); // Lọc lại tất cả phim trước khi áp dụng lọc theo ngày
+                    filterMoviesByDate(selectedDate);
                 },
                 year, month, day);
 
         datePickerDialog.show();
+    }
+    // Phương thức để cập nhật màu của các nút
+    private void updateSelectedButton(Button newButton) {
+        // Nếu nút đã được chọn khác nút hiện tại, đổi màu
+        if (selectedButton != null) {
+            selectedButton.setBackgroundTintList(getResources().getColorStateList(R.color.button_primary)); // Màu mặc định
+            selectedButton.setTextColor(getResources().getColor(R.color.text_button)); // Màu chữ mặc định
+        }
+
+        // Cập nhật nút hiện tại và đổi màu
+        selectedButton = newButton;
+        selectedButton.setBackgroundTintList(getResources().getColorStateList(R.color.colorSelected)); // Màu đã chọn
+        selectedButton.setTextColor(getResources().getColor(R.color.text_button)); // Màu chữ đã chọn
+    }
+
+    private void filterMoviesByDate(String selectedDate) {
+        List<Phim> filteredList = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        for (Phim phim : phimList) {
+            String ngayTao = phim.getNgayThemPhim();
+            Log.d("QLPhimActivity", "Phim date: " + ngayTao + " | Selected date: " + selectedDate);
+            if (selectedDate.equals("Chọn ngày")){
+                filteredList.add(phim);
+            }
+            else {
+                try {
+                    Date phimDate = dateFormat.parse(ngayTao);
+                    Date selectedDateObj = dateFormat.parse(selectedDate);
+
+                    if (phimDate.equals(selectedDateObj)) {
+                        filteredList.add(phim);
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+        Log.d("QLPhimActivity", "Filtered list size by date: " + filteredList.size());
+        String a = binding.spinnerTimGoi.getSelectedItem().toString().trim();
+        filterMoviesByGoi(a, filteredList);  // Lọc theo gói sau khi lọc theo ngày
     }
 
 

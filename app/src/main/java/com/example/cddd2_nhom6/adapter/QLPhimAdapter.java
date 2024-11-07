@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ItemQlPhimBinding;
 import com.example.cddd2_nhom6.model.Goi;
 import com.example.cddd2_nhom6.model.KieuPhim;
@@ -81,18 +82,19 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
 
         // Đổi màu nền nếu item được chọn
         if (selectedMovies.contains(currentPhim)) {
-            holder.itemView.setBackgroundColor(Color.RED); // Màu nền khi được chọn
+            holder.binding.itemView.setBackgroundColor(Color.RED); // Màu nền khi được chọn
         } else {
-            holder.itemView.setBackgroundColor(Color.parseColor("#00405D")); // Màu nền mặc định
+            holder.binding.itemView.setBackgroundResource(R.drawable.movie_item_background); // Màu nền mặc định
         }
 
     }
 
-    public void updateMovieList(List<Phim> filteredMovies) {
-        this.phimList.clear();
-        this.phimList.addAll(filteredMovies);
-        notifyDataSetChanged(); // Làm mới RecyclerView
+    public void updateMovieList(List<Phim> newList) {
+        phimList.clear();
+        phimList.addAll(newList);
+        notifyDataSetChanged();
     }
+
 
 
     // Hàm chọn/bỏ chọn phim

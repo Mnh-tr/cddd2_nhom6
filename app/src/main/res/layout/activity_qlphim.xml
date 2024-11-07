@@ -5,110 +5,132 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#4D4D4D"
+    android:background="@color/background_main"
     android:orientation="vertical"
     tools:context=".activity.QLPhimActivity">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
+        <!-- Header với gradient -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:background="@drawable/header_gradient"
             android:orientation="horizontal"
-            android:background="#323131"
-            >
+            android:elevation="4dp"
+            android:padding="16dp">
 
             <ImageView
-                android:padding="30dp"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:src="@drawable/exit_left"
-                android:contentDescription="Exit Icon" />
+                android:contentDescription="Exit Icon"
+                android:padding="8dp"
+                android:tint="@color/text_primary" />
 
-            <!-- Title Section (TextView nằm chính giữa) -->
             <TextView
                 android:id="@+id/tvTitle"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
                 android:text="Quản Lý Phim"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:gravity="center"
-                android:layout_gravity="center"
-                />
-            <!-- View trống để đảm bảo tiêu đề nằm chính giữa -->
+                android:textColor="@color/text_primary"
+                android:gravity="center" />
+
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:layout_height="match_parent">
                 <ImageView
                     android:id="@+id/delete_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="end"
-                    android:padding="16dp"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:src="@drawable/baseline_delete_24"
-                    android:visibility="gone"
-                    />
+                    android:contentDescription="Delete Icon"
+                    android:padding="8dp"
+                    android:tint="@color/text_primary"
+                    android:visibility="gone" />
             </LinearLayout>
-
         </LinearLayout>
-        <!-- Filter options -->
-        <LinearLayout
+
+        <!-- Filter section với card view -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal"
-            android:padding="8dp">
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/card_background">
 
-            <Button
-                android:id="@+id/btnngaytao"
-                android:layout_margin="2dp"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="2"
-                android:text="Ngày tạo"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp">
 
-                android:textColor="@color/white"/>
+                <Button
+                    android:id="@+id/btnChonTatCa"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:backgroundTint="@color/button_primary"
+                    android:text="All ngày"
+                    android:textColor="@color/text_button"
+                    android:padding="8dp" />
 
-            <Spinner
-                android:id="@+id/spinnerTimGoi"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_margin="2dp"
-                android:layout_weight="1"
-                android:backgroundTint="@color/white" />
+                <Button
+                    android:id="@+id/btnngaytao"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:backgroundTint="@color/button_primary"
+                    android:text="Chọn ngày"
+                    android:textColor="@color/text_button"
+                    android:padding="8dp" />
 
-        </LinearLayout>
+                <Spinner
+                    android:id="@+id/spinnerTimGoi"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/spinner_background"
+                    android:padding="8dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-
-
-        <!-- RecyclerView for movie list -->
+        <!-- RecyclerView với item cards -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="8"
-            tools:listitem="@layout/item_ql_phim"
-            android:padding="16dp"/>
+            android:padding="8dp"
+            android:clipToPadding="false"
+            tools:listitem="@layout/item_ql_phim" />
+
+        <!-- Nút thêm phim với gradient -->
         <Button
-            android:textSize="25sp"
             android:id="@+id/btnAddPhim"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Thêm Phim"
-            android:backgroundTint="#ca8dbd"
-            android:textColor="@android:color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:padding="7dp"
-            android:layout_margin="14dp"/>
+            android:textSize="18sp"
+            android:background="@drawable/button_gradient"
+            android:textColor="@color/text_button"
+            android:padding="12dp"
+            android:layout_margin="16dp"
+            android:elevation="4dp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
