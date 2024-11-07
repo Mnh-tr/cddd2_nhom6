@@ -20,4 +20,32 @@
     <color name="green">#1eee5c</color>
     <color name="red">#FF0000</color>
     <color name="orange">#FFA500</color>
+    <color name="chip_background_color">#E0E0E0</color>
+
+
+    <!-- Màu nền của gói user-->
+    <color name="normal_bg">#2D2D2D</color>
+    <color name="vip_bg_start">#FFD700</color>
+    <color name="vip_bg_end">#FFA500</color>
+    <color name="admin_bg_start">#FF4B4B</color>
+    <color name="admin_bg_end">#FF0000</color>
+    <color name="manager_bg_start">#4CAF50</color>
+    <color name="manager_bg_end">#45A049</color>
+
+    <!-- Màu chữ của gói user-->
+    <color name="normal_text">#78FFFFFF</color>
+    <color name="vip_text">#000000</color>
+    <color name="admin_text">#FFFFFF</color>
+    <color name="manager_text">#FFFFFF</color>
+
+
+    <!-- Status Colors  của thao tác nâng cấp vip-->
+    <color name="status_pending_text">#FFFFFF</color>
+    <color name="status_completed_text">#FFFFFF</color>
+
+    <!-- Background Colors của thao tác nâng cấp vip-->
+    <color name="status_pending_start">#FF6B3D</color>
+    <color name="status_pending_end">#FF4C29</color>
+    <color name="status_completed_start">#2ECC71</color>
+    <color name="status_completed_end">#27AE60</color>
 </resources>

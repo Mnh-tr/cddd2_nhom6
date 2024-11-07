@@ -28,6 +28,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activity.DoanhThuActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.QLYeuCauActivity"
             android:exported="false" />
         <activity
@@ -67,7 +70,9 @@
         <activity android:name=".activity.DSThongBaoActivity" />
         <activity android:name=".activity.QLThongBaoActivity" />
         <activity android:name=".activity.DangKyActivity" />
-        <activity android:name=".activity.DangNhapActivity" />
+        <activity
+            android:name=".activity.DangNhapActivity"
+            android:exported="true" />
         <activity android:name=".activity.LichSuXemActivity" />
         <activity android:name=".activity.DanhSachYeuThichActivity" />
         <activity android:name=".activity.CaiDatActivity"/>

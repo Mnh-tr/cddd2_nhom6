@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -97,6 +98,15 @@ public class QLYeuCauActivity extends AppCompatActivity {
 
             // Gọi phương thức lọc khi RadioButton thay đổi
             locTheoSpinnerVaRadio(dateFilter, statusFilter);
+        });
+
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(QLYeuCauActivity.this, QLUserActivity.class);
+                startActivity(intent);
+                finish();
+            }
         });
     }
     // Hàm kết hợp để áp dụng cả hai bộ lọc

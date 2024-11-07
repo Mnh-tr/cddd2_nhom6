@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -26,11 +27,12 @@ import com.google.firebase.database.ValueEventListener;
 public class VipActivity extends AppCompatActivity {
     private ActivityVipBinding binding;
     private String idUser;
-    private  String nameUser;
+    private String nameUser;
     private String emailUser;
     private int idLoaiND;
     private DatabaseReference yeuCauRef;
     private boolean doubleBackToExitPressedOnce = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +50,7 @@ public class VipActivity extends AppCompatActivity {
 
         // Kiểm tra xem idUser có trong bảng YeuCau hay chưa
         kiemTraYeuCau(idUser);
+        kiemTraLoaiNguoiDung();
         // Xử lý sự kiện chọn item của Bottom Navigation
         binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -57,10 +60,9 @@ public class VipActivity extends AppCompatActivity {
                     intent = new Intent(VipActivity.this, MainActivity.class);
                 } else if (item.getItemId() == R.id.nav_vip) {
                     return true;
-                }else if(item.getItemId() == R.id.nav_profile) {
+                } else if (item.getItemId() == R.id.nav_profile) {
                     intent = new Intent(VipActivity.this, CaNhanActivity.class);
-                }
-                else if (item.getItemId() == R.id.nav_download) {
+                } else if (item.getItemId() == R.id.nav_download) {
                     intent = new Intent(VipActivity.this, TaiPhimActivity.class);
                 }
                 if (intent != null) {
@@ -86,18 +88,62 @@ public class VipActivity extends AppCompatActivity {
 
     }
 
-    private void laythongtinUser(){
+    private void laythongtinUser() {
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
-        emailUser  = sharedPreferences.getString("email", null);
+        emailUser = sharedPreferences.getString("email", null);
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
     }
 
+    private void kiemTraLoaiNguoiDung() {
+        FirebaseDatabase.getInstance().getReference("Users").orderByChild("id_user").equalTo(idUser)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                        if (userSnapshot.exists()) {
+                            for (DataSnapshot user : userSnapshot.getChildren()) {
+                                Integer idLoaiND = user.child("id_loaiND").getValue(Integer.class);
+                                // Thêm log kiểm tra giá trị của id_loaiND
+                                if (idLoaiND != null) {
+                                    Log.d("id loại người dùng", "idLoaiND: " + idLoaiND);
+                                } else {
+                                    Log.d("id loại người dùng", "idLoaiND is null for user " + idUser);
+                                }
+                                // Kiểm tra trạng thái của yêuq cầu
+                                if (idLoaiND != null && idLoaiND == 1) {
+                                    // Nếu idLoaiND là 1, đổi màu và text của các nút
+                                    binding.btnDangKy.setText("Đang sử dụng");
+                                    binding.btnDangKy.setEnabled(false); // Vô hiệu hóa nút
+                                    binding.btnDangKy.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00FB21"))); // Xanh
+
+                                    binding.btnFree.setText("Sử dụng");
+                                    binding.btnFree.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff66b2"))); // màu hồng
+                                } else {
+                                    binding.btnDangKy.setText("Đăng ký ngay");
+                                    binding.btnDangKy.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff66b2"))); // Hồng ban đầu
+                                    binding.btnDangKy.setEnabled(true);
+                                    binding.btnFree.setText("Đang sử dụng");
+                                    binding.btnFree.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00FB21"))); // Xanh lá
+
+                                }
+                            }
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
     // Kiểm tra nếu idUser đã có trong bảng YeuCau
     private void kiemTraYeuCau(String idUser) {
-        yeuCauRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        yeuCauRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 boolean found = false;
@@ -108,22 +154,49 @@ public class VipActivity extends AppCompatActivity {
                     // Kiểm tra nếu idUser trùng khớp
                     if (idUserInDB != null && idUserInDB.equals(idUser)) {
                         found = true;
+                        // Thêm ghi log để kiểm tra idUser được lấy đúng cách
+                        Log.d("KiemTraYeuCau", "Found idUser: " + idUserInDB);
+                        FirebaseDatabase.getInstance().getReference("Users").orderByChild("id_user").equalTo(idUser)
+                                .addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                                        if (userSnapshot.exists()) {
+                                            for (DataSnapshot user : userSnapshot.getChildren()) {
+                                                Integer idLoaiND = user.child("id_loaiND").getValue(Integer.class);
+                                                // Thêm log kiểm tra giá trị của id_loaiND
+                                                if (idLoaiND != null) {
+                                                    Log.d("id loại người dùng", "idLoaiND: " + idLoaiND);
+                                                } else {
+                                                    Log.d("id loại người dùng", "idLoaiND is null for user " + idUser);
+                                                }
+                                                // Kiểm tra trạng thái của yêuq cầu
+                                                if (idLoaiND != null && idLoaiND == 1) {
+                                                    // Nếu idTrangThai là 1, đổi màu và text của các nút
+                                                    binding.btnDangKy.setText("Đang sử dụng");
+                                                    binding.btnDangKy.setEnabled(false); // Vô hiệu hóa nút
+                                                    binding.btnDangKy.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00FB21"))); // Xanh
 
-                        // Kiểm tra trạng thái của yêu cầu
-                        if (idTrangThai != null && idTrangThai == 1) {
-                            // Nếu idTrangThai là 1, đổi màu và text của các nút
-                            binding.btnDangKy.setText("Đang sử dụng");
-                            binding.btnDangKy.setEnabled(false); // Vô hiệu hóa nút
-                            binding.btnDangKy.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00FB21"))); // Xám
+                                                    binding.btnFree.setText("Sử dụng");
+                                                    binding.btnFree.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff66b2"))); // Hồng
+                                                } else {
+                                                    if (idTrangThai != null && idTrangThai == 0) {
+                                                        // Nếu idTrangThai không phải là 1 nhưng idUser đã có trong bảng YeuCau
+                                                        binding.btnDangKy.setText("Đang xử lý");
+                                                        binding.btnDangKy.setEnabled(false); // Vô hiệu hóa nút
+                                                        binding.btnDangKy.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff66b2"))); // Hồng ban đầu
+                                                    }
+                                                }
+                                            }
+                                        }
 
-                            binding.btnFree.setText("Sử dụng");
-                            binding.btnFree.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff66b2"))); // Xanh lá
-                        } else {
-                            // Nếu idTrangThai không phải là 1 nhưng idUser đã có trong bảng YeuCau
-                            binding.btnDangKy.setText("Đang xử lý");
-                            binding.btnDangKy.setEnabled(false); // Vô hiệu hóa nút
-                            binding.btnDangKy.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff66b2"))); // Hồng ban đầu
-                        }
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
                         break;
                     }
                 }
@@ -157,7 +230,6 @@ public class VipActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
-
 
 
 }
