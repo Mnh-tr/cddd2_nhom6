@@ -13,6 +13,7 @@ import com.example.cddd2_nhom6.databinding.ItemQlPhimBinding;
 import com.example.cddd2_nhom6.model.Goi;
 import com.example.cddd2_nhom6.model.KieuPhim;
 import com.example.cddd2_nhom6.model.Phim;
+import com.example.cddd2_nhom6.model.QLPhim;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +21,10 @@ import java.util.List;
 public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimViewHolder> {
 
     private Context context;
-    private List<Phim> phimList;
+    private List<QLPhim> phimList;
     private List<KieuPhim> kieuPhimList;
     private List<Goi> goiList;
-    private List<Phim> selectedMovies = new ArrayList<>(); // Danh sách phim được chọn
+    private List<QLPhim> selectedMovies = new ArrayList<>(); // Danh sách phim được chọn
     private boolean multiSelectMode = false;
     private OnMovieSelectListener onMovieSelectListener;
     private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
@@ -38,7 +39,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
     }
 
     // Constructor
-    public QLPhimAdapter(Context context, List<Phim> phimList, List<KieuPhim> kieuPhimList, List<Goi> goiList, OnMovieSelectListener onMovieSelectListener) {
+    public QLPhimAdapter(Context context, List<QLPhim> phimList, List<KieuPhim> kieuPhimList, List<Goi> goiList, OnMovieSelectListener onMovieSelectListener) {
         this.context = context;
         this.phimList = phimList;
         this.kieuPhimList = kieuPhimList;
@@ -55,7 +56,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
 
     @Override
     public void onBindViewHolder(@NonNull QLPhimViewHolder holder, int position) {
-        Phim currentPhim = phimList.get(position);
+        QLPhim currentPhim = phimList.get(position);
 
         // Lưu vị trí mới cho Holder
         final int pos = position;
@@ -89,7 +90,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
 
     }
 
-    public void updateMovieList(List<Phim> newList) {
+    public void updateMovieList(List<QLPhim> newList) {
         phimList.clear();
         phimList.addAll(newList);
         notifyDataSetChanged();
@@ -98,7 +99,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
 
 
     // Hàm chọn/bỏ chọn phim
-    private void toggleSelection(Phim movie) {
+    private void toggleSelection(QLPhim movie) {
         if (selectedMovies.contains(movie)) {
             selectedMovies.remove(movie);
         } else {
@@ -115,7 +116,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
     }
 
 
-    public List<Phim> getSelectedMovies() {
+    public List<QLPhim> getSelectedMovies() {
         return selectedMovies;
     }
 
@@ -135,7 +136,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
             // Nhấn giữ để chọn phim
             itemView.setOnLongClickListener(view -> {
                 multiSelectMode = true;
-                Phim currentPhim = phimList.get(position); // Lấy phim hiện tại
+                QLPhim currentPhim = phimList.get(position); // Lấy phim hiện tại
                 toggleSelection(currentPhim);
                 return true;
             });
@@ -143,7 +144,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
             // Nhấn để chọn/bỏ chọn phim
             itemView.setOnClickListener(view -> {
                 if (multiSelectMode) {
-                    Phim currentPhim = phimList.get(position); // Lấy phim hiện tại
+                    QLPhim currentPhim = phimList.get(position); // Lấy phim hiện tại
                     toggleSelection(currentPhim);
                 } else {
                     recyclerViewItemClickListener.onItemClick(view, position);

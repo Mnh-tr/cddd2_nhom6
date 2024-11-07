@@ -104,7 +104,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
                     android:layout_marginStart="8dp"
-                    android:background="@drawable/spinner_background"
+                    android:background="@drawable/spinner_ql_phim"
                     android:padding="8dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>

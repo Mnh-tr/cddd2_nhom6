@@ -26,6 +26,7 @@ import com.example.cddd2_nhom6.databinding.ActivityQlphimBinding;
 import com.example.cddd2_nhom6.model.Goi;
 import com.example.cddd2_nhom6.model.KieuPhim;
 import com.example.cddd2_nhom6.model.Phim;
+import com.example.cddd2_nhom6.model.QLPhim;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -43,7 +44,7 @@ import java.util.List;
 public class QLPhimActivity extends AppCompatActivity {
 
     private QLPhimAdapter adapter;
-    private List<Phim> phimList = new ArrayList<>(); // Danh sách phim
+    private List<QLPhim> phimList = new ArrayList<>(); // Danh sách phim
     private List<KieuPhim> kieuPhimList = new ArrayList<>();
     private List<Goi> goiList = new ArrayList<>();
     private ActivityQlphimBinding binding;
@@ -72,7 +73,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
         // Thêm listener cho item click
         adapter.setRecyclerViewItemClickListener((view, position) -> {
-            Phim selectedPhim = phimList.get(position);
+            QLPhim selectedPhim = phimList.get(position);
             Intent intent = new Intent(QLPhimActivity.this, ThemPhimActivity.class);
             intent.putExtra("id_movie", selectedPhim.getId_movie()); // Truyền id_movie
             startActivity(intent);
@@ -106,7 +107,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
         // Xử lý sự kiện xóa phim khi nhấn vào icon xóa
         binding.deleteIcon.setOnClickListener(v -> {
-            List<Phim> selectedMovies = adapter.getSelectedMovies();
+            List<QLPhim> selectedMovies = adapter.getSelectedMovies();
 
             // Kiểm tra nếu có phim được chọn
             if (!selectedMovies.isEmpty()) {
@@ -167,10 +168,10 @@ public class QLPhimActivity extends AppCompatActivity {
         filterMoviesByGoi(goiType, phimList);  // Lọc theo gói và sử dụng danh sách phim đã lọc
     }
 
-    private void filterMoviesByGoi(String goiType, List<Phim> phimListToFilter) {
-        List<Phim> filteredList = new ArrayList<>();
+    private void filterMoviesByGoi(String goiType, List<QLPhim> phimListToFilter) {
+        List<QLPhim> filteredList = new ArrayList<>();
 
-        for (Phim phim : phimListToFilter) {
+        for (QLPhim phim : phimListToFilter) {
             if (goiType.equals("All") ||
                     (goiType.equals("Thường") && "0".equals(phim.getGoi())) ||
                     (goiType.equals("Vip") && "1".equals(phim.getGoi()))) {
@@ -182,8 +183,8 @@ public class QLPhimActivity extends AppCompatActivity {
         adapter.updateMovieList(filteredList);  // Cập nhật lại adapter với danh sách phim đã lọc
     }
 
-    private void deleteSelectedMovies(List<Phim> selectedMovies) {
-        for (Phim phim : selectedMovies) {
+    private void deleteSelectedMovies(List<QLPhim> selectedMovies) {
+        for (QLPhim phim : selectedMovies) {
             // Xóa phim từ Firebase
             FirebaseDatabase.getInstance().getReference("Movies")
                     .child(phim.getId_movie())
@@ -203,7 +204,7 @@ public class QLPhimActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 phimList.clear(); // Xóa dữ liệu cũ (nếu có)
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Phim movie = snapshot.getValue(Phim.class);
+                    QLPhim movie = snapshot.getValue(QLPhim.class);
                     if (movie != null) {
                         phimList.add(movie);
                     }
@@ -264,10 +265,10 @@ public class QLPhimActivity extends AppCompatActivity {
     }
 
     private void filterMoviesByDate(String selectedDate) {
-        List<Phim> filteredList = new ArrayList<>();
+        List<QLPhim> filteredList = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-        for (Phim phim : phimList) {
+        for (QLPhim phim : phimList) {
             String ngayTao = phim.getNgayThemPhim();
             Log.d("QLPhimActivity", "Phim date: " + ngayTao + " | Selected date: " + selectedDate);
             if (selectedDate.equals("Chọn ngày")){
