@@ -3,13 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#414441"
+    android:background="#f07355"
     android:padding="20dp"
     android:gravity="bottom">
     <ImageView
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:background="@drawable/ic_person_24"/>
+        android:background="@drawable/ic_person_24"
+        android:backgroundTint="#414441"/>
     <TextView
         android:id="@+id/tvTenNguoiDung"
         android:layout_width="wrap_content"

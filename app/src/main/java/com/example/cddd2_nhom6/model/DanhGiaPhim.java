@@ -66,7 +66,7 @@ public class DanhGiaPhim {
 
 
     public void tinhTrungBinhDanhGia() {
-        ratingsRef.child(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
+        ratingsRef.child(movieSlug).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 int luot = 0;
@@ -84,10 +84,10 @@ public class DanhGiaPhim {
                     // Tính trung bình sao
                     float diemDanhGia = tongDanhGia / luot;
                     // Cập nhật giao diện với tổng số đánh giá và trung bình sao
-                    binding.tvAverageRating.setText("( " + diemDanhGia + " điểm / " + luot + " lượt)");
+                    binding.tvAverageRating.setText("( " + diemDanhGia + " / " + luot + " lượt)");
                 } else {
                     // Nếu không có đánh giá, hiển thị thông báo và đặt điểm trung bình là 0
-                    binding.tvAverageRating.setText("( 0 điểm / 0 lượt )");
+                    binding.tvAverageRating.setText("( 0 / 0 lượt )");
                     binding.ratingBar.setRating(0); // Reset ratingBar nếu không có đánh giá
                 }
             }
