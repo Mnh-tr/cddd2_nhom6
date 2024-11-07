@@ -76,6 +76,7 @@
         <activity android:name=".activity.ThongBaoActivity" />
         <activity android:name=".activity.TaiPhimActivity" />
         <activity android:name=".activity.XemPhimTaixuongActivity" />
+        <activity android:name=".activity.HoTroActivity" />
     </application>
 
 </manifest>
