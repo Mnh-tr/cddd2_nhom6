@@ -20,4 +20,6 @@
     <color name="green">#1eee5c</color>
     <color name="red">#FF0000</color>
     <color name="orange">#FFA500</color>
+    <color name="primary_color">#6200EE</color>
+    <color name="background_color">#F5F7FA</color>
 </resources>
