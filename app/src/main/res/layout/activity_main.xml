@@ -16,8 +16,8 @@
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:background="@color/meBlack">
+            android:background="@color/meBlack"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -93,18 +93,17 @@
                                 android:textStyle="bold"
                                 android:visibility="gone" />
 
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/recyclerViewMovies"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone" />
+
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
                                 android:paddingTop="10dp">
-
-
-                                <androidx.recyclerview.widget.RecyclerView
-                                    android:id="@+id/recyclerViewMovies"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:visibility="gone" />
 
                                 <!-- Phim bộ -->
                                 <LinearLayout

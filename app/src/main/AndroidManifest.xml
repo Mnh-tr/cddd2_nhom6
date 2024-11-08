@@ -88,8 +88,7 @@
         <activity android:name=".activity.HoTroActivity" />
         <activity android:name=".activity.QLHoTroActivity" />
         <activity android:name=".activity.QLTheLoaiActivity"/>
-        <activity android:name=".activity.HoTroActivity" />
-        <activity android:name=".activity.DSHoTroActivity" />
+
     </application>
 
 </manifest>

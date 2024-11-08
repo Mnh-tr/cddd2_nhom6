@@ -155,25 +155,25 @@ public class MainActivity extends AppCompatActivity {
                 if ("Kkphim".equals(name)) {
                     binding.xemThemPhimBo.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSKkphimBo)); // Chuyển danh sách phim bộ
+                       // intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSKkphimBo)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "series"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemPhimLe.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSKkphimPhimLe)); // Chuyển danh sách phim bộ
+                       // intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSKkphimPhimLe)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "movie"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemTVshow.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSKkphimTvShow)); // Chuyển danh sách phim bộ
+                       // intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSKkphimTvShow)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "tvShow"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemHoatHinh.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSKkphimHoatHinh)); // Chuyển danh sách phim bộ
+                      //  intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSKkphimHoatHinh)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "hoathinh"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
@@ -181,25 +181,25 @@ public class MainActivity extends AppCompatActivity {
                 } else if ("Ophim".equals(name)) {
                     binding.xemThemPhimBo.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSOphimBo)); // Chuyển danh sách phim bộ
+                        //intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSOphimBo)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "series"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemPhimLe.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSOphimLe)); // Chuyển danh sách phim bộ
+                       // intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSOphimLe)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "movie"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemHoatHinh.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSOphimHoatHinh)); // Chuyển danh sách phim bộ
+                      //  intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSOphimHoatHinh)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "hoathinh"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemTVshow.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSOphimTvShow)); // Chuyển danh sách phim bộ
+                      //  intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSOphimTvShow)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "tvShow"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
@@ -666,14 +666,11 @@ public class MainActivity extends AppCompatActivity {
                                         List<DSPhim> seriesKkphims = response.body().getData().getItems();
                                         // Nếu có kết quả, hiển thị kết quả tìm kiếm
                                         if (!seriesKkphims.isEmpty()) {
-                                            // Show the search results section
                                             binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerViewMovies.setVisibility(View.VISIBLE);
 
-                                            // Set up the adapter with search results
                                             binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, seriesKkphims));
                                         } else {
-                                            // If no results, hide the search results section
                                             binding.tvDanhSachTimKiem.setVisibility(View.GONE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
                                             Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
@@ -725,14 +722,11 @@ public class MainActivity extends AppCompatActivity {
                                         List<DSPhimAPiOphim> seriesOphim = response.body().getData().getItems();
                                         // Nếu có kết quả, hiển thị kết quả tìm kiếm
                                         if (!seriesOphim.isEmpty()) {
-                                            // Show the search results section
                                             binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerViewMovies.setVisibility(View.VISIBLE);
 
-                                            // Set up the adapter with search results
                                             binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, seriesOphim));
                                         } else {
-                                            // If no results, hide the search results section
                                             binding.tvDanhSachTimKiem.setVisibility(View.GONE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
                                             Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();

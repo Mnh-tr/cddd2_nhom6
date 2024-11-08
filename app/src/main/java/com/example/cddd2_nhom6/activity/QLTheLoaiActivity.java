@@ -3,6 +3,7 @@ package com.example.cddd2_nhom6.activity;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -241,5 +242,16 @@ private void deleteCategory(int position) {
         super.onDestroy();
         // Giải phóng tài nguyên của binding khi Activity bị hủy
         binding = null;
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 }

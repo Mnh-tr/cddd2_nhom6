@@ -23,4 +23,5 @@ public class DoanhThuActivity extends AppCompatActivity {
             return insets;
         });
     }
+
 }
