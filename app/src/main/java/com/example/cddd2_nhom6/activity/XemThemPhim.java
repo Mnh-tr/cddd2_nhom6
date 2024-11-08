@@ -75,23 +75,6 @@ public class XemThemPhim extends AppCompatActivity {
                 Toast.makeText(XemThemPhim.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
         }, XemThemPhim.this); // Thêm XemThemPhim.this làm Context);
-        // Tải dữ liệu ban đầu
-        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
-            @Override
-            public void onBaseUrlFetched(String name, String url) {
-                if ("Kkphim".equals(name)) {
-                    // Tải dữ liệu ban đầu
-                    loadXemThemPhimKKPhim(currentPage, type);
-                } else if ("Ophim".equals(name)) {
-                    loadXemThemPhimOPhim(currentPage, type);
-                }
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(XemThemPhim.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
-            }
-        }, XemThemPhim.this); // Thêm XemThemPhim.this làm Context);
         // Nhận danh sách và loại phim từ Intent
         List<DSPhim> receivedSeriesKkphimList = getIntent().getParcelableArrayListExtra("seriesList");
         List<DSPhim> phimLeList = getIntent().getParcelableArrayListExtra("phimLe");
@@ -203,7 +186,7 @@ public class XemThemPhim extends AppCompatActivity {
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
         Call<DSPhimResponse> call;
         switch (type) {
-            case "phimle":
+            case "movie":
                 call = apiService.getPhimLe(page);
                 break;
             case "series":
@@ -212,7 +195,7 @@ public class XemThemPhim extends AppCompatActivity {
             case "hoathinh":
                 call = apiService.getHoatHinh(page);
                 break;
-            case "tvshow":
+            case "tvShow":
                 call = apiService.getTVShow(page);
                 break;
             default:
@@ -242,40 +225,40 @@ public class XemThemPhim extends AppCompatActivity {
     private void loadXemThemPhimOPhim(int page, String type) {
         isLoading = true;
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        Call<DSPhimResponse> call;
+        Call<DSResponseOphim> call;
         switch (type) {
-            case "phimle":
-                call = apiService.getPhimLe(page);
+            case "movie":
+                call = apiService.getPhimLeOphim(page);
                 break;
             case "series":
-                call = apiService.getSeries(page);
+                call = apiService.getSeriesOphim(page);
                 break;
             case "hoathinh":
-                call = apiService.getHoatHinh(page);
+                call = apiService.getHoatHinhOphim(page);
                 break;
-            case "tvshow":
-                call = apiService.getTVShow(page);
+            case "tvShow":
+                call = apiService.getTVShowOphim(page);
                 break;
             default:
                 isLoading = false;
                 return;
         }
 
-        call.enqueue(new Callback<DSPhimResponse>() {
+        call.enqueue(new Callback<DSResponseOphim>() {
             @Override
-            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+            public void onResponse(Call<DSResponseOphim> call, Response<DSResponseOphim> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<DSPhim> newMovies = response.body().getData().getItems();
+                    List<DSPhimAPiOphim> newMovies = response.body().getData().getItems();
                     if (newMovies != null) {
-                        DSPhimXemThem.addAll(newMovies);
-                        dsPhimAdapter.notifyDataSetChanged();
+                        seriesOphimList.addAll(newMovies);
+                        seriesAdapterOphim.notifyDataSetChanged();
                     }
                 }
                 isLoading = false;
             }
 
             @Override
-            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+            public void onFailure(Call<DSResponseOphim> call, Throwable t) {
                 isLoading = false;
             }
         });

@@ -274,7 +274,7 @@ public class ChiTietPhim {
         }
 
         public boolean isChieurap() {
-            return chieurap;
+            return chieurap = false;
         }
 
         public void setChieurap(boolean chieurap) {

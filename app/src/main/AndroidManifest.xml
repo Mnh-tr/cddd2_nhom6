@@ -85,6 +85,7 @@
             android:windowSoftInputMode="adjustPan|stateHidden"/>
         <activity android:name=".activity.XemPhimTaixuongActivity" />
         <activity android:name=".activity.HoTroActivity" />
+        <activity android:name=".activity.DSHoTroActivity" />
     </application>
 
 </manifest>
