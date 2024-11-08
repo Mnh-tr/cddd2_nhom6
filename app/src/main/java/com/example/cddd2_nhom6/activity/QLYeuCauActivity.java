@@ -308,6 +308,7 @@ public class QLYeuCauActivity extends AppCompatActivity {
                 idThanhToan,
                 yeuCau.getIdUser(),
                 yeuCau.getContent(),
+                yeuCau.getPaymentDate(),
                 ngayXacNhan,
                 yeuCau.getAmount(),
                 ngayHetHan

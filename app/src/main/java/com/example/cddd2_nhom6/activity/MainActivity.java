@@ -100,6 +100,9 @@ public class MainActivity extends AppCompatActivity {
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
+
+        theoDoiThayDoiTrenFirebase();
+
         loc();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         updateUser();
@@ -235,6 +238,62 @@ public class MainActivity extends AppCompatActivity {
         }
         // Khởi tạo và chạy banner
         loaDuLieuApiKhiThayDoi();
+    }
+    private void laythongtinUser(){
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        idUser = sharedPreferences.getString("id_user", null);
+        nameUser = sharedPreferences.getString("name", null);
+        emailUser  = sharedPreferences.getString("email", null);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
+        Log.d("id_loaiND Ban đầu", String.valueOf(idLoaiND));
+
+    }
+    private void theoDoiThayDoiTrenFirebase() {
+        if (idUser != null) {
+            DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+
+            // Tìm bản ghi có id_user khớp với idUser
+            usersRef.orderByChild("id_user").equalTo(idUser).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                            // Lấy dữ liệu mới từ Firebase
+                            String newName = userSnapshot.child("name").getValue(String.class);
+                            String newEmail = userSnapshot.child("email").getValue(String.class);
+                            Integer newIdLoaiND = userSnapshot.child("id_loaiND").getValue(Integer.class);
+
+                            if (newIdLoaiND != null) {
+                                // Cập nhật lại SharedPreferences với dữ liệu mới
+                                SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putString("name", newName);
+                                editor.putString("email", newEmail);
+                                editor.putInt("id_loaiND", newIdLoaiND);
+                                editor.apply();
+
+                                // Cập nhật biến trong Activity nếu cần thiết
+                                nameUser = newName;
+                                emailUser = newEmail;
+                                idLoaiND = newIdLoaiND;
+
+                                Log.d("id_loaiND sau khi cập nhập", String.valueOf(idLoaiND));
+                            } else {
+                                Log.e("Lỗi", "Giá trị id_loaiND null");
+                            }
+                        }
+                    } else {
+                        Log.e("Lỗi", "Không tìm thấy người dùng với id_user: " + idUser);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    // Xử lý lỗi nếu cần
+                    Log.e("FirebaseError", "Không thể lắng nghe thay đổi dữ liệu.", error.toException());
+                }
+            });
+        }
     }
 
     public static void kiemTraTruyCap(String idUser) {
@@ -575,14 +634,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("TruyCap", "Lỗi khi thêm truy cập: " + e.getMessage());
                 });
     }
-    private void laythongtinUser(){
-        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        idUser = sharedPreferences.getString("id_user", null);
-        nameUser = sharedPreferences.getString("name", null);
-        emailUser  = sharedPreferences.getString("email", null);
-        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
-    }
     private void updateUser(){
         // Tham chiếu đến NavigationView
         NavigationView navigationView = findViewById(R.id.navigationView);  // Giả sử NavigationView có id là nav_view
