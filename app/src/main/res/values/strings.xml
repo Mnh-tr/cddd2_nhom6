@@ -14,6 +14,7 @@
     <string name="about">Về chúng tôi</string>
     <string name="Help">Trợ giúp</string>
     <string name="logout">Đăng xuất</string>
+    <string name="login">Đăng Nhập</string>
     <string name="admin">Admin</string>
     <string name="profile_image">Ảnh đại diện</string>
     <string-array name="genre_array">
