@@ -58,6 +58,14 @@ public class XemThemPhim extends AppCompatActivity {
         binding = ActivityXemThemPhimBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Danh sách Phim"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+        }
+
         // Nhận dữ liệu từ Intent và lưu vào một biến duy nhất
         type = getIntent().getStringExtra("type");
         Log.d("XemThemPhim", "Received type: " + type);
@@ -233,9 +241,8 @@ public class XemThemPhim extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (item.getItemId() == android.R.id.home) {
-            // Chuyển đến màn hình profile
-            Intent intent = new Intent(this, MainActivity.class); // Thay ProfileActivity bằng tên Activity profile của bạn
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             return true;
         }

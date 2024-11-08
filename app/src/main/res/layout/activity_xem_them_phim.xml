@@ -17,18 +17,6 @@
             android:layout_height="wrap_content"
             android:background="#414441"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
-
-            <ImageView
-                android:id="@+id/camera_icon"
-                android:layout_width="18dp"
-                android:layout_height="18dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Danh sách Phim"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold"/>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
     <LinearLayout
@@ -42,6 +30,7 @@
             android:id="@+id/recyclerViewMovies"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
 
     </LinearLayout>
 </FrameLayout>
