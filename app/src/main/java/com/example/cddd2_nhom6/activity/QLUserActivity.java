@@ -49,12 +49,19 @@ public class QLUserActivity extends AppCompatActivity {
     private HashMap<Long, String> loaiMap;
     private ArrayList<String> danhSachGoi;
     private boolean isLoaiNguoiDungLoaded = false;
+    // danh sách người dùng góc
+    private List<User> originalUserList;
+    private ValueEventListener userValueEventListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityQluserBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Khởi tạo các list ngay từ đầu
+        userList = new ArrayList<>();
+        originalUserList = new ArrayList<>();
 
         // Khởi tạo Firebase reference
         yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
@@ -63,12 +70,31 @@ public class QLUserActivity extends AppCompatActivity {
 
         loaiMap = new HashMap<>();
         // Cài đặt RecyclerView
-        loadLoaiNguoiDung();
+
         hienThiRecyclerView();
+        SearchEditText();
         xulyTimKiemSpiner();
+
+
+        // Xử lý sự kiện lọc theo spinner
+        binding.spinnerStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedStatus = parent.getItemAtPosition(position).toString();
+                String searchQuery = binding.searchEditText.getText().toString();
+                //filterUsersByStatus(selectedStatus);
+                filterUsers(searchQuery, selectedStatus);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Không có hành động gì khi không có lựa chọn
+            }
+        });
+        loadLoaiNguoiDung();
         laySoLuongYeuCauHomNay();
         demSoLuongUserVip();
-        loadDuLieu();
+        demSoLuongUserThuong();
 
         // Thiết lập sự kiện click cho từng item
         userAdapter.setRecyclerViewItemClickListener(new UserAdapter.OnRecyclerViewItemClickListener() {
@@ -83,19 +109,6 @@ public class QLUserActivity extends AppCompatActivity {
                 }
             }
         });
-        // Xử lý sự kiện lọc theo spinner
-        binding.spinnerStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedStatus = parent.getItemAtPosition(position).toString();
-                filterUsersByStatus(selectedStatus);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Không có hành động gì khi không có lựa chọn
-            }
-        });
         // Lấy giá trị mặc định từ Spinner và lọc dữ liệu ngay từ đầu
         String defaultStatus = binding.spinnerStatus.getSelectedItem().toString();
         filterUsersByStatus(defaultStatus);
@@ -107,6 +120,8 @@ public class QLUserActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        loadDuLieu();
     }
     private void digLogChiTietUser(User clickedUser){
         DialogUserInfoBinding dialogBinding = DialogUserInfoBinding.inflate(LayoutInflater.from(this));
@@ -164,6 +179,8 @@ public class QLUserActivity extends AppCompatActivity {
     }
 
     private void laySoLuongYeuCauHomNay() {
+        DatabaseReference yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
+
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String ngayHienTai = sdf.format(new Date());
 
@@ -177,6 +194,39 @@ public class QLUserActivity extends AppCompatActivity {
 
                 Log.d("laySoLuongYeuCauHomNay", "Số lượng yêu cầu hôm nay: " + soLuong);
                 binding.tvSLUserDangKy.setText(String.valueOf(soLuong));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(QLUserActivity.this, "Lỗi khi lấy dữ liệu", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        yeuCauRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int countChuaXuLy = 0;
+                int countDaXuLy = 0;
+
+                for (DataSnapshot yeuCauSnapshot : dataSnapshot.getChildren()) {
+                    String paymentDate = yeuCauSnapshot.child("paymentDate").getValue(String.class);
+                    Integer idTrangThai = yeuCauSnapshot.child("idTrangThai").getValue(Integer.class);
+
+                    // Kiểm tra nếu paymentDate trùng với ngày hiện tại
+                    if (paymentDate != null && paymentDate.startsWith(ngayHienTai)) {
+                        if (idTrangThai != null) {
+                            if (idTrangThai == 0) {
+                                countChuaXuLy++;
+                            } else if (idTrangThai == 1) {
+                                countDaXuLy++;
+                            }
+                        }
+                    }
+                }
+
+                // Hiển thị số lượng lên TextView
+                binding.tvSLUserChuaXL.setText(String.valueOf(countChuaXuLy));
+                binding.tvSLUserDaXL.setText(String.valueOf(countDaXuLy));
             }
 
             @Override
@@ -207,6 +257,27 @@ public class QLUserActivity extends AppCompatActivity {
         });
     }
 
+    private void demSoLuongUserThuong() {
+        usersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int countRegularUsers = 0;
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    Long idLoaiND = userSnapshot.child("id_loaiND").getValue(Long.class);
+                    if (idLoaiND != null && idLoaiND == 0) {
+                        countRegularUsers++;
+                    }
+                }
+                binding.tvSLGoiThuongDangKy.setText(String.valueOf(countRegularUsers));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(QLUserActivity.this, "Lỗi khi lấy dữ liệu", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     // Hàm để chuyển đổi timestamp sang định dạng dd/MM/yyyy
     private String convertTimestampToDate(Long timestamp) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -214,11 +285,13 @@ public class QLUserActivity extends AppCompatActivity {
     }
 
     private void loadDuLieu() {
+        // Hiển thị ProgressBar khi bắt đầu tải dữ liệu
+        binding.progressBar.setVisibility(View.VISIBLE);
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 userList.clear();
-
+                originalUserList = new ArrayList<>();
                 for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                     String id_user = userSnapshot.child("id_user").getValue(String.class);
                     String name = userSnapshot.child("name").getValue(String.class);
@@ -228,21 +301,31 @@ public class QLUserActivity extends AppCompatActivity {
                     String email = userSnapshot.child("email").getValue(String.class);
                     String firebaseKey = userSnapshot.getKey();
                     // Lấy `type` từ `loaiMap` dựa trên `idLoaiND`, nếu không có thì gán là "Thường"
-                    String goi = loaiMap.getOrDefault(idLoaiND, "Thường");
+                    String goi = loaiMap.getOrDefault(idLoaiND, "Loading...");
 
+                    Log.d("kiểm tra gói", "gói ở ql user: " + goi);
                     if (status == null) status = "offline";
-                    userList.add(new User(firebaseKey,id_user, name, status, goi,idLoaiND, createdAt, email));
+                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email);
+                    userList.add(user);
+                    originalUserList.add(user);
+
                 }
+
                 // Áp dụng bộ lọc ngay khi dữ liệu đã load
+                String searchQuery = binding.searchEditText.getText().toString();
                 String selectedStatus = binding.spinnerStatus.getSelectedItem().toString();
-                filterUsersByStatus(selectedStatus);
+                //filterUsersByStatus(selectedStatus);
+                filterUsers(searchQuery, selectedStatus);
                 // Thông báo cho adapter rằng dữ liệu đã thay đổi
                 userAdapter.notifyDataSetChanged();
+                // Ẩn ProgressBar sau khi dữ liệu đã tải xong
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(QLUserActivity.this, "Lỗi khi lấy dữ liệu", Toast.LENGTH_SHORT).show();
+                binding.progressBar.setVisibility(View.GONE);
             }
         });
     }
@@ -300,4 +383,44 @@ public class QLUserActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerStatus.setAdapter(adapter);
     }
+
+    private void SearchEditText() {
+        binding.searchEditText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                if (originalUserList != null) { // Thêm kiểm tra null
+                    filterUsers(s.toString(), binding.spinnerStatus.getSelectedItem().toString());
+                }
+            }
+        });
+    }
+    private void filterUsers(String searchQuery, String statusFilter) {
+        if (originalUserList == null) return; // Thêm kiểm tra null
+
+        List<User> filteredList = new ArrayList<>();
+        searchQuery = searchQuery.toLowerCase().trim();
+
+        for (User user : originalUserList) {
+            boolean matchesSearch = searchQuery.isEmpty() ||
+                    user.getName().toLowerCase().contains(searchQuery) ||
+                    user.getEmail().toLowerCase().contains(searchQuery) ||
+                    user.getId_user().toLowerCase().contains(searchQuery);
+
+            boolean matchesStatus = statusFilter.equals("All") ||
+                    user.getStatus().equalsIgnoreCase(statusFilter);
+
+            if (matchesSearch && matchesStatus) {
+                filteredList.add(user);
+            }
+        }
+
+        userAdapter.updateData(filteredList);
+    }
+
 }

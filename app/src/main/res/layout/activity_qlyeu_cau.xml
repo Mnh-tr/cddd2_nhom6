@@ -99,43 +99,48 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginHorizontal="16dp">
+        android:layout_marginHorizontal="5dp">
 
         <!-- Radio buttons cho các bộ lọc thời gian -->
         <RadioGroup
             android:id="@+id/radioGroupTimeFilter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:orientation="horizontal">
 
             <RadioButton
                 android:id="@+id/radioToday"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:text="Hôm nay" />
 
             <RadioButton
                 android:id="@+id/radio7Days"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:text="7 ngày" />
 
             <RadioButton
                 android:id="@+id/radio1Month"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:text="1 tháng" />
 
             <RadioButton
                 android:id="@+id/radio1Year"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:text="1 năm" />
 
             <RadioButton
                 android:id="@+id/radioAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:text="All" />
         </RadioGroup>
     </LinearLayout>

@@ -42,7 +42,7 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
         holder.binding.tvTitle.setText(thongBao.getTitle());
         holder.binding.tvTime.setText(thongBao.getTime());
         holder.binding.tvContent.setText(thongBao.getContent());
-        holder.binding.imgIcon.setImageResource(R.drawable.ic_notification); // Cài đặt icon tạm thời
+        holder.binding.imgIcon.setImageResource(R.drawable.baseline_message_24); // Cài đặt icon tạm thời
 
         /// Luu Position mới cho Holder
         final int pos = position;

@@ -1,7 +1,9 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,13 +12,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.DSPhimAdapter;
+import com.example.cddd2_nhom6.adapter.DSPhimAdapterOphim;
 import com.example.cddd2_nhom6.adapter.PhimAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityXemThemPhimBinding;
 import com.example.cddd2_nhom6.model.DSPhim;
+import com.example.cddd2_nhom6.model.DSPhimAPiOphim;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
+import com.example.cddd2_nhom6.response.DSResponseOphim;
 import com.example.cddd2_nhom6.response.PhimResponse;
 
 import java.util.ArrayList;
@@ -31,9 +36,10 @@ public class XemThemPhim extends AppCompatActivity {
     private int currentPage = 1; // Trang hiện tại
     private String type;
     private List<DSPhim> DSPhimXemThem;
-    private List<Phim> PhimXemThem;
     private DSPhimAdapter dsPhimAdapter;
-    private PhimAdapter phimAdapter;
+    private DSPhimAdapterOphim seriesAdapterOphim;
+    private List<DSPhimAPiOphim> seriesOphimList;
+    ;
     private boolean isLoading = false;
 
 
@@ -46,21 +52,112 @@ public class XemThemPhim extends AppCompatActivity {
         // Nhận dữ liệu từ Intent và lưu vào một biến duy nhất
         type = getIntent().getStringExtra("type");
         Log.d("XemThemPhim", "Received type: " + type);
-
+        // Khởi tạo các danh sách và adapter
         DSPhimXemThem = new ArrayList<>();
-        PhimXemThem = new ArrayList<>();
-        if ("moinhat".equals(type)) {
-            phimAdapter = new PhimAdapter(this, PhimXemThem); // Adapter cho phim mới nhất
-            binding.recyclerViewMovies.setAdapter(phimAdapter); // Sử dụng phimAdapter
-        } else {
-            dsPhimAdapter = new DSPhimAdapter(this, DSPhimXemThem); // Adapter cho các loại phim khác
-            binding.recyclerViewMovies.setAdapter(dsPhimAdapter); // Sử dụng dsPhimAdapter
-        }
+        dsPhimAdapter = new DSPhimAdapter(this, DSPhimXemThem);
+        seriesOphimList = new ArrayList<>();
+        seriesAdapterOphim = new DSPhimAdapterOphim(this, seriesOphimList);
         binding.recyclerViewMovies.setLayoutManager(new GridLayoutManager(this, 3));
+        // Tải dữ liệu ban đầu
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            @Override
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Tải dữ liệu ban đầu
+                    binding.recyclerViewMovies.setAdapter(dsPhimAdapter);
+                } else if ("Ophim".equals(name)) {
+                    binding.recyclerViewMovies.setAdapter(seriesAdapterOphim);
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(XemThemPhim.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, XemThemPhim.this); // Thêm XemThemPhim.this làm Context);
+        // Tải dữ liệu ban đầu
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            @Override
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Tải dữ liệu ban đầu
+                    loadXemThemPhimKKPhim(currentPage, type);
+                } else if ("Ophim".equals(name)) {
+                    loadXemThemPhimOPhim(currentPage, type);
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(XemThemPhim.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, XemThemPhim.this); // Thêm XemThemPhim.this làm Context);
+        // Nhận danh sách và loại phim từ Intent
+        List<DSPhim> receivedSeriesKkphimList = getIntent().getParcelableArrayListExtra("seriesList");
+        List<DSPhim> phimLeList = getIntent().getParcelableArrayListExtra("phimLe");
+        List<DSPhim> tvShowList = getIntent().getParcelableArrayListExtra("tVshow");
+        List<DSPhim> phimHoatHinhList = getIntent().getParcelableArrayListExtra("hoatHinh");
+        // Nhận danh sách và loại phim từ Intent
+        List<DSPhimAPiOphim> receivedSeriesOphimList = getIntent().getParcelableArrayListExtra("seriesList");
+        List<DSPhimAPiOphim> phimLeOphimList = getIntent().getParcelableArrayListExtra("phimLe");
+        List<DSPhimAPiOphim> tvShowOphimList = getIntent().getParcelableArrayListExtra("tVshow");
+        List<DSPhimAPiOphim> phimHoatHinhOphimList = getIntent().getParcelableArrayListExtra("hoatHinh");
 
         // Tải dữ liệu ban đầu
-        loadXemThemPhim(currentPage, type);
+        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            @Override
+            public void onBaseUrlFetched(String name, String url) {
+                if ("Kkphim".equals(name)) {
+                    // Tải dữ liệu ban đầu
+                    // Cập nhật dữ liệu dựa trên loại phim
+                    if ("series".equals(type) && receivedSeriesKkphimList != null) {
+                        DSPhimXemThem.addAll(receivedSeriesKkphimList);
+                        dsPhimAdapter.notifyDataSetChanged(); // Cập nhật cho phim bộ
+                        setTitle("Danh Sách Phim Bộ");
+                    } else if ("movie".equals(type) && phimLeList != null) {
+                        DSPhimXemThem.addAll(phimLeList);
+                        dsPhimAdapter.notifyDataSetChanged(); // Cập nhật cho phim lẻ
+                        setTitle("Danh Sách Phim Lẻ");
+                    } else if ("hoathinh".equals(type) && phimHoatHinhList != null) {
+                        DSPhimXemThem.addAll(phimHoatHinhList);
+                        dsPhimAdapter.notifyDataSetChanged(); // Cập nhật cho phim hoạt hình
+                        setTitle("Danh Sách Phim Hoạt Hình");
+                    } else if (tvShowList != null) { // Chỉ cần kiểm tra tvShowList
+                        DSPhimXemThem.addAll(tvShowList);
+                        dsPhimAdapter.notifyDataSetChanged(); // Cập nhật cho chương trình truyền hình
+                        setTitle("Danh Sách TV Show");
+                    } else {
+                        Log.e("AllMovieActivity", "All lists are null!");
+                    }
+                } else if ("Ophim".equals(name)) {
+                    // Cập nhật dữ liệu dựa trên loại phim
+                    if ("series".equals(type) && receivedSeriesOphimList != null) {
+                        seriesOphimList.addAll(receivedSeriesOphimList);
+                        seriesAdapterOphim.notifyDataSetChanged(); // Cập nhật cho phim bộ
+                        setTitle("Danh Sách Phim Bộ");
+                    } else if ("movie".equals(type) && phimLeOphimList != null) {
+                        seriesOphimList.addAll(phimLeOphimList);
+                        seriesAdapterOphim.notifyDataSetChanged(); // Cập nhật cho phim lẻ
+                        setTitle("Danh Sách Phim Lẻ");
+                    } else if ("hoathinh".equals(type) && phimHoatHinhOphimList != null) {
+                        seriesOphimList.addAll(phimHoatHinhOphimList);
+                        seriesAdapterOphim.notifyDataSetChanged(); // Cập nhật cho phim hoạt hình
+                        setTitle("Danh Sách Phim Hoạt Hình");
+                    } else if (tvShowList != null) { // Chỉ cần kiểm tra tvShowList
+                        seriesOphimList.addAll(tvShowOphimList);
+                        seriesAdapterOphim.notifyDataSetChanged(); // Cập nhật cho chương trình truyền hình
+                        setTitle("Danh Sách TV Show");
+                    } else {
+                        Log.e("AllMovieActivity", "All lists are null!");
+                    }
+                }
+            }
 
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(XemThemPhim.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, XemThemPhim.this); // Thêm XemThemPhim.this làm Context);
         // Thêm listener cuộn để tải thêm dữ liệu khi đến cuối danh sách
         binding.recyclerViewMovies.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -79,74 +176,109 @@ public class XemThemPhim extends AppCompatActivity {
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
                             && firstVisibleItemPosition >= 0) {
                         currentPage++;
-                        loadXemThemPhim(currentPage, type);
+                        ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+                            @Override
+                            public void onBaseUrlFetched(String name, String url) {
+                                if ("Kkphim".equals(name)) {
+                                    // Tải dữ liệu ban đầu
+                                    loadXemThemPhimKKPhim(currentPage, type);
+                                } else if ("Ophim".equals(name)) {
+                                    loadXemThemPhimOPhim(currentPage, type);
+                                }
+                            }
+
+                            @Override
+                            public void onError(String errorMessage) {
+                                Toast.makeText(XemThemPhim.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+                            }
+                        }, XemThemPhim.this); // Thêm XemThemPhim.this làm Context);
                     }
                 }
             }
         });
     }
 
-    private void loadXemThemPhim(int page, String type) {
+    private void loadXemThemPhimKKPhim(int page, String type) {
         isLoading = true;
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        if ("moinhat".equals(type)) {
-            Call<PhimResponse> call = apiService.getMovies(page);
-            call.enqueue(new Callback<PhimResponse>() {
-                @Override
-                public void onResponse(Call<PhimResponse> call, Response<PhimResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        List<Phim> newMovies = response.body().getItems();
-                        if (newMovies != null) {
-                            PhimXemThem.addAll(newMovies);
-                            phimAdapter.notifyDataSetChanged();
-                        }
-                    }
-                    isLoading = false;
-                }
+        Call<DSPhimResponse> call;
+        switch (type) {
+            case "phimle":
+                call = apiService.getPhimLe(page);
+                break;
+            case "series":
+                call = apiService.getSeries(page);
+                break;
+            case "hoathinh":
+                call = apiService.getHoatHinh(page);
+                break;
+            case "tvshow":
+                call = apiService.getTVShow(page);
+                break;
+            default:
+                isLoading = false;
+                return;
+        }
 
-                @Override
-                public void onFailure(Call<PhimResponse> call, Throwable t) {
-                    isLoading = false;
+        call.enqueue(new Callback<DSPhimResponse>() {
+            @Override
+            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<DSPhim> newMovies = response.body().getData().getItems();
+                    if (newMovies != null) {
+                        DSPhimXemThem.addAll(newMovies);
+                        dsPhimAdapter.notifyDataSetChanged();
+                    }
                 }
-            });
-        } else {
-            Call<DSPhimResponse> call;
-            switch (type) {
-                case "phimle":
-                    call = apiService.getPhimLe(page);
-                    break;
-                case "series":
-                    call = apiService.getSeries(page);
-                    break;
-                case "hoathinh":
-                    call = apiService.getHoatHinh(page);
-                    break;
-                case "tvshow":
-                    call = apiService.getTVShow(page);
-                    break;
-                default:
-                    isLoading = false;
-                    return;
+                isLoading = false;
             }
 
-            call.enqueue(new Callback<DSPhimResponse>() {
-                @Override
-                public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        List<DSPhim> newMovies = response.body().getData().getItems();
-                        if (newMovies != null) {
-                            DSPhimXemThem.addAll(newMovies);
-                            dsPhimAdapter.notifyDataSetChanged();
-                        }
-                    }
-                    isLoading = false;
-                }
-
-                @Override
-                public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                    isLoading = false;
-                }
-            });
+            @Override
+            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                isLoading = false;
+            }
+        });
+    }
+    private void loadXemThemPhimOPhim(int page, String type) {
+        isLoading = true;
+        ApiService apiService = ApiClient.getClient().create(ApiService.class);
+        Call<DSPhimResponse> call;
+        switch (type) {
+            case "phimle":
+                call = apiService.getPhimLe(page);
+                break;
+            case "series":
+                call = apiService.getSeries(page);
+                break;
+            case "hoathinh":
+                call = apiService.getHoatHinh(page);
+                break;
+            case "tvshow":
+                call = apiService.getTVShow(page);
+                break;
+            default:
+                isLoading = false;
+                return;
         }
+
+        call.enqueue(new Callback<DSPhimResponse>() {
+            @Override
+            public void onResponse(Call<DSPhimResponse> call, Response<DSPhimResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<DSPhim> newMovies = response.body().getData().getItems();
+                    if (newMovies != null) {
+                        DSPhimXemThem.addAll(newMovies);
+                        dsPhimAdapter.notifyDataSetChanged();
+                    }
+                }
+                isLoading = false;
+            }
+
+            @Override
+            public void onFailure(Call<DSPhimResponse> call, Throwable t) {
+                isLoading = false;
+            }
+        });
     }
 }
+

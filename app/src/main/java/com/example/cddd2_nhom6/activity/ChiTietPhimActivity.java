@@ -98,7 +98,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         tinhTrungBinhDanhGia(movieSlug);
     }
     public void tinhTrungBinhDanhGia(String movieSlug) {
-        ratingsRef.child(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
+        ratingsRef.child(movieSlug).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 int totalRatings = 0;
@@ -113,11 +113,11 @@ public class ChiTietPhimActivity extends AppCompatActivity {
                 if (totalRatings > 0) {
                     float averageRating = sumRatings / totalRatings;
                     // Cập nhật giao diện với tổng số đánh giá và trung bình sao
-                    binding.tvAverageRating.setText("( " + averageRating + " điểm / " + totalRatings + " lượt)");
+                    binding.tvAverageRating.setText("( " + averageRating + " / " + totalRatings + " lượt)");
                     binding.ratingBar.setRating(averageRating);
                     binding.ratingBar.setIsIndicator(true);
                 } else {
-                    binding.tvAverageRating.setText("( 0 điểm / 0 lượt )");
+                    binding.tvAverageRating.setText("( 0 / 0 lượt )");
                     binding.ratingBar.setRating(0); // Reset ratingBar nếu không có đánh giá
                     binding.ratingBar.setIsIndicator(true);
                 }

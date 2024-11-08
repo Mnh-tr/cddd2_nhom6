@@ -1,8 +1,12 @@
 package com.example.cddd2_nhom6.model;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
 
 import java.util.List;
 
-public class DSPhim {
+public class DSPhim implements Parcelable {
     private String _id;
     private String name;
     private String slug;
@@ -19,6 +23,31 @@ public class DSPhim {
     private List<Category> category;
     private List<Country> country;
 
+    protected DSPhim(Parcel in) {
+        _id = in.readString();
+        name = in.readString();
+        slug = in.readString();
+        origin_name = in.readString();
+        poster_url = in.readString();
+        thumb_url = in.readString();
+        episode_current = in.readString();
+        quality = in.readString();
+        lang = in.readString();
+        year = in.readInt();
+    }
+
+    public static final Creator<DSPhim> CREATOR = new Creator<DSPhim>() {
+        @Override
+        public DSPhim createFromParcel(Parcel in) {
+            return new DSPhim(in);
+        }
+
+        @Override
+        public DSPhim[] newArray(int size) {
+            return new DSPhim[size];
+        }
+    };
+
     public String getSlug() {
         return slug;
     }
@@ -29,6 +58,26 @@ public class DSPhim {
 
     public List<Country> getCountry() {
         return country;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int i) {
+
+        parcel.writeString(_id);
+        parcel.writeString(name);
+        parcel.writeString(slug);
+        parcel.writeString(origin_name);
+        parcel.writeString(poster_url);
+        parcel.writeString(thumb_url);
+        parcel.writeString(episode_current);
+        parcel.writeString(quality);
+        parcel.writeString(lang);
+        parcel.writeInt(year);
     }
 
     public static class Modified {

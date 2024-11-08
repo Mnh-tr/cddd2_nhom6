@@ -1,7 +1,10 @@
 package com.example.cddd2_nhom6.adapter;
 
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,14 +47,22 @@ public class YeuCauAdapter extends RecyclerView.Adapter<YeuCauAdapter.YeuCauView
     public void onBindViewHolder(@NonNull YeuCauViewHolder holder, int position) {
         YeuCau yeuCau = yeuCauList.get(position);
         holder.bind(yeuCau);
-
+        Resources resources = holder.itemView.getResources();
         // Đổi màu trạng thái: cam nếu chưa xử lý, xanh nếu đã xử lý
         if (yeuCau.getIdTrangThai() == 0) {
             holder.binding.tvTrangThai.setText("Chưa xử lý");
-            holder.binding.tvTrangThai.setTextColor(holder.itemView.getResources().getColor(R.color.orange));
+            holder.binding.tvTrangThai.setBackgroundResource(R.drawable.status_pending_background);
+            holder.binding.tvTrangThai.setTextColor(resources.getColor(R.color.status_pending_text));
+
+            // Thêm hiệu ứng rung nhẹ để thu hút sự chú ý
+            Animation shake = AnimationUtils.loadAnimation(holder.itemView.getContext(), R.anim.shake_animation);
+            holder.binding.tvTrangThai.startAnimation(shake);
         } else {
             holder.binding.tvTrangThai.setText("Đã xử lý");
-            holder.binding.tvTrangThai.setTextColor(holder.itemView.getResources().getColor(R.color.green));
+            holder.binding.tvTrangThai.setBackgroundResource(R.drawable.status_completed_background);
+            holder.binding.tvTrangThai.setTextColor(resources.getColor(R.color.status_completed_text));
+
+            holder.binding.tvTrangThai.clearAnimation();
         }
         // Lưu vị trí mới cho Holder
         final int pos = position;
