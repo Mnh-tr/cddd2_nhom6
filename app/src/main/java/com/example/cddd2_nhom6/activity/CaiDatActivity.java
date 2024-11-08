@@ -7,14 +7,18 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityCaiDatBinding;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class CaiDatActivity extends AppCompatActivity {
     private ActivityCaiDatBinding binding;
@@ -27,11 +31,9 @@ public class CaiDatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityCaiDatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-
-
         setEvent();
-
+        checkAdminStatus();
+        kiemTraDangNhap();
     }
     public void setEvent(){
         laythongtinUser();
@@ -57,29 +59,26 @@ public class CaiDatActivity extends AppCompatActivity {
                 startActivity(a);
             }
         });
-        binding.ivdangxuat.setOnClickListener(new View.OnClickListener() {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        binding.ivdangxuat.setOnClickListener(view -> dangXuat());
+        binding.admin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Lấy ID người dùng
-                String userId = user.getUid();
-                DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("status");
-                MainActivity.truycap = false;
-                // Đặt trạng thái là "offline"
-                userStatusRef.setValue("offline");
-                FirebaseAuth.getInstance().signOut();
-                SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.clear(); // Xóa tất cả thông tin
-                editor.apply();
-                Intent intent = new Intent(CaiDatActivity.this, MainActivity.class);
+                Intent intent = new Intent(CaiDatActivity.this, AdminActivity.class );
                 startActivity(intent);
-                finish();
-                Toast.makeText(CaiDatActivity.this, "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
             }
         });
-
-
+    }
+    private void kiemTraDangNhap(){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Người dùng đã đăng nhập
+            binding.ivdangxuat.setText(R.string.logout);
+            binding.ivdangxuat.setOnClickListener(view -> dangXuat());
+        } else {
+            // Người dùng chưa đăng nhập
+            binding.ivdangxuat.setText(R.string.login);
+            binding.ivdangxuat.setOnClickListener(view -> dangNhap());
+        }
     }
     private void laythongtinUser(){
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -88,6 +87,70 @@ public class CaiDatActivity extends AppCompatActivity {
         emailUser  = sharedPreferences.getString("email", null);
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
+    }
+    private void checkAdminStatus() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
+
+            // Lấy id_loaiND của người dùng
+            userRef.child("id_loaiND").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    Integer idLoaiND = snapshot.getValue(Integer.class);
+
+                    // Kiểm tra nếu người dùng là admin
+                    if (idLoaiND != null && idLoaiND == 2) {
+                        binding.cvDangXuat.setVisibility(View.VISIBLE); // Hiển thị nút admin
+                    } else {
+                        binding.cvDangXuat.setVisibility(View.GONE); // Ẩn nút admin
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    // Xử lý lỗi nếu có
+                }
+            });
+        } else {
+            binding.cvDangXuat.setVisibility(View.GONE); // Ẩn nút admin khi người dùng không tồn tại
+        }
+    }
+    private void dangXuat() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("status");
+
+            // Đặt trạng thái là "offline" trong Firebase Database
+            userStatusRef.setValue("offline").addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    // Thực hiện đăng xuất khỏi Firebase Auth
+                    FirebaseAuth.getInstance().signOut();
+
+                    // Xóa thông tin trong SharedPreferences
+                    SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.clear(); // Xóa tất cả dữ liệu trong SharedPreferences
+                    editor.apply();
+
+                    // Chuyển người dùng về MainActivity
+                    Intent intent = new Intent(CaiDatActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish(); // Đóng CaiDatActivity
+
+                    Toast.makeText(CaiDatActivity.this, "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(CaiDatActivity.this, "Đăng xuất thất bại, vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+    private void dangNhap() {
+        // Chuyển đến màn hình đăng nhập
+        Intent intent = new Intent(CaiDatActivity.this, DangNhapActivity.class);
+        startActivity(intent);
     }
     @Override
     protected void onResume() {

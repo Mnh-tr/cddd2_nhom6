@@ -84,6 +84,10 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:windowSoftInputMode="adjustPan|stateHidden"/>
         <activity android:name=".activity.XemPhimTaixuongActivity" />
+        <activity android:name=".activity.DSHoTroActivity" />
+        <activity android:name=".activity.HoTroActivity" />
+        <activity android:name=".activity.QLHoTroActivity" />
+        <activity android:name=".activity.QLTheLoaiActivity"/>
         <activity android:name=".activity.HoTroActivity" />
         <activity android:name=".activity.DSHoTroActivity" />
     </application>
