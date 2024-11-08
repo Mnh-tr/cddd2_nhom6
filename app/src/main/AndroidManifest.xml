@@ -71,6 +71,10 @@
         <activity android:name=".activity.ThongBaoActivity" />
         <activity android:name=".activity.TaiPhimActivity" />
         <activity android:name=".activity.XemPhimTaixuongActivity" />
+        <activity android:name=".activity.DSHoTroActivity" />
+        <activity android:name=".activity.HoTroActivity" />
+        <activity android:name=".activity.QLHoTroActivity" />
+        <activity android:name=".activity.QLTheLoaiActivity"/>
     </application>
 
 </manifest>
