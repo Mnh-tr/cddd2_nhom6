@@ -59,7 +59,7 @@ public class CaNhanActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        
         // Initialize Data Binding
         binding = ActivityCanhanBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());

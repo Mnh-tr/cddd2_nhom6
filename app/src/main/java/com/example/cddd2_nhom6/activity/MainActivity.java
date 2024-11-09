@@ -37,6 +37,7 @@ import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.DSPhimAPiOphim;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.model.PhimAPiOphim;
+import com.example.cddd2_nhom6.model.QLPhim;
 import com.example.cddd2_nhom6.model.ThongBaoKhiUngDungTat;
 import com.example.cddd2_nhom6.model.ThongBaoTrenManHinh;
 import com.example.cddd2_nhom6.model.TruyCap;
@@ -91,6 +92,10 @@ public class MainActivity extends AppCompatActivity {
     private String theLoaiSlug = null;
     private String quocGiaSlug = null;
     private boolean doubleBackToExitPressedOnce = false;
+
+    private PhimAdapter phimAdapter;
+    private DatabaseReference movieRef;
+    private List<QLPhim> movieList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -132,9 +137,21 @@ public class MainActivity extends AppCompatActivity {
             loadTVShow();// Tải lại danh sách tvshow
             loadPhimLe();
             loadPhimHoatHinh();
+            fetchMoviesFromFirebase();
             binding.tvDanhSachTimKiem.setVisibility(View.GONE);
             binding.recyclerViewMovies.setVisibility(View.GONE);
         });
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        movieRef = database.getReference("movies"); // Đây là nơi lưu trữ thông tin phim trên Firebase
+
+        // Khởi tạo movieList và RecyclerView
+        movieList = new ArrayList<>();
+        phimAdapter = new PhimAdapter(this, movieList);
+        binding.recyclerViewphim.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerViewphim.setAdapter(phimAdapter);
+        // Load phim từ Firebase
+        fetchMoviesFromFirebase();
 
         apiService = ApiClient.getClient().create(ApiService.class);
         // Khởi tạo danh sách phim
@@ -801,7 +818,35 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerViewtvShow.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recyclerViewphimle.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recyclerViewphimhoathinh.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.recyclerViewphim.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
     }
+    private void fetchMoviesFromFirebase() {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Movies");
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                movieList.clear(); // Xóa dữ liệu cũ (nếu có)
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    // Lấy dữ liệu từ snapshot
+                    QLPhim movie = snapshot.getValue(QLPhim.class);
+                    if (movie != null) {
+                        // Kiểm tra và thêm vào danh sách
+                        movieList.add(movie);
+                    }
+                }
+                // Cập nhật RecyclerView sau khi có dữ liệu
+                phimAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("MainActivity", "Failed to fetch data", databaseError.toException());
+            }
+        });
+    }
+
+
     private void loadSeries() {
         int page = 1;
 

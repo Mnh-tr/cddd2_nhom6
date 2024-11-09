@@ -32,7 +32,7 @@ public class TaiPhimActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+
         // Khởi tạo binding
         binding = ActivityDownLoadBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
