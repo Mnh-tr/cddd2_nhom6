@@ -63,7 +63,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
         // Cài đặt RecyclerView
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new QLPhimAdapter(this, phimList, kieuPhimList, goiList, selectedCount -> {
+        adapter = new QLPhimAdapter(this, phimList, goiList, selectedCount -> {
             if (selectedCount > 0) {
                 binding.deleteIcon.setVisibility(View.VISIBLE); // Hiển thị icon xóa nếu có phim được chọn
             } else {
@@ -85,6 +85,15 @@ public class QLPhimActivity extends AppCompatActivity {
     }
 
     private void xulyButton() {
+
+        binding.ivThoat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(QLPhimActivity.this, AdminActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         binding.btnAddPhim.setOnClickListener(new View.OnClickListener() {
             @Override

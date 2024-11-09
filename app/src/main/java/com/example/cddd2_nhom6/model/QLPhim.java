@@ -17,20 +17,14 @@ public class QLPhim {
     private String dienVien; // Diễn viên
     private String quocGia; // Quốc gia
     private float rating; // Đánh giá
-    private int id_kieuPhim; // ID kiểu phim
     private String ngayThemPhim; // Ngày thêm phim
     private String ngayCapNhat; // Ngày cập nhật phim
     private String movieUrl; // URL video phim
-    private String slug;
-
-    public String getSlug() {
-        return slug;
-    }
 
     // Constructor có tham số
     public QLPhim(String id_movie, String name, String content, String poster_url, String thumb_url,
                 String goi, String time, String year, String tacGia, String theLoai, String dienVien,
-                String quocGia, float rating, int id_kieuPhim, String ngayThemPhim, String ngayCapNhat,
+                String quocGia, float rating, String ngayThemPhim, String ngayCapNhat,
                 String movieUrl) {
         this.id_movie = id_movie;
         this.name = name;
@@ -45,7 +39,6 @@ public class QLPhim {
         this.dienVien = dienVien;
         this.quocGia = quocGia;
         this.rating = rating;
-        this.id_kieuPhim = id_kieuPhim;
         this.ngayThemPhim = ngayThemPhim;
         this.ngayCapNhat = ngayCapNhat;
         this.movieUrl = movieUrl; // Thêm movieUrl vào constructor
@@ -66,7 +59,6 @@ public class QLPhim {
         this.dienVien = "";
         this.quocGia = "";
         this.rating = 0.0f;
-        this.id_kieuPhim = 0;
         this.ngayThemPhim = "";
         this.ngayCapNhat = "";
         this.movieUrl = ""; // Khởi tạo movieUrl
@@ -175,14 +167,6 @@ public class QLPhim {
 
     public void setRating(float rating) {
         this.rating = rating;
-    }
-
-    public int getId_kieuPhim() {
-        return id_kieuPhim;
-    }
-
-    public void setId_kieuPhim(int id_kieuPhim) {
-        this.id_kieuPhim = id_kieuPhim;
     }
 
     public String getNgayThemPhim() {

@@ -40,6 +40,7 @@
     <color name="background_color">#F5F7FA</color>
     <color name="chip_background_color">#E0E0E0</color>
 
+    <color name="primary">#1E88E5</color>
 
     <!-- Màu nền của gói user-->
     <color name="normal_bg">#2D2D2D</color>

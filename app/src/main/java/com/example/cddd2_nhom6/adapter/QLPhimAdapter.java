@@ -22,7 +22,6 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
 
     private Context context;
     private List<QLPhim> phimList;
-    private List<KieuPhim> kieuPhimList;
     private List<Goi> goiList;
     private List<QLPhim> selectedMovies = new ArrayList<>(); // Danh sách phim được chọn
     private boolean multiSelectMode = false;
@@ -39,10 +38,9 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
     }
 
     // Constructor
-    public QLPhimAdapter(Context context, List<QLPhim> phimList, List<KieuPhim> kieuPhimList, List<Goi> goiList, OnMovieSelectListener onMovieSelectListener) {
+    public QLPhimAdapter(Context context, List<QLPhim> phimList,  List<Goi> goiList, OnMovieSelectListener onMovieSelectListener) {
         this.context = context;
         this.phimList = phimList;
-        this.kieuPhimList = kieuPhimList;
         this.goiList = goiList;
         this.onMovieSelectListener = onMovieSelectListener;
     }

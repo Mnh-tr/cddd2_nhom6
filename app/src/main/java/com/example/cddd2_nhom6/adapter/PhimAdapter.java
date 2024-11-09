@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.cddd2_nhom6.activity.ChiTietPhimActivity;
+import com.example.cddd2_nhom6.activity.ChiTietPhimFirebaseActivity;
 import com.example.cddd2_nhom6.databinding.ItemPhimBinding;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.model.QLPhim;
@@ -47,15 +48,15 @@ public class PhimAdapter extends RecyclerView.Adapter<PhimAdapter.PhimViewHolder
                 .into(holder.binding.moviePoster);
 
         // Bắt sự kiện click vào item
-//        holder.itemView.setOnClickListener(v -> {
-//            // Lấy slug của phim từ item
-//            String movieSlug = movie.getSlug();
-//
-//            // Tạo Intent để chuyển đến ChiTietPhimActivity
-//            Intent intent = new Intent(holder.itemView.getContext(), ChiTietPhimActivity.class);
-//            intent.putExtra("slug", movieSlug); // Truyền slug phim cho ChiTietPhimActivity
-//            holder.itemView.getContext().startActivity(intent);
-//        });
+        holder.itemView.setOnClickListener(v -> {
+            // Lấy slug của phim từ item
+            String movieSlug = movie.getId_movie();
+
+            // Tạo Intent để chuyển đến ChiTietPhimActivity
+            Intent intent = new Intent(holder.itemView.getContext(), ChiTietPhimFirebaseActivity.class);
+            intent.putExtra("slug", movieSlug); // Truyền slug phim cho ChiTietPhimActivity
+            holder.itemView.getContext().startActivity(intent);
+        });
     }
 
     @Override
