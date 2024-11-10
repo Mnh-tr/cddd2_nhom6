@@ -81,16 +81,72 @@
                             android:orientation="vertical"
                             android:padding="10dp">
 
-                            <TextView
-                                android:id="@+id/tvDanhSachTimKiem"
+                            <LinearLayout
+                                android:id="@+id/dsPhim"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:background="@drawable/border_title"
+                                android:orientation="horizontal"
                                 android:padding="7dp"
-                                android:text="Danh Sách phim"
-                                android:textColor="@color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
+                                android:visibility="gone">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Danh Sách Phim"
+                                    android:textColor="@color/white"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="end"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/xemThemBoLoc"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center_vertical"
+                                        android:clickable="true"
+                                        android:focusable="true"
+                                        android:text="Xem thêm"
+                                        android:textColor="@color/white"
+                                        android:textSize="16sp" />
+
+                                    <ImageView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_marginStart="4dp"
+                                        android:src="@drawable/ic_right_24" />
+
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/dsPhimTimKiem"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/border_title"
+                                android:orientation="horizontal"
+                                android:padding="7dp"
+                                android:visibility="gone">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Danh Sách Phim"
+                                    android:textColor="@color/white"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/recyclerTimKiem"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
                                 android:visibility="gone" />
 
                             <androidx.recyclerview.widget.RecyclerView

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -50,6 +51,8 @@ public class XemThemPhim extends AppCompatActivity {
     ;
     private boolean isLoading = false;
     private ApiService apiService;
+    private String theloai;
+    private String quocgia;
 
 
     @Override
@@ -68,7 +71,10 @@ public class XemThemPhim extends AppCompatActivity {
 
         // Nhận dữ liệu từ Intent và lưu vào một biến duy nhất
         type = getIntent().getStringExtra("type");
-        Log.d("XemThemPhim", "Received type: " + type);
+        theloai = getIntent().getStringExtra("theloai");
+        quocgia = getIntent().getStringExtra("quocgia");
+        Log.d("XemThemPhim", "Received type: " + theloai);
+        Log.d("XemThemPhim", "Received type: " + quocgia);
         // Khởi tạo các danh sách và adapter
         DSPhimXemThem = new ArrayList<>();
         dsPhimAdapter = new DSPhimAdapter(this, DSPhimXemThem);
@@ -100,9 +106,9 @@ public class XemThemPhim extends AppCompatActivity {
             @Override
             public void onBaseUrlFetched(String name, String url) {
                 if ("Kkphim".equals(name)) {
-                    loadXemThemPhimKKPhim(currentPage, type);
+                    loadXemThemPhimKKPhim(currentPage, type, theloai, quocgia);
                 } else if ("Ophim".equals(name)) {
-                    loadXemThemPhimOPhim(currentPage, type);
+                    loadXemThemPhimOPhim(currentPage, type, theloai, quocgia);
                 }
             }
 
@@ -133,9 +139,9 @@ public class XemThemPhim extends AppCompatActivity {
                             @Override
                             public void onBaseUrlFetched(String name, String url) {
                                 if ("Kkphim".equals(name)) {
-                                    loadXemThemPhimKKPhim(currentPage, type);
+                                    loadXemThemPhimKKPhim(currentPage, type, theloai, quocgia);
                                 } else if ("Ophim".equals(name)) {
-                                    loadXemThemPhimOPhim(currentPage, type);
+                                    loadXemThemPhimOPhim(currentPage, type, theloai, quocgia);
                                 }
                             }
 
@@ -150,26 +156,35 @@ public class XemThemPhim extends AppCompatActivity {
         });
     }
 
-    private void loadXemThemPhimKKPhim(int page, String type) {
-        isLoading = true;
+    private void loadXemThemPhimKKPhim(int page, String type, String theLoaiSlug, String quocGiaSlug) {
+        isLoading = true;  // Đánh dấu bắt đầu tải dữ liệu
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
         Call<DSPhimResponse> call = null;
-        switch (type) {
-            case "movie":
-                call = apiService.getPhimLe(page);
-                break;
-            case "series":
-                call = apiService.getSeries(page);
-                break;
-            case "hoathinh":
-                call = apiService.getHoatHinh(page);
-                break;
-            case "tvShow":
-                call = apiService.getTVShow(page);
-                break;
-            default:
-                isLoading = false;
-                return;
+
+        // Kiểm tra và gọi API lấy dữ liệu theo thể loại hoặc quốc gia
+        if (theLoaiSlug != null && !theLoaiSlug.isEmpty()) {
+            call = apiService.getTheLoaiKKPhim(theLoaiSlug, page);  // Thể loại
+        } else if (quocGiaSlug != null && !quocGiaSlug.isEmpty()) {
+            call = apiService.getQuocGiaKKPhim(quocGiaSlug, page);  // Quốc gia
+        } else {
+            // Kiểm tra nếu type không phải thể loại hoặc quốc gia
+            switch (type) {
+                case "movie":
+                    call = apiService.getPhimLe(page);
+                    break;
+                case "series":
+                    call = apiService.getSeries(page);
+                    break;
+                case "hoathinh":
+                    call = apiService.getHoatHinh(page);
+                    break;
+                case "tvShow":
+                    call = apiService.getTVShow(page);
+                    break;
+                default:
+                    isLoading = false;
+                    return;
+            }
         }
 
         if (call != null) {
@@ -194,26 +209,36 @@ public class XemThemPhim extends AppCompatActivity {
         }
     }
 
-    private void loadXemThemPhimOPhim(int page, String type) {
+
+    private void loadXemThemPhimOPhim(int page, String type, String theLoaiSlug, String quocGiaSlug) {
         isLoading = true;
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
         Call<DSResponseOphim> call = null;
-        switch (type) {
-            case "movie":
-                call = apiService.getPhimLeOphim(page);
-                break;
-            case "series":
-                call = apiService.getSeriesOphim(page);
-                break;
-            case "hoathinh":
-                call = apiService.getHoatHinhOphim(page);
-                break;
-            case "tvShow":
-                call = apiService.getTVShowOphim(page);
-                break;
-            default:
-                isLoading = false;
-                return;
+        // Kiểm tra và gọi API lấy dữ liệu theo thể loại hoặc quốc gia
+        if (theLoaiSlug != null && !theLoaiSlug.isEmpty()) {
+            call = apiService.getTheLoaiOPhim(theLoaiSlug, page);  // Thể loại
+        } else if (quocGiaSlug != null && !quocGiaSlug.isEmpty()) {
+            call = apiService.getQuocGiaOPhim(quocGiaSlug, page);  // Quốc gia
+        } else {
+            // Kiểm tra nếu type không phải thể loại hoặc quốc gia
+            switch (type) {
+                case "movie":
+                    call = apiService.getPhimLeOphim(page);
+                    break;
+                case "series":
+                    call = apiService.getSeriesOphim(page);
+                    break;
+                case "hoathinh":
+                    call = apiService.getHoatHinhOphim(page);
+                    break;
+                case "tvShow":
+                    call = apiService.getTVShowOphim(page);
+                    break;
+
+                default:
+                    isLoading = false;
+                    return;
+            }
         }
 
         if (call != null) {
@@ -237,6 +262,9 @@ public class XemThemPhim extends AppCompatActivity {
             });
         }
     }
+
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

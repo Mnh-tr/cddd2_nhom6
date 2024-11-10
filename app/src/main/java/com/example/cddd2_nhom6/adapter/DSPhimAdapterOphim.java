@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.cddd2_nhom6.activity.ChiTietPhimActivity;
 import com.example.cddd2_nhom6.databinding.ItemDsphimBinding;
+import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.DSPhimAPiOphim;
 
 import java.util.List;
