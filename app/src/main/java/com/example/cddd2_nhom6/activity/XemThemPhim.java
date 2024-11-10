@@ -138,10 +138,10 @@ public class XemThemPhim extends AppCompatActivity {
 
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
                             && firstVisibleItemPosition >= 0) {
-                        currentPage++;
                         ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
                             @Override
                             public void onBaseUrlFetched(String name, String url) {
+                                currentPage++;
                                 if ("Kkphim".equals(name)) {
                                     loadXemThemPhimKKPhim(currentPage, type, theloai, quocgia);
                                 } else if ("Ophim".equals(name)) {

@@ -300,31 +300,6 @@ public class MainActivity extends AppCompatActivity {
                 // Cập nhật TextView hiển thị tên quốc gia
                 binding.tvSlug.setText("Quốc gia: " + selectedQuocGiaName);
             }
-            ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
-                @Override
-                public void onBaseUrlFetched(String name, String url) {
-                    if ("Kkphim".equals(name)) {
-                        binding.xemThemBoLoc.setOnClickListener(v -> {
-                            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                            intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
-                            intent.putExtra("quocgia", quocGiaSlug); // Thêm quốc gia
-                            startActivity(intent);
-                        });
-                    } else if ("Ophim".equals(name)) {
-                        binding.xemThemBoLoc.setOnClickListener(v -> {
-                            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                            intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
-                            intent.putExtra("quocgia", quocGiaSlug); // Thêm quốc gia
-                            startActivity(intent);
-                        });
-                    }
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    Toast.makeText(MainActivity.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
-                }
-            }, MainActivity.this); // Thêm MainActivity.this làm Context);
 
             if (theLoaiSlug != null) {
                 // Nếu chỉ có slug thể loại
@@ -334,9 +309,19 @@ public class MainActivity extends AppCompatActivity {
                         if ("Kkphim".equals(name)) {
                             binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimKKPhim(theLoaiSlug, null); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
+                                startActivity(intent);
+                            });
                         } else if ("Ophim".equals(name)) {
                             binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimOPhim(theLoaiSlug, null); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
+                                startActivity(intent);
+                            });
                         }
                     }
 
@@ -353,9 +338,19 @@ public class MainActivity extends AppCompatActivity {
                         if ("Kkphim".equals(name)) {
                             binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimKKPhim(null, quocGiaSlug); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("quocgia", quocGiaSlug); // Thêm quốc gia
+                                startActivity(intent);
+                            });
                         } else if ("Ophim".equals(name)) {
                             binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimOPhim(null, quocGiaSlug); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("quocgia", quocGiaSlug); // Thêm quốc gia
+                                startActivity(intent);
+                            });
                         }
                     }
 
