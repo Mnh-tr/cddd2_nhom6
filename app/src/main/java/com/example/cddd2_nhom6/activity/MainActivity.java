@@ -93,7 +93,8 @@ public class MainActivity extends AppCompatActivity {
     private String theLoaiSlug = null;
     private String quocGiaSlug = null;
     private boolean doubleBackToExitPressedOnce = false;
-
+    private String selectedTheLoaiName;
+    private String selectedQuocGiaName;
     private PhimAdapter phimAdapter;
     private DatabaseReference movieRef;
     private List<QLPhim> movieList;
@@ -142,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
             loadPhimLe();
             loadPhimHoatHinh();
             fetchMoviesFromFirebase();
-            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
             binding.dsPhim.setVisibility(View.GONE);
             binding.recyclerViewMovies.setVisibility(View.GONE);
             binding.recyclerTimKiem.setVisibility(View.GONE);
@@ -802,11 +802,13 @@ public class MainActivity extends AppCompatActivity {
                                             binding.dsPhimTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
                                             binding.recyclerTimKiem.setAdapter(new DSPhimAdapter(MainActivity.this, seriesKkphims));
                                         } else {
                                             binding.dsPhimTimKiem.setVisibility(View.GONE);
                                             binding.recyclerTimKiem.setVisibility(View.GONE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
                                             Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                         }
 
@@ -816,6 +818,7 @@ public class MainActivity extends AppCompatActivity {
                                         binding.dsPhimTimKiem.setVisibility(View.GONE);
                                         binding.recyclerTimKiem.setVisibility(View.GONE);
                                         binding.recyclerViewMovies.setVisibility(View.GONE);
+                                        binding.dsPhim.setVisibility(View.GONE);
                                         Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                     }
                                 }
@@ -825,6 +828,7 @@ public class MainActivity extends AppCompatActivity {
                                     binding.dsPhimTimKiem.setVisibility(View.GONE);
                                     binding.recyclerTimKiem.setVisibility(View.GONE);
                                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                                    binding.dsPhim.setVisibility(View.GONE);
                                     Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -861,11 +865,13 @@ public class MainActivity extends AppCompatActivity {
                                             binding.dsPhimTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
                                             binding.recyclerTimKiem.setAdapter(new DSPhimAdapterOphim(MainActivity.this, seriesOphim));
                                         } else {
                                             binding.dsPhimTimKiem.setVisibility(View.GONE);
                                             binding.recyclerTimKiem.setVisibility(View.GONE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
                                             Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                         }
 
@@ -875,6 +881,7 @@ public class MainActivity extends AppCompatActivity {
                                         binding.dsPhimTimKiem.setVisibility(View.GONE);
                                         binding.recyclerTimKiem.setVisibility(View.GONE);
                                         binding.recyclerViewMovies.setVisibility(View.GONE);
+                                        binding.dsPhim.setVisibility(View.GONE);
                                         Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                     }
                                 }
@@ -884,6 +891,7 @@ public class MainActivity extends AppCompatActivity {
                                     binding.dsPhimTimKiem.setVisibility(View.GONE);
                                     binding.recyclerTimKiem.setVisibility(View.GONE);
                                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                                    binding.dsPhim.setVisibility(View.GONE);
                                     Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
                                 }
                             });

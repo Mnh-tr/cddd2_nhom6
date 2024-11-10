@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/meBlack"
+    android:background="#696969"
     tools:context=".activity.TaiPhimActivity">
 
     <!-- Phần giao diện chính của ứng dụng -->

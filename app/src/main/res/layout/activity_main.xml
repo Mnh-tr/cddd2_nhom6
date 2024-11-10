@@ -11,7 +11,7 @@
         android:id="@+id/drawerlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/meBlack">
+        android:background="#696969">
         <!-- Thêm Toolbar vào đây -->
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
@@ -23,7 +23,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#414441"
+                android:background="#696969"
                 app:navigationIcon="@drawable/menu"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"></androidx.appcompat.widget.Toolbar>
 
