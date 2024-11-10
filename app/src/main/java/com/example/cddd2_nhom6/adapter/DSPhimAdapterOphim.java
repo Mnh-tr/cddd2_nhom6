@@ -51,7 +51,7 @@ public class DSPhimAdapterOphim extends RecyclerView.Adapter<DSPhimAdapterOphim.
 
         // Sử dụng Glide để load hình ảnh
         Glide.with(context)  // Sử dụng context đã được cung cấp
-                .load(series.getPosterUrl())
+                .load(series.getThumbUrl())
                 .into(holder.binding.moviePoster);
 
         /// Luu Position mới cho Holder
