@@ -3,9 +3,11 @@ package com.example.cddd2_nhom6.activity;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -31,14 +33,17 @@ public class QLTheLoaiActivity extends AppCompatActivity {
     private List<Category> categoryList = new ArrayList<>();
     private ActivityQltheLoaiBinding binding;
     private DatabaseReference databaseReference;
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Ánh xạ layout của Activity với View Binding
         binding = ActivityQltheLoaiBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
         // Khởi tạo Firebase Database reference
         databaseReference = FirebaseDatabase.getInstance().getReference("theLoai");
@@ -236,7 +241,21 @@ private void deleteCategory(int position) {
     }
 
 
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
 
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
     @Override
     protected void onDestroy() {
         super.onDestroy();

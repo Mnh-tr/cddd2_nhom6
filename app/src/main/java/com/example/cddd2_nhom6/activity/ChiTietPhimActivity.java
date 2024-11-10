@@ -3,12 +3,14 @@ package com.example.cddd2_nhom6.activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,6 +52,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
     private LichSuPhim lichSuPhim;
     private DatabaseReference ratingsRef;
     private DatabaseReference userRef;
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +60,9 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         binding = ActivityChiTietPhimBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setEvent();
+
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
     }
     private void setEvent() {
         // Lấy slug từ Intent
@@ -278,7 +284,21 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         });
     }
 
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
 
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
     @Override
     protected void onResume() {
         super.onResume();

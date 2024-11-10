@@ -92,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
     private String theLoaiSlug = null;
     private String quocGiaSlug = null;
     private boolean doubleBackToExitPressedOnce = false;
+    private String selectedTheLoaiName = "";
+    private String selectedQuocGiaName = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -286,10 +288,17 @@ public class MainActivity extends AppCompatActivity {
                 return true; // Đảm bảo không xử lý thêm các sự kiện khác
             }
 
+            // Cập nhật tên thể loại hoặc quốc gia đã chọn
             if ("Thể Loại".equals(header)) {
+                selectedTheLoaiName = selectedItem; // Lưu tên thể loại
                 theLoaiSlug = theLoaiSlugMap.get(selectedItem); // Lấy slug cho thể loại
+                // Cập nhật TextView hiển thị tên thể loại
+                binding.tvSlug.setText("Thể loại: " + selectedTheLoaiName);
             } else if ("Quốc Gia".equals(header)) {
+                selectedQuocGiaName = selectedItem; // Lưu tên quốc gia
                 quocGiaSlug = quocGiaSlugMap.get(selectedItem); // Lấy slug cho quốc gia
+                // Cập nhật TextView hiển thị tên quốc gia
+                binding.tvSlug.setText("Quốc gia: " + selectedQuocGiaName);
             }
             ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
                 @Override

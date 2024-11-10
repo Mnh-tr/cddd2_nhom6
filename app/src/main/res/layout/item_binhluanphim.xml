@@ -25,6 +25,7 @@
                 android:textSize="16sp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:textColor="#FFF"
                 android:layout_weight="1" />
 
             <LinearLayout
@@ -40,6 +41,7 @@
                     android:layout_height="wrap_content"
                     android:text="20/10/2024 20:45:57"
                     android:textSize="16sp"
+                    android:textColor="#FFF"
                     android:layout_gravity="center_vertical"
                     android:layout_marginEnd="8dp" />  <!-- Khoảng cách giữa ngày và nút xóa -->
 
@@ -57,6 +59,7 @@
             android:id="@+id/tvBinhLuan"
             android:text="Binh Luan"
             android:textSize="16sp"
+            android:textColor="#FFF"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </LinearLayout>

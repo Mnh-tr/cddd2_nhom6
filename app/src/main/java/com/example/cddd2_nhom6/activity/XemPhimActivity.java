@@ -3,6 +3,7 @@ package com.example.cddd2_nhom6.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -14,6 +15,7 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -82,6 +84,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private LinearLayout.LayoutParams originalPlayerViewParams;
     private TaiPhim taiPhim;
     private DatabaseReference commentsRef;
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +96,8 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         setControl();
         setEvent();
 
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
         // Lưu LayoutParams ban đầu
         originalPlayerViewParams = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
 
@@ -523,6 +528,21 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         // Giữ màn hình sáng khi ứng dụng hoạt động
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
+
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
 
 
 }
