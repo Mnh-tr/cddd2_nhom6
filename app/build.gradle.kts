@@ -64,4 +64,5 @@ dependencies {
     implementation ("com.google.firebase:firebase-messaging:23.0.0")
     implementation ("com.google.android.material:material:1.8.0")
     implementation ("androidx.cardview:cardview:1.0.0")
+
 }
