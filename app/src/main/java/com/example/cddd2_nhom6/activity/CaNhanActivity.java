@@ -81,37 +81,6 @@ public class CaNhanActivity extends AppCompatActivity {
         Toast.makeText(CaNhanActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         binding.tvTenNguoiDung.setText(nameUser);
         binding.tvEmail.setText(emailUser);
-
-        // Kiểm tra trạng thái đăng nhập
-        //FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (idUser != null) {
-            if (idLoaiND == 3 || idLoaiND == 2){
-                isUserLoggedIn = true;
-                binding.btnDangNhap.setVisibility(View.VISIBLE);
-                binding.btnDangNhap.setText("Admin");
-            }else{
-                isUserLoggedIn = true; // Người dùng đã đăng nhập
-                binding.btnDangNhap.setVisibility(View.GONE);
-            }
-        }
-        else {
-            isUserLoggedIn = false; // Người dùng chưa đăng nhập
-            binding.btnDangNhap.setVisibility(View.VISIBLE);
-            binding.btnDangNhap.setText("Đăng Nhập"); // Đổi văn bản nút thành "Đăng Nhập"
-        }
-
-        binding.btnDangNhap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (binding.btnDangNhap.getText().equals("Admin")){
-                    Intent intent = new Intent(CaNhanActivity.this, AdminActivity.class );
-                    startActivity(intent);
-                }
-                else {
-                    Intent intent = new Intent(CaNhanActivity.this, DangNhapActivity.class);
-                    startActivity(intent);
-                }
-        }});
         binding.caiDat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
