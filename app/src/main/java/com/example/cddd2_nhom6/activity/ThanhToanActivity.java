@@ -3,10 +3,12 @@ package com.example.cddd2_nhom6.activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -54,7 +56,14 @@ public class ThanhToanActivity extends AppCompatActivity {
         yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
         // Tạo nội dung thanh toán
         TaoNoiDungThanhToan(idUser);
+// Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Thanh toán"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
 
+        }
         binding.btnPayment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -194,4 +203,15 @@ public class ThanhToanActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, VipActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

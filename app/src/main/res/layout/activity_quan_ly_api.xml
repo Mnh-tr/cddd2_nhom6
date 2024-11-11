@@ -5,40 +5,23 @@
     android:background="#FFF">
 
     <!-- Header Layout -->
-    <LinearLayout
-        android:id="@+id/headerSection"
+    <!-- Nút quay lại và tiêu đề -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@drawable/header_gradient"
-        android:padding="10dp">
+        android:layout_height="60dp"
+        android:background="#1E1E1E"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <ImageView
-            android:id="@+id/exitIcon"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:src="@drawable/exit_left"
-            android:contentDescription="Exit Icon" />
-
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:text="Quản Lý API"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:gravity="center_vertical" />
-    </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
 
     <!-- RecyclerView for API List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvApiList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/headerSection"
+        android:layout_below="@id/toolbar"
         android:layout_marginTop="8dp" />
     <LinearLayout
         android:id="@+id/selectedApiSection"

@@ -1,6 +1,8 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -33,7 +35,14 @@ public class QLQuocGiaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityQlquocGiaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+// Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Quản lý Quốc Gia"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
 
+        }
         // Cấu hình RecyclerView
         binding.rvQlyQuocGia.setLayoutManager(new LinearLayoutManager(this));
         danhSachQuocGia = new ArrayList<>();
@@ -153,5 +162,15 @@ public class QLQuocGiaActivity extends AppCompatActivity {
         super.onPause();
         // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, AdminActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -1,9 +1,11 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -43,7 +45,14 @@ public class QuanLyAPI extends AppCompatActivity {
         binding = ActivityQuanLyApiBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         imageView = findViewById(R.id.img_selectApi);
+// Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Quản lý API"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
 
+        }
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         danhSachApi = new ArrayList<>();
@@ -89,7 +98,7 @@ public class QuanLyAPI extends AppCompatActivity {
         binding.rvApiList.setLayoutManager(new LinearLayoutManager(this));
         binding.rvApiList.setAdapter(apiAdapter);
 
-        binding.exitIcon.setOnClickListener(v -> finish());
+//        binding.exitIcon.setOnClickListener(v -> finish());
     }
 
     private void layDanhSachApiTuFirebase() {
@@ -250,5 +259,15 @@ public class QuanLyAPI extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, AdminActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
