@@ -119,21 +119,21 @@ public class QLQuocGiaActivity extends AppCompatActivity {
         quocGiaRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                danhSachQuocGia.clear();
-                for (DataSnapshot quocGiaSnapshot : snapshot.getChildren()) {
-                    QuocGia quocGia = quocGiaSnapshot.getValue(QuocGia.class);
-                    if (quocGia != null) {
-                        danhSachQuocGia.add(0, quocGia); // Thêm vào đầu danh sách
-                    }
+                danhSachQuocGia.clear(); // Xóa danh sách cũ
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    QuocGia quocGia = dataSnapshot.getValue(QuocGia.class);
+                    danhSachQuocGia.add(quocGia);
                 }
+                // Cập nhật RecyclerView
                 quocGiaAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(QLQuocGiaActivity.this, "Lỗi tải danh sách: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(QLQuocGiaActivity.this, "Lỗi khi tải dữ liệu!", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     // Đặt lại form sau khi thêm thành công

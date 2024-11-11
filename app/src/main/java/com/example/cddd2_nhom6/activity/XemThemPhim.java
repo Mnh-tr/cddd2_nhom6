@@ -71,7 +71,6 @@ public class XemThemPhim extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Danh sách Phim"); // Đặt tên mới cho Toolbar
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
         // Nhận dữ liệu từ Intent và lưu vào một biến duy nhất

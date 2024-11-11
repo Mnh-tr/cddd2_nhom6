@@ -84,19 +84,24 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
                         .show();
             });
 
-            // Xử lý nút Xóa
             binding.btnDelete.setOnClickListener(v -> {
                 new AlertDialog.Builder(context)
                         .setTitle("Xác nhận")
                         .setMessage("Bạn có chắc chắn muốn xóa quốc gia này không?")
                         .setPositiveButton("Có", (dialog, which) -> {
-                            // Truyền ID của quốc gia để xóa
-                            String quocGiaId = String.valueOf(quocGiaList.get(position).getId());
-                            quocGiaRef.child(quocGiaId).removeValue()
+                            // Lấy ID của quốc gia cần xóa
+                            long quocGiaId = quocGiaList.get(position).getId();
+
+                            // Xóa quốc gia khỏi Firebase bằng ID
+                            quocGiaRef.child(String.valueOf(quocGiaId)).removeValue()
                                     .addOnSuccessListener(aVoid -> {
                                         Toast.makeText(context, "Đã xóa quốc gia!", Toast.LENGTH_SHORT).show();
-                                        quocGiaList.remove(position);  // Xóa quốc gia khỏi danh sách
-                                        notifyItemRemoved(position);  // Cập nhật lại RecyclerView
+                                        if (position >= 0 && position < quocGiaList.size()) {
+                                            quocGiaList.remove(position);  // Xóa quốc gia khỏi danh sách
+                                            notifyItemRemoved(position);  // Cập nhật lại RecyclerView
+                                        } else {
+                                            Toast.makeText(context, "Lỗi vị trí, không thể xóa!", Toast.LENGTH_SHORT).show();
+                                        }
                                     })
                                     .addOnFailureListener(e -> {
                                         Toast.makeText(context, "Lỗi khi xóa quốc gia!", Toast.LENGTH_SHORT).show();
@@ -105,6 +110,7 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
                         .setNegativeButton("Không", (dialog, which) -> dialog.dismiss())
                         .show();
             });
+
 
             // Xử lý nút Lưu
             binding.btnSave.setOnClickListener(v -> {
