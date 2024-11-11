@@ -57,19 +57,24 @@ public class ThemPhimActivity extends AppCompatActivity {
         // Lấy dữ liệu từ Firebase
         // xu ly hien thi ảnh Poster
         xulyHienThiAnh();
+        layDuLieuQuocGia();
         layDuLieuTheLoai();
+
 
         // Nhận ID phim từ Intent
         String idMovie = getIntent().getStringExtra("id_movie");
         if (idMovie != null) {
             // Nếu ID phim không null, thực hiện chức năng cập nhật
             layDuLieuPhim(idMovie);
+            binding.tvThemPhim.setText("Chi Tiết Phim");
             binding.submitButton.setText("Cập nhật");
             binding.submitButton.setOnClickListener(v -> themPhimVaoFirebase());
         } else {
             // Nếu không, đây là chức năng thêm phim
             binding.submitButton.setOnClickListener(v -> themPhimVaoFirebase());
         }
+
+
 // Khởi tạo danh sách thể loại và các biến liên quan
         genres = getResources().getStringArray(R.array.genre_array); // Lấy danh sách thể loại từ resources
         selectedGenres = new boolean[genres.length]; // Khởi tạo mảng trạng thái cho các thể loại
@@ -179,6 +184,36 @@ public class ThemPhimActivity extends AppCompatActivity {
         });
     }
 
+    private void layDuLieuQuocGia() {
+        DatabaseReference quocGiaRef = FirebaseDatabase.getInstance().getReference("quocGia");
+        quocGiaRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<String> quocGiaList = new ArrayList<>();
+                quocGiaList.add("Chọn quốc gia"); // Thêm tùy chọn mặc định đầu tiên
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    // Lấy giá trị của cột "name" trong bảng quocGia
+                    String quocGiaName = snapshot.child("name").getValue(String.class);
+                    if (quocGiaName != null) {
+                        quocGiaList.add(quocGiaName); // Thêm name vào danh sách
+                    }
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(ThemPhimActivity.this, android.R.layout.simple_spinner_item, quocGiaList);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                binding.spinnerCountry.setAdapter(adapter);
+
+                // Đặt giá trị mặc định
+                binding.spinnerCountry.setSelection(0);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(ThemPhimActivity.this, "Lỗi khi tải dữ liệu quốc gia", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     private void themPhimVaoFirebase() {
         // Lấy giá trị từ các trường nhập liệu
@@ -317,7 +352,6 @@ public class ThemPhimActivity extends AppCompatActivity {
 
     private void layDuLieuPhim(String idMovie) {
         DatabaseReference movieRef = FirebaseDatabase.getInstance().getReference("Movies").child(idMovie);
-        //DatabaseReference goi = FirebaseDatabase.getInstance().getReference("Goi").child(idMovie);
         movieRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -358,11 +392,8 @@ public class ThemPhimActivity extends AppCompatActivity {
                         binding.radioFree.setChecked(false);
                         binding.radioPremium.setChecked(true);
                     }
-                    //binding.goiSpinner.setSelection(getSpinnerPosition(binding.goiSpinner, goiId));
                     // cho them vao firebase
                     binding.spinnerCountry.setSelection(getSpinnerPosition(binding.spinnerCountry,quocGia));
-
-
                     binding.selectedGenresText.setText("Thể loại đã chọn: " + theLoai);
 
                 }
