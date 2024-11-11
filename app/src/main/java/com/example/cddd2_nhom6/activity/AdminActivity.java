@@ -6,15 +6,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -30,6 +33,7 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -72,14 +76,6 @@ public class AdminActivity extends AppCompatActivity {
         xulyXemThongTin();
         xulybuttonMenu();
 
-        binding.ivthoat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AdminActivity.this, CaNhanActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
 
     }
 
@@ -568,100 +564,62 @@ public class AdminActivity extends AppCompatActivity {
     //xu ly button menu
     //xu ly button menu
     private void xulybuttonMenu() {
+        // Xử lý khi nhấn vào ImageView để mở menu
         binding.ivButtonMenu.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                // Inflate the menu layout
-                LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-                View popupView = inflater.inflate(R.layout.menu_layout_admin, null);
+            public void onClick(View view) {
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    binding.drawerLayout.openDrawer(GravityCompat.START);
+                }
+            }
+        });
 
-                // Create the PopupWindow
-                PopupWindow popupWindow = new PopupWindow(popupView,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        true);
+        // Xử lý sự kiện khi người dùng chọn các mục trong NavigationView
+        binding.navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                Intent a = null;
+                if (item.getItemId() == R.id.itemQLPhim) {
+                     a = new Intent(AdminActivity.this, QLPhimActivity.class);
+//                    return handled = true;
+                } else if (item.getItemId() == R.id.itemQLDoanhThu) {
+                    // Mở giao diện Quản Lý Doanh Thu
+                     a = new Intent(AdminActivity.this, DoanhThuActivity.class);
+                } else if (item.getItemId() == R.id.itemQLUser) {
+                    // Mở giao diện Quản Lý User
+                     a = new Intent(AdminActivity.this, QLUserActivity.class);
+                } else if (item.getItemId() == R.id.itemQLTheLoai) {
+                    // Mở giao diện Quản Lý Thể Loại
+                     a = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
+                } else if (item.getItemId() == R.id.itemQLQuocGia) {
+                    // Mở giao diện Quản Lý Quốc Gia
+//                    Intent a = new Intent(AdminActivity.this, QL.class);
+                } else if (item.getItemId() == R.id.itemQLThongBao) {
+                    // Mở giao diện Quản Lý Thông Báo
+                     a = new Intent(AdminActivity.this, QLThongBaoActivity.class);
+                } else if (item.getItemId() == R.id.itemHoTro) {
+                    // Hiển thị thông tin hỗ trợ
+                     a = new Intent(AdminActivity.this, QLHoTroActivity.class);
+                } else if (item.getItemId() == R.id.itemQLApi) {
+                    // Mở giao diện Quản Lý Api
+                     a = new Intent(AdminActivity.this, QuanLyAPI.class);
+                }
+                else if (item.getItemId() == R.id.itemthat) {
+                    // Mở giao diện Quản Lý Api
+                     a = new Intent(AdminActivity.this, CaNhanActivity.class);
+                }
+                // Đóng ngăn kéo nếu đã xử lý sự kiện
+                if (a != null) {
+                    //binding.drawerLayout.closeDrawer(GravityCompat.START);
+                    startActivity(a);
+                    return true;
+                }
+                return false;
 
-                // Show the PopupWindow at the desired location
-                popupWindow.showAsDropDown(binding.ivButtonMenu, 0, 0);
-
-                // Handle Doanh thu button click
-                popupView.findViewById(R.id.btn_doanh_thu).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Chuyển sang trang Doanh thu
-//                        Intent intent = new Intent(AdminActivity.this, QLPhimActivity.class);
-//                        startActivity(intent);
-//                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-                popupView.findViewById(R.id.btn_hotro).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(AdminActivity.this, DSHoTroActivity.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();
-                    }
-                });
-
-                popupView.findViewById(R.id.btn_ThongBao).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(AdminActivity.this, DSThongBaoActivity.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-
-                popupView.findViewById(R.id.btn_ql_api).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(AdminActivity.this, QuanLyAPI.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-                popupView.findViewById(R.id.btn_ThongBao).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(AdminActivity.this, DSThongBaoActivity.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-                popupView.findViewById(R.id.btn_ql_user).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(AdminActivity.this, QLUserActivity.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-                popupView.findViewById(R.id.btn_quanly_phim).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(AdminActivity.this, QLPhimActivity.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-                popupView.findViewById(R.id.btn_ql_theloai).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent intent = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
-
-                popupView.findViewById(R.id.btn_doanh_thu).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(AdminActivity.this, DoanhThuActivity.class);
-                        startActivity(intent);
-                        popupWindow.dismiss();  // Đóng PopupWindow sau khi nhấn
-                    }
-                });
             }
         });
     }
+
 }
