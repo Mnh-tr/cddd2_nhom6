@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -105,15 +106,14 @@ public class QLYeuCauActivity extends AppCompatActivity {
             // Gọi phương thức lọc khi RadioButton thay đổi
             locTheoSpinnerVaRadio(dateFilter, statusFilter);
         });
+        // Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Danh Sách Yêu Cầu");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
 
-        binding.btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(QLYeuCauActivity.this, QLUserActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
+        }
     }
     // Hàm kết hợp để áp dụng cả hai bộ lọc
     private void locTheoSpinnerVaRadio(String dateRange, String statusFilter) {
@@ -374,5 +374,15 @@ public class QLYeuCauActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, QLUserActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
