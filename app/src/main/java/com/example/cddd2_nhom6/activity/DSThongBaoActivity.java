@@ -3,6 +3,7 @@ package com.example.cddd2_nhom6.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -40,12 +41,17 @@ public class DSThongBaoActivity extends AppCompatActivity implements ThongBaoAda
         EdgeToEdge.enable(this);
         binding = ActivityDsthongBaoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        // Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Quản lý Doanh Thu"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+        }
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         // Khởi tạo Firebase Realtime Database
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        binding.btnBack.setOnClickListener(v -> onBackPressed());
         binding.recyclerViewApis.setLayoutManager(new LinearLayoutManager(this));
         thongBaoAdapter = new ThongBaoAdapter(DSThongBaoActivity.this,thongBaoList);
         binding.recyclerViewApis.setAdapter(thongBaoAdapter);
@@ -133,5 +139,16 @@ public class DSThongBaoActivity extends AppCompatActivity implements ThongBaoAda
     @Override
     public void onItemClick(View view, ThongBao thongBao) {
         hienDialogThongBao(thongBao);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, AdminActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

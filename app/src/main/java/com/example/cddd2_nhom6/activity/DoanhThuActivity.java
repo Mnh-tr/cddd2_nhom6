@@ -76,7 +76,7 @@ public class DoanhThuActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         // Kiểm tra xem ActionBar đã được khởi tạo chưa
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Quản lý Doanh Thu"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setTitle("Quản lý Thông Báo"); // Đặt tên mới cho Toolbar
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
         }
         // Thiết lập RecyclerView
