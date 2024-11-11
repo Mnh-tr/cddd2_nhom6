@@ -148,6 +148,21 @@ public class MainActivity extends AppCompatActivity {
             binding.recyclerTimKiem.setVisibility(View.GONE);
             binding.dsPhimTimKiem.setVisibility(View.GONE);
         });
+        binding.expandableListView.setOnGroupClickListener((parent, v, groupPosition, id) -> {
+            String headerTitle = listHeaders.get(groupPosition);
+
+            if ("Đăng Nhập".equals(headerTitle)) {
+                Intent intent = new Intent(MainActivity.this, DangNhapActivity.class);
+                startActivity(intent);
+                return true; // Ngăn chặn mở rộng nhóm
+            } else if ("Thông tin cá nhân".equals(headerTitle)) {
+                Intent intent = new Intent(MainActivity.this, CaNhanActivity.class);
+                startActivity(intent);
+                return true; // Ngăn chặn mở rộng nhóm
+            }
+
+            return false; // Cho phép mở rộng nhóm nếu không phải là "Đăng Nhập" hoặc "Thông tin cá nhân"
+        });
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         movieRef = database.getReference("movies"); // Đây là nơi lưu trữ thông tin phim trên Firebase
@@ -347,22 +362,6 @@ public class MainActivity extends AppCompatActivity {
         binding.expandableListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
             String header = (String) adapter.getGroup(groupPosition);
             String selectedItem = (String) adapter.getChild(groupPosition, childPosition);
-
-            // Kiểm tra nếu mục "Đăng Nhập" được nhấn
-            if ("Đăng Nhập".equals(selectedItem)) {
-                // Chuyển hướng đến màn hình đăng nhập
-                Intent intent = new Intent(MainActivity.this, DangNhapActivity.class);
-                startActivity(intent);
-                return true; // Đảm bảo không xử lý thêm các sự kiện khác
-            }
-            // Kiểm tra nếu mục "Thông tin cá nhân" được nhấn
-            if ("Thông tin cá nhân".equals(selectedItem)) {
-                // Chuyển hướng đến màn hình thông tin cá nhân
-                Intent intent = new Intent(MainActivity.this, CaNhanActivity.class);
-                startActivity(intent);
-                return true; // Đảm bảo không xử lý thêm các sự kiện khác
-            }
-
             // Cập nhật tên thể loại hoặc quốc gia đã chọn
             if ("Thể Loại".equals(header)) {
                 selectedTheLoaiName = selectedItem; // Lưu tên thể loại
@@ -456,9 +455,10 @@ public class MainActivity extends AppCompatActivity {
         caiDat.add("Giao diện sáng");
         caiDat.add("Giao diện tối");
         listChildren.put("Cài Đặt", caiDat);
-
         listHeaders.add("Thông tin cá nhân");
         listHeaders.add("Đăng Nhập");
+        listChildren.put("Đăng Nhập", new ArrayList<>());
+        listChildren.put("Thông tin cá nhân", new ArrayList<>());
 
         // Lấy dữ liệu "Thể Loại" từ Firebase
         database.child("theLoai").addValueEventListener(new ValueEventListener() {
