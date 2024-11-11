@@ -1,17 +1,29 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.adapter.LSThanhToanAdapter;
 import com.example.cddd2_nhom6.databinding.ActivityAdminBinding;
+import com.example.cddd2_nhom6.databinding.DialogLichsuThanhtoanBinding;
+import com.example.cddd2_nhom6.model.LichSuThanhToan;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -25,10 +37,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -42,25 +57,92 @@ public class DoanhThuActivity extends AppCompatActivity {
     private long tongDT1Thang = 0;
     private long tongGDHomNay = 0;
 
+    private LSThanhToanAdapter adapter;
+    private List<LichSuThanhToan> lichSuTTList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityDoanhThuBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         // Khởi tạo Firebase Realtime Database
         databaseReference = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
+        // Khởi tạo danh sách và adapter
+        lichSuTTList = new ArrayList<>();
+        adapter = new LSThanhToanAdapter(this, lichSuTTList);
+
+        // Thiết lập RecyclerView
+        binding.recyclerViewLichSu.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerViewLichSu.setAdapter(adapter);
+
+        // Thiết lập sự kiện khi nhấn vào item trong RecyclerView
+        adapter.setOnItemClickListener((view, position) -> {
+            LichSuThanhToan thanhToan = lichSuTTList.get(position);
+            // Tạo dialog hiển thị thông tin chi tiết thanh toán
+            hienThiChiTietLSThanhToan(thanhToan);
+            Toast.makeText(this, "Chi tiết thanh toán của: " + thanhToan.getIdUser(), Toast.LENGTH_SHORT).show();
+            // Bạn có thể mở một Activity khác để hiển thị chi tiết thanh toán nếu cần
+        });
+
+
 
         // Khởi tạo HashMap để lưu doanh thu theo tháng
         monthlyRevenue = new HashMap<>();
         for (int i = 1; i <= 12; i++) {
             monthlyRevenue.put(i, 0L);
         }
+
+        // Thiết lập Spinner năm
+        thietLapSpinner();
+
+        // Lắng nghe thay đổi của Spinner để cập nhật dữ liệu
+        caiDatSuKienChonNam();
         // Lắng nghe sự thay đổi dữ liệu trong thời gian thực
         loadDuLieuDoanhThu();
         layDuLieuVaHienThiBieuDo();
+        loadLichSuThanhToan();
+    }
+    private void loadLichSuThanhToan() {
+        // Hiển thị ProgressBar trong khi tải dữ liệu
+        binding.progressBar.setVisibility(View.VISIBLE);
+
+        // Tham chiếu đến bảng LichSuThanhToan trong Firebase
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Xóa dữ liệu cũ trong danh sách
+                lichSuTTList.clear();
+
+                // Duyệt qua các bản ghi trong Firebase
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    LichSuThanhToan thanhToan = snapshot.getValue(LichSuThanhToan.class);
+                    if (thanhToan != null) {
+                        lichSuTTList.add(thanhToan);
+                    }
+                }
+
+                // Ẩn ProgressBar sau khi tải xong dữ liệu
+                binding.progressBar.setVisibility(View.GONE);
+
+                // Cập nhật adapter sau khi thêm dữ liệu mới
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(DoanhThuActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;  // Giải phóng View Binding khi Activity bị hủy
+    }
     private void loadDuLieuDoanhThu() {
         // Lắng nghe sự thay đổi trong toàn bộ "LichSuThanhToan"
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -126,10 +208,12 @@ public class DoanhThuActivity extends AppCompatActivity {
 
     private void capNhapDuLieu() {
         // Cập nhật UI thông qua binding (các biến sẽ tự động hiển thị trên giao diện)
-        binding.tvTongDoanhThu.setText(String.valueOf(tongDTHomNay));
-        binding.tvDoanhThu7Ngay.setText(String.valueOf(tongDT7Ngay));
-        binding.tvDoanhThu1Thang.setText(String.valueOf(tongDT1Thang));
-        binding.tvSoGiaoDich.setText(String.valueOf(tongGDHomNay));
+
+
+        binding.tvTongDoanhThu.setText(dinhDangTien(Double.valueOf(tongDTHomNay)));
+        binding.tvDoanhThu7Ngay.setText(dinhDangTien(Double.valueOf(tongDT7Ngay)));
+        binding.tvDoanhThu1Thang.setText(dinhDangTien(Double.valueOf(tongDT1Thang)));
+        binding.tvSoGiaoDich.setText(dinhDangTien(Double.valueOf(tongGDHomNay)));
     }
 
     private void hienThiBieuDo() {
@@ -210,4 +294,123 @@ public class DoanhThuActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void hienThiChiTietLSThanhToan(LichSuThanhToan thanhToan){
+        DialogLichsuThanhtoanBinding dialogBinding = DialogLichsuThanhtoanBinding.inflate(LayoutInflater.from(this));
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Hiển thị thông tin chi tiết lịch sử thanh toán
+        hienThiNameLenDiaLog(dialogBinding,thanhToan);
+        dialogBinding.tvIdUserDialog.setText(thanhToan.getIdUser());
+        dialogBinding.tvContentDialog.setText(thanhToan.getNoiDung());
+        dialogBinding.tvAmountDialog.setText(String.valueOf(thanhToan.getSoTien()));
+        dialogBinding.tvPaymentDateDialog.setText(thanhToan.getNgayThanhToan());
+        dialogBinding.tvNgayXacNhan.setText(thanhToan.getNgayXacNhan());
+        dialogBinding.tvNgayHetHan.setText(thanhToan.getNgayHetHan());
+
+
+        // Xử lý các sự kiện liên quan đến thanh toán (ví dụ: nút Xác nhận thanh toán)
+        dialogBinding.btnDong.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+    }
+
+    private void hienThiNameLenDiaLog(DialogLichsuThanhtoanBinding dialogBinding,LichSuThanhToan thanhToan){
+        // Truy vấn người dùng từ Firebase dựa trên id_user tự tạo
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        usersRef.orderByChild("id_user").equalTo(thanhToan.getIdUser()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    // Lấy tên của người dùng đầu tiên tìm thấy
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        String userName = userSnapshot.child("name").getValue(String.class);
+                        dialogBinding.tvUserNameDialog.setText(userName);
+                        break; // Thoát khỏi vòng lặp sau khi tìm thấy người dùng đầu tiên
+                    }
+                } else {
+                    dialogBinding.tvUserNameDialog.setText("Tên không xác định");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                dialogBinding.tvUserNameDialog.setText("Lỗi kết nối");
+            }
+        });
+    }
+
+    private String dinhDangTien(Double doanhThu){
+        DecimalFormat decimalFormat = new DecimalFormat("#,###");
+        String formattedDoanhThu = decimalFormat.format(doanhThu);
+        return formattedDoanhThu;
+    }
+    // Thiết lập danh sách năm cho Spinner và chọn năm hiện tại theo mặc định
+    private void thietLapSpinner() {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        List<Integer> yearsList = new ArrayList<>();
+        for (int i = 2015; i <= currentYear; i++) {
+            yearsList.add(i);
+        }
+
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, yearsList);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerYear.setAdapter(adapter);
+        binding.spinnerYear.setSelection(yearsList.indexOf(currentYear));
+
+        // Tải dữ liệu ban đầu cho năm hiện tại
+        taiDuLieuChoNamDuocChon(currentYear);
+    }
+
+    // Hàm lắng nghe sự kiện khi chọn năm trên Spinner
+    private void caiDatSuKienChonNam() {
+        binding.spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                int selectedYear = (int) parent.getItemAtPosition(position);
+                taiDuLieuChoNamDuocChon(selectedYear);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Tuỳ chọn: xử lý trường hợp khi không có gì được chọn nếu cần
+            }
+        });
+    }
+    // Hàm tải dữ liệu doanh thu theo năm
+    private void taiDuLieuChoNamDuocChon(int year) {
+        datLaiDoanhThuTheoThang();  // Đặt lại dữ liệu doanh thu hàng tháng
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                    String ngayXacNhan = childSnapshot.child("ngayXacNhan").getValue(String.class);
+                    Long soTien = childSnapshot.child("soTien").getValue(Long.class);
+
+                    // Chỉ cập nhật doanh thu nếu ngày giao dịch khớp với năm được chọn
+                    if (ngayXacNhan != null && soTien != null && ngayXacNhan.contains("/" + year)) {
+                        capNhatDoanhThuHangThang(ngayXacNhan, soTien);
+                    }
+                }
+                hienThiBieuDo();  // Làm mới biểu đồ sau khi tải dữ liệu
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.e("DoanhThuActivity", "Lỗi khi tải dữ liệu: " + error.getMessage());
+            }
+        });
+    }
+    // Hàm đặt lại doanh thu hàng tháng về 0
+    private void datLaiDoanhThuTheoThang() {
+        for (int i = 1; i <= 12; i++) {
+            monthlyRevenue.put(i, 0L);
+        }
+    }
+
 }
+

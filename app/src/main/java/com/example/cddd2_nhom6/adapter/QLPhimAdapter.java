@@ -70,6 +70,11 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
 
         String goiType = getGoiTypeById(Integer.parseInt(currentPhim.getGoi()));
         holder.binding.goiPhim.setText(goiType);
+        if (!goiType.equals("Vip")){
+            holder.binding.goiPhim.setBackgroundResource(R.drawable.thuong_goi);
+        }else{
+            holder.binding.goiPhim.setBackgroundResource(R.drawable.vip_badge);
+        }
 
         holder.binding.theloai.setText(currentPhim.getTheLoai());
         holder.binding.ngaytao.setText(currentPhim.getNgayThemPhim());
@@ -85,6 +90,7 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
         } else {
             holder.binding.itemView.setBackgroundResource(R.drawable.movie_item_background); // Màu nền mặc định
         }
+
 
     }
 

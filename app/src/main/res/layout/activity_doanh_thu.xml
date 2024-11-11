@@ -5,26 +5,22 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#696969"
+    android:background="#1A1A1A"
     android:orientation="vertical">
 
     <!-- Thanh tiêu đề -->
-    <RelativeLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="#1E1E1E"
-        android:elevation="4dp">
-
-        <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/back"
-            android:padding="12dp"
-            android:src="@drawable/ic_back" />
+        android:elevation="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:titleTextColor="#FFFFFF"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+        app:navigationIcon="@drawable/ic_back"
+        >
 
         <TextView
             android:id="@+id/title"
@@ -34,8 +30,9 @@
             android:text="Quản lý Doanh Thu"
             android:textColor="#FFFFFF"
             android:textSize="22sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+            android:textStyle="bold"
+            android:layout_centerVertical="true"/>
+    </androidx.appcompat.widget.Toolbar>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -229,13 +226,38 @@
                     </LinearLayout>
                 </LinearLayout>
             </GridLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:layout_marginVertical="8dp"
+                android:layout_marginHorizontal="16dp"
+                android:background="@drawable/rounded_spinner_background" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chọn năm:"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="10dp"/>
+
+                <Spinner
+                    android:id="@+id/spinnerYear"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:paddingHorizontal="12dp"
+                    android:popupBackground="#3C3C3C"
+                    android:theme="@style/SpinnerStyle"/>
+            </LinearLayout>
 
             <!-- Biểu đồ doanh thu -->
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/lineChart"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:layout_margin="16dp"
+                android:layout_marginHorizontal="16dp"
                 android:background="@drawable/rounded_corner"
                 android:padding="8dp"/>
 
@@ -273,19 +295,11 @@
                         android:textColorHint="#80FFFFFF"
                         android:textSize="15sp" />
                 </LinearLayout>
-
-                <Spinner
-                    android:id="@+id/spinnerFilter"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:padding="5dp"
-                    android:spinnerMode="dropdown" />
             </LinearLayout>
 
             <!-- Danh sách giao dịch -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvTransactions"
+                android:id="@+id/recyclerViewLichSu"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"

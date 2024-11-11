@@ -112,7 +112,7 @@ public class VipActivity extends AppCompatActivity {
                                 } else {
                                     Log.d("id loại người dùng", "idLoaiND is null for user " + idUser);
                                 }
-                                // Kiểm tra trạng thái của yêuq cầu
+                                // Kiểm tra trạng thái của yêu cầu
                                 if (idLoaiND != null && idLoaiND == 1) {
                                     // Nếu idLoaiND là 1, đổi màu và text của các nút
                                     binding.btnDangKy.setText("Đang sử dụng");
