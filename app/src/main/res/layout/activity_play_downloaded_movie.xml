@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -14,5 +14,6 @@
         android:layout_height="250dp"
         app:resize_mode="fill"
         android:background="#000">
+        <include layout="@layout/custom_player_controls" />
     </androidx.media3.ui.PlayerView>
-</RelativeLayout>
+</LinearLayout>
