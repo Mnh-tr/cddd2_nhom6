@@ -64,6 +64,13 @@ public class CaiDatActivity extends AppCompatActivity {
                 startActivity(a);
             }
         });
+        binding.tvVeChungToi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(CaiDatActivity.this, VeChungToiActivity.class );
+                startActivity(intent);
+            }
+        });
         binding.ivdangxuat.setOnClickListener(view -> dangXuat());
         binding.admin.setOnClickListener(new View.OnClickListener() {
             @Override
