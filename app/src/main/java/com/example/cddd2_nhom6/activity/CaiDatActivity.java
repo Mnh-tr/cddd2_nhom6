@@ -3,10 +3,12 @@ package com.example.cddd2_nhom6.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,6 +28,7 @@ public class CaiDatActivity extends AppCompatActivity {
     private  String nameUser;
     private String emailUser;
     private int idLoaiND;
+    private boolean doubleBackToExitPressedOnce = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +37,8 @@ public class CaiDatActivity extends AppCompatActivity {
         setEvent();
         checkAdminStatus();
         kiemTraDangNhap();
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
     }
     public void setEvent(){
         laythongtinUser();
@@ -101,7 +106,7 @@ public class CaiDatActivity extends AppCompatActivity {
                     Integer idLoaiND = snapshot.getValue(Integer.class);
 
                     // Kiểm tra nếu người dùng là admin
-                    if (idLoaiND != null && idLoaiND == 2) {
+                    if (idLoaiND != null && idLoaiND == 2 || idLoaiND == 3) {
                         binding.cvDangXuat.setVisibility(View.VISIBLE); // Hiển thị nút admin
                     } else {
                         binding.cvDangXuat.setVisibility(View.GONE); // Ẩn nút admin
@@ -147,6 +152,21 @@ public class CaiDatActivity extends AppCompatActivity {
             });
         }
     }
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
+
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
     private void dangNhap() {
         // Chuyển đến màn hình đăng nhập
         Intent intent = new Intent(CaiDatActivity.this, DangNhapActivity.class);

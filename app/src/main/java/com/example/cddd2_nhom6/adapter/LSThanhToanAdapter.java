@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cddd2_nhom6.databinding.ItemThanhToanBinding;
 import com.example.cddd2_nhom6.model.LichSuThanhToan;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -41,13 +47,36 @@ public class LSThanhToanAdapter extends RecyclerView.Adapter<LSThanhToanAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LichSuThanhToan thanhToan = thanhToanList.get(position);
 
-        // Gán dữ liệu vào các TextView thông qua binding
-        //holder.binding.tvUserName.setText(thanhToan.getUserName());
+        // Truy vấn người dùng từ Firebase dựa trên id_user tự tạo
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        usersRef.orderByChild("id_user").equalTo(thanhToan.getIdUser()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    // Lấy tên của người dùng đầu tiên tìm thấy
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        String userName = userSnapshot.child("name").getValue(String.class);
+                        holder.binding.tvUserName.setText(userName != null ? userName : "Tên không xác định");
+                        break; // Thoát khỏi vòng lặp sau khi tìm thấy người dùng đầu tiên
+                    }
+                } else {
+                    holder.binding.tvUserName.setText("Tên không xác định");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                holder.binding.tvUserName.setText("Lỗi kết nối");
+            }
+        });
+
+
         holder.binding.tvMaUser.setText(thanhToan.getIdUser());
         holder.binding.tvNoiDung.setText(thanhToan.getNoiDung());
         holder.binding.tvNgayThanhToan.setText(thanhToan.getNgayThanhToan());
         holder.binding.tvNgayXacNhan.setText(thanhToan.getNgayXacNhan());
-        //holder.binding.tvSoTien.setText(thanhToan.getSoTien());
+        holder.binding.tvSoTien.setText(String.valueOf(thanhToan.getSoTien()));
+
 
         /// Luu Position mới cho Holder
         final int pos = position;

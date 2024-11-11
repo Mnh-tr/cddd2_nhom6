@@ -1,11 +1,13 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +28,7 @@ public class DSHoTroActivity extends AppCompatActivity {
     private ActivityDsHoTroBinding binding;
     private HoTroAdapter hoTroAdapter;
     private List<HoTro> hoTroList = new ArrayList<>();
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +37,8 @@ public class DSHoTroActivity extends AppCompatActivity {
         binding = ActivityDsHoTroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
-
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
         hoTroAdapter = new HoTroAdapter(DSHoTroActivity.this,hoTroList);
         binding.recyclerViewApis.setLayoutManager(new LinearLayoutManager(this));
@@ -70,7 +73,21 @@ public class DSHoTroActivity extends AppCompatActivity {
         });
     }
 
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
 
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
 
     @Override
     protected void onResume() {
