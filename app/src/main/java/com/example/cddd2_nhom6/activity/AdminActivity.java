@@ -4,17 +4,22 @@ import static java.lang.Long.parseLong;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
@@ -47,7 +52,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-public class AdminActivity extends AppCompatActivity {
+public class AdminActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private ActivityAdminBinding binding;
     private DatabaseReference dataUser;
@@ -57,6 +62,7 @@ public class AdminActivity extends AppCompatActivity {
     private long endOfDay;
     private Calendar calendar = Calendar.getInstance();
     private Chip a = null;
+    private boolean doubleBackToExitPressedOnce = false;
 
 
     @Override
@@ -74,8 +80,18 @@ public class AdminActivity extends AppCompatActivity {
         hienThiTatCaThongTin();
 
         xulyXemThongTin();
-        xulybuttonMenu();
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
+        setSupportActionBar(binding.toolbar);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, binding.drawerLayout, binding.toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        );
+
+        binding.drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+        binding.navigationView.setNavigationItemSelectedListener(this);
 
     }
 
@@ -561,65 +577,65 @@ public class AdminActivity extends AppCompatActivity {
         }
     }
 
-    //xu ly button menu
-    //xu ly button menu
-    private void xulybuttonMenu() {
-        // Xử lý khi nhấn vào ImageView để mở menu
-        binding.ivButtonMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    binding.drawerLayout.openDrawer(GravityCompat.START);
-                }
-            }
-        });
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
 
-        // Xử lý sự kiện khi người dùng chọn các mục trong NavigationView
-        binding.navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem item) {
-                Intent a = null;
-                if (item.getItemId() == R.id.itemQLPhim) {
-                     a = new Intent(AdminActivity.this, QLPhimActivity.class);
-//                    return handled = true;
-                } else if (item.getItemId() == R.id.itemQLDoanhThu) {
-                    // Mở giao diện Quản Lý Doanh Thu
-                     a = new Intent(AdminActivity.this, DoanhThuActivity.class);
-                } else if (item.getItemId() == R.id.itemQLUser) {
-                    // Mở giao diện Quản Lý User
-                     a = new Intent(AdminActivity.this, QLUserActivity.class);
-                } else if (item.getItemId() == R.id.itemQLTheLoai) {
-                    // Mở giao diện Quản Lý Thể Loại
-                     a = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
-                } else if (item.getItemId() == R.id.itemQLQuocGia) {
-                    // Mở giao diện Quản Lý Quốc Gia
-//                    Intent a = new Intent(AdminActivity.this, QL.class);
-                } else if (item.getItemId() == R.id.itemQLThongBao) {
-                    // Mở giao diện Quản Lý Thông Báo
-                     a = new Intent(AdminActivity.this, QLThongBaoActivity.class);
-                } else if (item.getItemId() == R.id.itemHoTro) {
-                    // Hiển thị thông tin hỗ trợ
-                     a = new Intent(AdminActivity.this, QLHoTroActivity.class);
-                } else if (item.getItemId() == R.id.itemQLApi) {
-                    // Mở giao diện Quản Lý Api
-                     a = new Intent(AdminActivity.this, QuanLyAPI.class);
-                }
-                else if (item.getItemId() == R.id.itemthat) {
-                    // Mở giao diện Quản Lý Api
-                     a = new Intent(AdminActivity.this, CaNhanActivity.class);
-                }
-                // Đóng ngăn kéo nếu đã xử lý sự kiện
-                if (a != null) {
-                    //binding.drawerLayout.closeDrawer(GravityCompat.START);
-                    startActivity(a);
-                    return true;
-                }
-                return false;
+        if (id == R.id.itemQLPhim){
+            Intent  myIntent = new Intent(AdminActivity.this, QLPhimActivity.class);
+            startActivity(myIntent);
+        }else if(id == R.id.itemQLApi) {
+            Intent myIntent = new Intent(AdminActivity.this, QuanLyAPI.class);
+            startActivity(myIntent);
 
+        }else if(id == R.id.itemQLTheLoai) {
+            Intent myIntent = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
+            startActivity(myIntent);
+
+        }else if(id == R.id.itemQLDoanhThu) {
+            Intent myIntent = new Intent(AdminActivity.this, DoanhThuActivity.class);
+            startActivity(myIntent);
+        }else if(id == R.id.itemQLUser) {
+            Intent myIntent = new Intent(AdminActivity.this, QLUserActivity.class);
+            startActivity(myIntent);
+        }else if(id == R.id.itemQLThongBao){
+            Intent myIntent = new Intent(AdminActivity.this, DSThongBaoActivity.class);
+            startActivity(myIntent);
+        }else if(id == R.id.itemthat){
+            Intent myIntent = new Intent(AdminActivity.this, MainActivity.class);
+            startActivity(myIntent);
+        }
+        binding.drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
             }
-        });
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
+
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Giữ màn hình sáng khi ứng dụng hoạt động
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
 }
