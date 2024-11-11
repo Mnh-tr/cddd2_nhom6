@@ -582,33 +582,32 @@ public class AdminActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(MenuItem item) {
                 Intent a = null;
                 if (item.getItemId() == R.id.itemQLPhim) {
-                     a = new Intent(AdminActivity.this, QLPhimActivity.class);
+                    a = new Intent(AdminActivity.this, QLPhimActivity.class);
 //                    return handled = true;
                 } else if (item.getItemId() == R.id.itemQLDoanhThu) {
                     // Mở giao diện Quản Lý Doanh Thu
-                     a = new Intent(AdminActivity.this, DoanhThuActivity.class);
+                    a = new Intent(AdminActivity.this, DoanhThuActivity.class);
                 } else if (item.getItemId() == R.id.itemQLUser) {
                     // Mở giao diện Quản Lý User
-                     a = new Intent(AdminActivity.this, QLUserActivity.class);
+                    a = new Intent(AdminActivity.this, QLUserActivity.class);
                 } else if (item.getItemId() == R.id.itemQLTheLoai) {
                     // Mở giao diện Quản Lý Thể Loại
-                     a = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
+                    a = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
                 } else if (item.getItemId() == R.id.itemQLQuocGia) {
                     // Mở giao diện Quản Lý Quốc Gia
 //                    Intent a = new Intent(AdminActivity.this, QL.class);
                 } else if (item.getItemId() == R.id.itemQLThongBao) {
                     // Mở giao diện Quản Lý Thông Báo
-                     a = new Intent(AdminActivity.this, QLThongBaoActivity.class);
+                    a = new Intent(AdminActivity.this, QLThongBaoActivity.class);
                 } else if (item.getItemId() == R.id.itemHoTro) {
                     // Hiển thị thông tin hỗ trợ
-                     a = new Intent(AdminActivity.this, QLHoTroActivity.class);
+                    a = new Intent(AdminActivity.this, QLHoTroActivity.class);
                 } else if (item.getItemId() == R.id.itemQLApi) {
                     // Mở giao diện Quản Lý Api
-                     a = new Intent(AdminActivity.this, QuanLyAPI.class);
-                }
-                else if (item.getItemId() == R.id.itemthat) {
+                    a = new Intent(AdminActivity.this, QuanLyAPI.class);
+                } else if (item.getItemId() == R.id.itemthat) {
                     // Mở giao diện Quản Lý Api
-                     a = new Intent(AdminActivity.this, CaNhanActivity.class);
+                    a = new Intent(AdminActivity.this, CaNhanActivity.class);
                 }
                 // Đóng ngăn kéo nếu đã xử lý sự kiện
                 if (a != null) {
@@ -617,6 +616,7 @@ public class AdminActivity extends AppCompatActivity {
                     return true;
                 }
                 return false;
+            }
             public void onClick(View v) {
                 // Inflate the menu layout
                 LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
