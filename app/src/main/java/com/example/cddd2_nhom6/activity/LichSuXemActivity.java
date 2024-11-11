@@ -56,7 +56,6 @@ public class LichSuXemActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityLichSuXemBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -357,9 +356,6 @@ public class LichSuXemActivity extends AppCompatActivity {
         });
     }
 
-
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -368,7 +364,7 @@ public class LichSuXemActivity extends AppCompatActivity {
             // Xử lý sự kiện khi nhấn vào tìm kiếm
             Toast.makeText(this, "Bạn muốn tìm kiếm gì", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (item.getItemId() == android.R.id.home) {
+        } else if (id == android.R.id.home) {
             // Chuyển đến màn hình profile
             Intent intent = new Intent(this, CaNhanActivity.class); // Thay ProfileActivity bằng tên Activity profile của bạn
             startActivity(intent);
