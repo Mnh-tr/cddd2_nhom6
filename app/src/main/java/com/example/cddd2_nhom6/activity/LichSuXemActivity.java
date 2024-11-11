@@ -51,17 +51,12 @@ public class LichSuXemActivity extends AppCompatActivity {
     private ApiService apiService;
     private DatabaseReference usersRef;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityLichSuXemBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        //Goi chuc nang nhan 2 lan de thoat
-        getOnBackPressedDispatcher().addCallback(this, callback);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -78,6 +73,10 @@ public class LichSuXemActivity extends AppCompatActivity {
         setControl();
 
         hienThiLichSuPhim();
+        swipeRefreshLayout = binding.swipeRefreshLayout; // Khởi tạo SwipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            hienThiLichSuPhim();
+        });
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
         // Kiểm tra xem ActionBar đã được khởi tạo chưa
@@ -85,10 +84,6 @@ public class LichSuXemActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Lịch sử đã xem"); // Đặt tên mới cho Toolbar
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
         }
-        swipeRefreshLayout = binding.swipeRefreshLayout; // Khởi tạo SwipeRefreshLayout
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            hienThiLichSuPhim();
-        });
     }
 
     public void setControl() {
@@ -356,10 +351,6 @@ public class LichSuXemActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -367,8 +358,9 @@ public class LichSuXemActivity extends AppCompatActivity {
         if (id == R.id.action_search) {
             // Xử lý sự kiện khi nhấn vào tìm kiếm
             Toast.makeText(this, "Bạn muốn tìm kiếm gì", Toast.LENGTH_SHORT).show();
+
             return true;
-        } else if (item.getItemId() == android.R.id.home) {
+        } else if (id == android.R.id.home) {
             // Chuyển đến màn hình profile
             Intent intent = new Intent(this, CaNhanActivity.class); // Thay ProfileActivity bằng tên Activity profile của bạn
             startActivity(intent);
@@ -380,21 +372,6 @@ public class LichSuXemActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    // Thiết lập OnBackPressedDispatcher
-    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-        @Override
-        public void handleOnBackPressed() {
-            if (doubleBackToExitPressedOnce) {
-                finishAffinity();  // Thoát ứng dụng
-                return;
-            }
-            doubleBackToExitPressedOnce = true;
-            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
-
-            // Reset lại cờ sau 2 giây
-            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-        }
-    };
 
     @Override
     protected void onResume() {
