@@ -1,15 +1,19 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -24,16 +28,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,6 +53,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
     private boolean checkPhim = true;
     private LichSuPhim lichSuPhim;
     private DatabaseReference ratingsRef;
+    private DatabaseReference userRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

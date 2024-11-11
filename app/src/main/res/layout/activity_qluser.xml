@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1A1A1A"
+    android:background="#696969"
     android:orientation="vertical"
     tools:context=".activity.QLUserActivity">
 
@@ -13,7 +13,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#1E1E1E"
+        android:background="@drawable/header_gradient"
         android:elevation="4dp">
 
         <!-- Nút quay lại -->

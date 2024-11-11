@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -230,6 +231,16 @@ public class VipActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
 
 }

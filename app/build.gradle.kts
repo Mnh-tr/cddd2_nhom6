@@ -67,4 +67,5 @@ dependencies {
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     implementation ("androidx.cardview:cardview:1.0.0")
+    implementation ("com.squareup.picasso:picasso:2.8")
 }
