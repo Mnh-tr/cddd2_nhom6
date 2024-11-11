@@ -6,15 +6,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -22,10 +25,15 @@ import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityAdminBinding;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LegendEntry;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,8 +56,9 @@ public class AdminActivity extends AppCompatActivity {
     private long startOfDay;
     private long endOfDay;
     private Calendar calendar = Calendar.getInstance();
+    private Chip a = null;
 
-    private Button selectedButton = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,26 +67,31 @@ public class AdminActivity extends AppCompatActivity {
 
         dataUser = FirebaseDatabase.getInstance().getReference("Users");
         dataTruyCap = FirebaseDatabase.getInstance().getReference("TruyCap");
-        dataThanhToan = FirebaseDatabase.getInstance().getReference("YeuCau");
+        dataThanhToan = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
 
-        // Đặt lại khoảng thời gian cho hôm nay
-        layThongTinDangKy();
-        updateSelectedButton(binding.btnHMNay);
-        layThongTInDoanhThu();
-        layThongTinTruyCapHomNay(); // Gọi hàm lấy thông tin truy cập hôm nay
+        // Đặt cho tất cả
+        updateSelectedButton(binding.btnAll);
+        hienThiTatCaThongTin();
 
         xulyXemThongTin();
         xulybuttonMenu();
+
 
     }
 
 
 
     private void xulyXemThongTin() {
-        // Lắng nghe sự kiện khi nhấn nút "Hôm nay"
-        binding.btnHMNay.setOnClickListener(view -> {
+        // Lắng nghe sự kiện khi nhấn nút "Hôm nay
 
-            updateSelectedButton(binding.btnHMNay);
+        binding.btnAll.setOnClickListener(view -> {
+            updateSelectedButton(binding.btnAll);
+            hienThiTatCaThongTin();
+        });
+
+        binding.btnHomNay.setOnClickListener(view -> {
+
+            updateSelectedButton(binding.btnHomNay);
             layThongTinDangKy();
             layThongTInDoanhThu();
             layThongTinTruyCapHomNay();
@@ -93,9 +107,9 @@ public class AdminActivity extends AppCompatActivity {
             // Gọi hàm lấy thông tin truy cập 7 ngày qua
         });
         // Lắng nghe sự kiện khi nhấn nút "7 ngày qua"
-        binding.btn7NgY.setOnClickListener(view -> {
+        binding.btn7Ngay.setOnClickListener(view -> {
 
-            updateSelectedButton(binding.btn7NgY);
+            updateSelectedButton(binding.btn7Ngay);
             layThongTinDKTrongKhoangThoiGian(7);
             laythongtinDoanhThuTrongKhoang(7);
             layThongTinTruyCapTrongKhoangThoiGian(7);
@@ -111,28 +125,98 @@ public class AdminActivity extends AppCompatActivity {
             // Cập nhật số lượng truy cập 1 tháng qua
         });
         // Lắng nghe sự kiện khi nhấn nút "1 năm qua"
-        binding.btnnam.setOnClickListener(view -> {
+        binding.btnNam.setOnClickListener(view -> {
 
-            updateSelectedButton(binding.btnnam);
+            updateSelectedButton(binding.btnNam);
             layThongTinDKTrongKhoangThoiGian(365);
             laythongtinDoanhThuTrongKhoang(365);
             layThongTinTruyCapTrongKhoangThoiGian(365);
             // Cập nhật số lượng truy cập 1 tháng qua
         });
     }
+
+    private void hienThiTatCaThongTin() {
+
+        dataUser.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int slDangKy = 0;
+                for (DataSnapshot data : snapshot.getChildren()){
+                      slDangKy++;
+                }
+                binding.tvLuotDangKyAmount.setText(""+ slDangKy);
+                xulyBieuDo();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        dataThanhToan.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                double doanhthu = 0;
+                int goi = 0;
+                for (DataSnapshot data : snapshot.getChildren()){
+                    Long soTien = data.child("soTien").getValue(Long.class);
+                    doanhthu += soTien;
+                    goi++;
+                }
+                // Định dạng và hiển thị số lượng gói VIP
+                DecimalFormat decimalFormat = new DecimalFormat("#,###");
+                String formattedDoanhThu = decimalFormat.format(doanhthu);
+                binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
+                binding.tvGoiVIPAmount.setText("" + goi);
+
+                xulyBieuDo();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        dataTruyCap.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int soluongTruycap = 0;
+                for (DataSnapshot data : snapshot.getChildren()){
+                        soluongTruycap++;
+                }
+
+                binding.tvTruyCapAmount.setText("" + soluongTruycap);
+
+                xulyBieuDo();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+
+    }
+
     // Phương thức để cập nhật màu của các nút
-    private void updateSelectedButton(Button newButton) {
+    // Phương thức để cập nhật màu của các nút Chip
+    private void updateSelectedButton(Chip newButton) {
         // Nếu nút đã được chọn khác nút hiện tại, đổi màu
-        if (selectedButton != null) {
-            selectedButton.setBackgroundTintList(getResources().getColorStateList(R.color.colorDefault)); // Màu mặc định
-            selectedButton.setTextColor(getResources().getColor(R.color.defaultTextColor)); // Màu chữ mặc định
+        if (a != null) {
+            a.setChipBackgroundColorResource(R.color.colorDefault); // Màu nền mặc định
+            a.setTextColor(getResources().getColor(R.color.defaultTextColor)); // Màu chữ mặc định
         }
 
         // Cập nhật nút hiện tại và đổi màu
-        selectedButton = newButton;
-        selectedButton.setBackgroundTintList(getResources().getColorStateList(R.color.colorSelected)); // Màu đã chọn
-        selectedButton.setTextColor(getResources().getColor(R.color.selectedTextColor)); // Màu chữ đã chọn
+        a = newButton;
+        a.setChipBackgroundColorResource(R.color.colorSelected); // Màu nền đã chọn
+        a.setTextColor(getResources().getColor(R.color.selectedTextColor)); // Màu chữ đã chọn
     }
+
 
     private void layThongTinDangKy() {
         LayThoigianNgayHomNay();
@@ -201,19 +285,21 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 double doanhthu = 0;
+                int goi = 0;
                 for (DataSnapshot data : snapshot.getChildren()){
-                    Long trangThai = data.child("idTrangThai").getValue(Long.class);
-                    String ngaymua = data.child("paymentDate").getValue(String.class);
-                    Long amount = data.child("amount").getValue(Long.class);
-                    if (ngaymua != null && trangThai == 1 ) {
+                    //Long trangThai = data.child("idTrangThai").getValue(Long.class);
+                    String ngayxacnhan = data.child("ngayXacNhan").getValue(String.class);
+                    Long soTien = data.child("soTien").getValue(Long.class);
+                    if (ngayxacnhan != null ) {
                         try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-                            Date date = sdf.parse(ngaymua); // Chuyển đổi chuỗi thành Date
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                            Date date = sdf.parse(ngayxacnhan); // Chuyển đổi chuỗi thành Date
                             long timeInMillis = date.getTime(); // Lấy thời gian mili giây
 
                             // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
                             if (timeInMillis >= startOfDay && timeInMillis <= endOfDay) {
-                                doanhthu += amount;
+                                doanhthu += soTien;
+                                goi++;
                             }
                         } catch (ParseException e) {
                             e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
@@ -225,6 +311,7 @@ public class AdminActivity extends AppCompatActivity {
                 DecimalFormat decimalFormat = new DecimalFormat("#,###");
                 String formattedDoanhThu = decimalFormat.format(doanhthu);
                 binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
+                binding.tvGoiVIPAmount.setText("" + goi);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
             }
@@ -245,19 +332,21 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 double doanhthu = 0;
+                int goi = 0;
                 for (DataSnapshot data : snapshot.getChildren()){
-                    Long trangThai = data.child("idTrangThai").getValue(Long.class);
-                    String ngaymua = data.child("paymentDate").getValue(String.class);
-                    Long amount = data.child("amount").getValue(Long.class);
-                    if (ngaymua != null && trangThai == 1 ) {
+                    //Long trangThai = data.child("idTrangThai").getValue(Long.class);
+                    String ngayxacnhan = data.child("ngayXacNhan").getValue(String.class);
+                    Long soTien = data.child("soTien").getValue(Long.class);
+                    if (ngayxacnhan != null) {
                         try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-                            Date date = sdf.parse(ngaymua); // Chuyển đổi chuỗi thành Date
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                            Date date = sdf.parse(ngayxacnhan); // Chuyển đổi chuỗi thành Date
                             long timeInMillis = date.getTime(); // Lấy thời gian mili giây
 
                             // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
                             if (timeInMillis >= startTime && timeInMillis <= endTime) {
-                                doanhthu += amount;
+                                doanhthu += soTien;
+                                goi++;
                             }
                         } catch (ParseException e) {
                             e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
@@ -269,6 +358,7 @@ public class AdminActivity extends AppCompatActivity {
                 DecimalFormat decimalFormat = new DecimalFormat("#,###");
                 String formattedDoanhThu = decimalFormat.format(doanhthu);
                 binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
+                binding.tvGoiVIPAmount.setText("" + goi);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
 
@@ -399,44 +489,68 @@ public class AdminActivity extends AppCompatActivity {
 
         // Tạo dữ liệu cho BarChart
         ArrayList<BarEntry> barEntries = new ArrayList<>();
-        barEntries.add(new BarEntry(0, doanhThu));
-        barEntries.add(new BarEntry(1, truyCap));
-        barEntries.add(new BarEntry(2, luotDangKy));
-        barEntries.add(new BarEntry(3, goiVIP));
+        barEntries.add(new BarEntry(0, truyCap));
+        barEntries.add(new BarEntry(1, luotDangKy));
+        barEntries.add(new BarEntry(2, goiVIP));
+        barEntries.add(new BarEntry(3, doanhThu));
 
         BarDataSet barDataSet = new BarDataSet(barEntries, "Thống kê");
         barDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
         BarData barData = new BarData(barDataSet);
-        barData.setBarWidth(0.9f); // Độ rộng của cột
+        barData.setBarWidth(0.8f); // Đặt độ rộng của cột nhỏ lại để tạo khoảng cách
 
+        // Định dạng giá trị hiển thị trên các cột
+        barData.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                DecimalFormat decimalFormat = new DecimalFormat("#,###");
+                return decimalFormat.format(value);
+            }
+        });
+        barData.setValueTextSize(12f); // Kích thước chữ cho giá trị
 
         // Cập nhật BarChart
         binding.barChart.setData(barData);
         binding.barChart.setFitBars(true); // Đảm bảo các cột vừa với biểu đồ
         binding.barChart.invalidate(); // Làm mới biểu đồ
 
+
+        // Bỏ tiêu đề của biểu đồ
+        binding.barChart.getDescription().setEnabled(false);
+
+
         // Tùy chỉnh Legend (chú thích) cho biểu đồ
         Legend legend = binding.barChart.getLegend();
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM); // Đặt legend ở dưới
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER); // Canh giữa
-        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL); // Hiển thị theo chiều ngang
-        legend.setDrawInside(false); // Để bên ngoài biểu đồ
-        legend.setWordWrapEnabled(true); // Tự động xuống dòng nếu cần
-        legend.setYOffset(10f); // Khoảng cách giữa legend và biểu đồ
-        legend.setXOffset(0f); // Khoảng cách bên trái/phải của legend
-        legend.setTextSize(12f); // Kích thước chữ của legend
+        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        legend.setDrawInside(false);
+        legend.setWordWrapEnabled(true);
+        legend.setYOffset(10f);
+        legend.setXOffset(0f);
+        legend.setTextSize(12f);
 
         // Đặt màu sắc và nhãn cho mỗi dữ liệu (thay thế cho tên chung "Thống kê")
         ArrayList<LegendEntry> legendEntries = new ArrayList<>();
-        legendEntries.add(new LegendEntry("Doanh thu", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[0]));
-        legendEntries.add(new LegendEntry("Truy cập", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[1]));
-        legendEntries.add(new LegendEntry("Lượt đăng ký", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[2]));
-        legendEntries.add(new LegendEntry("Gói VIP", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[3]));
+        legendEntries.add(new LegendEntry("Truy cập", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[0]));
+        legendEntries.add(new LegendEntry("Lượt đăng ký", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[1]));
+        legendEntries.add(new LegendEntry("Gói VIP", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[2]));
+        legendEntries.add(new LegendEntry("Doanh thu", Legend.LegendForm.SQUARE, 10f, 2f, null, ColorTemplate.MATERIAL_COLORS[3]));
+        legend.setCustom(legendEntries);
 
-        legend.setCustom(legendEntries); // Đặt các ghi chú tùy chỉnh vào legend
+        // Tùy chỉnh trục X để hiển thị nhãn cho từng cột
+        XAxis xAxis = binding.barChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(new String[]{"Truy cập", "Đăng ký", "Gói VIP", "Doanh thu"}));
+        xAxis.setGranularity(1f);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
 
+        // Ẩn lưới trên trục Y
+        binding.barChart.getAxisLeft().setDrawGridLines(false);
+        binding.barChart.getAxisRight().setDrawGridLines(false);
     }
+
     // Phương thức để chuyển đổi giá trị từ chuỗi thành float
     private float parseValue(String value) {
         value = value.replaceAll("[^\\d.]", ""); // Xóa các ký tự không phải số
@@ -446,11 +560,63 @@ public class AdminActivity extends AppCompatActivity {
             return 0;
         }
     }
+
     //xu ly button menu
     //xu ly button menu
     private void xulybuttonMenu() {
+        // Xử lý khi nhấn vào ImageView để mở menu
         binding.ivButtonMenu.setOnClickListener(new View.OnClickListener() {
             @Override
+            public void onClick(View view) {
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    binding.drawerLayout.openDrawer(GravityCompat.START);
+                }
+            }
+        });
+
+        // Xử lý sự kiện khi người dùng chọn các mục trong NavigationView
+        binding.navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                Intent a = null;
+                if (item.getItemId() == R.id.itemQLPhim) {
+                     a = new Intent(AdminActivity.this, QLPhimActivity.class);
+//                    return handled = true;
+                } else if (item.getItemId() == R.id.itemQLDoanhThu) {
+                    // Mở giao diện Quản Lý Doanh Thu
+                     a = new Intent(AdminActivity.this, DoanhThuActivity.class);
+                } else if (item.getItemId() == R.id.itemQLUser) {
+                    // Mở giao diện Quản Lý User
+                     a = new Intent(AdminActivity.this, QLUserActivity.class);
+                } else if (item.getItemId() == R.id.itemQLTheLoai) {
+                    // Mở giao diện Quản Lý Thể Loại
+                     a = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
+                } else if (item.getItemId() == R.id.itemQLQuocGia) {
+                    // Mở giao diện Quản Lý Quốc Gia
+//                    Intent a = new Intent(AdminActivity.this, QL.class);
+                } else if (item.getItemId() == R.id.itemQLThongBao) {
+                    // Mở giao diện Quản Lý Thông Báo
+                     a = new Intent(AdminActivity.this, QLThongBaoActivity.class);
+                } else if (item.getItemId() == R.id.itemHoTro) {
+                    // Hiển thị thông tin hỗ trợ
+                     a = new Intent(AdminActivity.this, QLHoTroActivity.class);
+                } else if (item.getItemId() == R.id.itemQLApi) {
+                    // Mở giao diện Quản Lý Api
+                     a = new Intent(AdminActivity.this, QuanLyAPI.class);
+                }
+                else if (item.getItemId() == R.id.itemthat) {
+                    // Mở giao diện Quản Lý Api
+                     a = new Intent(AdminActivity.this, CaNhanActivity.class);
+                }
+                // Đóng ngăn kéo nếu đã xử lý sự kiện
+                if (a != null) {
+                    //binding.drawerLayout.closeDrawer(GravityCompat.START);
+                    startActivity(a);
+                    return true;
+                }
+                return false;
             public void onClick(View v) {
                 // Inflate the menu layout
                 LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -538,4 +704,5 @@ public class AdminActivity extends AppCompatActivity {
             }
         });
     }
+
 }

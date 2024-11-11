@@ -30,23 +30,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
                     android:background="@drawable/profile_header_gradient">
-
-                    <Button
-                        android:id="@+id/btnDangNhap"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="16dp"
-                        android:backgroundTint="#FF437E"
-                        android:fontFamily="sans-serif-medium"
-                        android:paddingHorizontal="20dp"
-                        android:text="Đăng nhập"
-                        android:textAllCaps="false"
-                        app:cornerRadius="25dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:visibility="gone"
-                        />
-
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/userAvatar"
                         android:layout_width="120dp"

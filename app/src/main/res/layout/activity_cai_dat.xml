@@ -33,27 +33,15 @@
             android:textSize="24sp"
             android:layout_marginStart="16dp" />
     </androidx.appcompat.widget.Toolbar>
-
-    <!-- Content Layout -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/border_radiu_caidat"
-            android:padding="8dp">
-
             <!-- User Info Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="#333333"
                 app:cardElevation="4dp"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="15dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginVertical="8dp">
 
                 <LinearLayout
@@ -74,7 +62,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Xin chào: "
+                        android:text="Xin chào "
                         android:textColor="#FFFFFF"
                         android:textSize="20sp" />
 
@@ -86,17 +74,19 @@
                         android:textColor="#FFFFFF"
                         android:textStyle="bold"
                         android:textSize="20sp" />
-
-                    <ImageButton
-                        android:id="@+id/ivdangxuat"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_logout_24"
-                        android:paddingLeft="10dp"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/border_radiu_caidat"
+            android:padding="8dp">
             <!-- Account Settings -->
             <TextView
                 android:layout_width="match_parent"
@@ -104,8 +94,8 @@
                 android:text="@string/account_settings"
                 android:textSize="18sp"
                 android:gravity="center"
-                android:background="#00405d"
-                android:textColor="@color/white"
+                android:background="@drawable/textview_border"
+                android:textColor="@color/black"
                 android:paddingVertical="8dp"/>
 
             <androidx.cardview.widget.CardView
@@ -235,6 +225,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
             <androidx.cardview.widget.CardView
+                android:id="@+id/cvDangXuat"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="#333333"
@@ -281,7 +272,7 @@
                     android:gravity="center_vertical">
 
                     <TextView
-                        android:id="@+id/tvDangXuat"
+                        android:id="@+id/ivdangxuat"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

@@ -4,20 +4,21 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 import android.widget.Toast;
 
+
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cddd2_nhom6.R;
@@ -52,6 +53,7 @@ public class QLUserActivity extends AppCompatActivity {
     // danh sách người dùng góc
     private List<User> originalUserList;
     private ValueEventListener userValueEventListener;
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +61,19 @@ public class QLUserActivity extends AppCompatActivity {
         binding = ActivityQluserBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
         // Khởi tạo các list ngay từ đầu
         userList = new ArrayList<>();
         originalUserList = new ArrayList<>();
+        // Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Quản lý User"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
 
+        }
         // Khởi tạo Firebase reference
         yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
@@ -422,5 +433,40 @@ public class QLUserActivity extends AppCompatActivity {
 
         userAdapter.updateData(filteredList);
     }
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
 
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, AdminActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

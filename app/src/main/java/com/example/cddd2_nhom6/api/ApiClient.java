@@ -4,12 +4,16 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -73,5 +77,6 @@ public class ApiClient {
         baseUrl = newBaseUrl;
         retrofit = null; // Đặt lại retrofit để sử dụng baseUrl mới
     }
+
 }
 

@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -111,7 +112,7 @@ public class VipActivity extends AppCompatActivity {
                                 } else {
                                     Log.d("id loại người dùng", "idLoaiND is null for user " + idUser);
                                 }
-                                // Kiểm tra trạng thái của yêuq cầu
+                                // Kiểm tra trạng thái của yêu cầu
                                 if (idLoaiND != null && idLoaiND == 1) {
                                     // Nếu idLoaiND là 1, đổi màu và text của các nút
                                     binding.btnDangKy.setText("Đang sử dụng");
@@ -230,6 +231,16 @@ public class VipActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
 
 }

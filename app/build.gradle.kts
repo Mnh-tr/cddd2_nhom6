@@ -63,6 +63,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation ("com.google.firebase:firebase-messaging:23.0.0")
     implementation ("com.google.android.material:material:1.8.0")
+
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     implementation ("androidx.cardview:cardview:1.0.0")
 
+    implementation ("com.squareup.picasso:picasso:2.8")
 }

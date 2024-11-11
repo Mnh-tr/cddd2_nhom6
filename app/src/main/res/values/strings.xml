@@ -6,6 +6,7 @@
     <string name="favorite_button_label">Yêu thích</string>
     <string name="fullscreen">fullscreen</string>
     <string name="episode">Tập phim</string>
+
     <string name="settings">Cài Đặt</string>
     <string name="account_settings">Thiết Lập Tài Khoản</string>
     <string name="change_password">Đổi Mật Khẩu</string>
@@ -14,6 +15,7 @@
     <string name="about">Về chúng tôi</string>
     <string name="Help">Trợ giúp</string>
     <string name="logout">Đăng xuất</string>
+    <string name="login">Đăng Nhập</string>
     <string name="admin">Admin</string>
     <string name="profile_image">Ảnh đại diện</string>
     <string-array name="genre_array">

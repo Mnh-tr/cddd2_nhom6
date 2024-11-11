@@ -27,6 +27,12 @@ public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimView
     public void setRecyclerViewItemClickListener(OnRecyclerViewItemClickListener recyclerViewItemClickListener) {
         DSPhimAdapter.recyclerViewItemClickListener = recyclerViewItemClickListener;
     }
+    // Thêm phương thức để cập nhật dữ liệu mới
+    public void updateData(List<DSPhim> newMovieList) {
+        this.dsPhims.clear(); // Xóa dữ liệu cũ
+        this.dsPhims.addAll(newMovieList); // Thêm dữ liệu mới
+        notifyDataSetChanged(); // Thông báo adapter cập nhật
+    }
 
     @NonNull
     @Override

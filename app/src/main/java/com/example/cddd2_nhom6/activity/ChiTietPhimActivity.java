@@ -1,15 +1,19 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -24,16 +28,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -52,8 +50,10 @@ public class ChiTietPhimActivity extends AppCompatActivity {
     private  String nameUser;
     private String emailUser;
     private int idLoaiND;
+    private boolean checkPhim = true;
     private LichSuPhim lichSuPhim;
     private DatabaseReference ratingsRef;
+    private DatabaseReference userRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +63,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         setEvent();
     }
     private void setEvent() {
+        laythongtinUser();
         // Lấy slug từ Intent
         movieSlug = getIntent().getStringExtra("slug");
         // Lấy chi tiết phim
@@ -73,15 +74,58 @@ public class ChiTietPhimActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (movieLink != null && !movieLink.isEmpty()) {
-                    String episodeCurrent = serverDataList.get(0).getName();
-                    // Lưu lịch sử xem phim
-                    lichSuPhim.luuLichSuXem(movieSlug,episodeCurrent,serverDataList);
-                    // Khởi động activity phát video
-                    Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
-                    intent.putExtra("movie_link", movieLink);  // Truyền link phim
-                    intent.putExtra("slug", movieSlug);
-                    intent.putExtra("episodeCurrent", episodeCurrent);
-                    view.getContext().startActivity(intent);
+                    Log.d("Check",String.valueOf(checkPhim));
+                    Log.d("Check loại người dùng",String.valueOf(idLoaiND));
+                    if(checkPhim && idLoaiND == 1 || idLoaiND == 2 || idLoaiND == 3){
+                        Log.d("Check",String.valueOf(checkPhim));
+                        Log.d("Check loại người dùng vip",String.valueOf(idLoaiND));
+                        Toast.makeText(view.getContext(), "Bạn là Vip", Toast.LENGTH_SHORT).show();
+                        String episodeCurrent = serverDataList.get(0).getName();
+                        // Lưu lịch sử xem phim
+                        lichSuPhim.luuLichSuXem(movieSlug,episodeCurrent,serverDataList);
+                        // Khởi động activity phát video
+                        Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
+                        intent.putExtra("movie_link", movieLink);  // Truyền link phim
+                        intent.putExtra("slug", movieSlug);
+                        intent.putExtra("episodeCurrent", episodeCurrent);
+                        view.getContext().startActivity(intent);
+                    }else{
+                        if (checkPhim  && idLoaiND == 0){
+                            Toast.makeText(view.getContext(), "Bạn cần mua vip để xem phim này", Toast.LENGTH_SHORT).show();
+
+                        }else{
+                            if(!checkPhim && idLoaiND == 1 || idLoaiND == 2 || idLoaiND == 3){
+                                Log.d("Check",String.valueOf(checkPhim));
+                                Log.d("Check loại người dùng vip",String.valueOf(idLoaiND));
+                                Toast.makeText(view.getContext(), "Bạn là Vip", Toast.LENGTH_SHORT).show();
+                                String episodeCurrent = serverDataList.get(0).getName();
+                                // Lưu lịch sử xem phim
+                                lichSuPhim.luuLichSuXem(movieSlug,episodeCurrent,serverDataList);
+                                // Khởi động activity phát video
+                                Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
+                                intent.putExtra("movie_link", movieLink);  // Truyền link phim
+                                intent.putExtra("slug", movieSlug);
+                                intent.putExtra("episodeCurrent", episodeCurrent);
+                                view.getContext().startActivity(intent);
+                            }else{
+                                if (!checkPhim  && idLoaiND == 0){
+                                    Log.d("Check",String.valueOf(checkPhim));
+                                    Log.d("Check loại người dùng thường",String.valueOf(idLoaiND));
+                                    Toast.makeText(view.getContext(), "Bạn là Thường", Toast.LENGTH_SHORT).show();
+                                    String episodeCurrent = serverDataList.get(0).getName();
+                                    // Lưu lịch sử xem phim
+                                    lichSuPhim.luuLichSuXem(movieSlug,episodeCurrent,serverDataList);
+                                    // Khởi động activity phát video
+                                    Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
+                                    intent.putExtra("movie_link", movieLink);  // Truyền link phim
+                                    intent.putExtra("slug", movieSlug);
+                                    intent.putExtra("episodeCurrent", episodeCurrent);
+                                    view.getContext().startActivity(intent);
+                                }
+                            }
+                        }
+                    }
+
                 } else {
                     Toast.makeText(view.getContext(), "Link phim không khả dụng", Toast.LENGTH_SHORT).show();
                 }
@@ -96,6 +140,13 @@ public class ChiTietPhimActivity extends AppCompatActivity {
         ratingsRef = FirebaseDatabase.getInstance().getReference("Ratings");
         // Tính và hiển thị trung bình sao và số lượt đánh giá
         tinhTrungBinhDanhGia(movieSlug);
+    }
+    private void laythongtinUser(){
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        idUser = sharedPreferences.getString("id_user", null);
+        nameUser = sharedPreferences.getString("name", null);
+        emailUser  = sharedPreferences.getString("email", null);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
     }
     public void tinhTrungBinhDanhGia(String movieSlug) {
         ratingsRef.child(movieSlug).addValueEventListener(new ValueEventListener() {
@@ -141,7 +192,8 @@ public class ChiTietPhimActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     // Lấy chi tiết phim từ phản hồi
                     ChiTietPhim.MovieItem movie = response.body().getMovie();  // Giả sử phản hồi trả về đối tượng Movie
-
+                    checkPhim = movie.isChieurap();
+                    Log.d("check Phim",String.valueOf(checkPhim));
                     // Hiển thị thông tin phim bằng ViewBinding
                     binding.textViewTitle.setText(movie.getName());
                     // Giới hạn số ký tự cho mô tả

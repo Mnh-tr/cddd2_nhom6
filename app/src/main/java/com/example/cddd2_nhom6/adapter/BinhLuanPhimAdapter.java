@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.adapter;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -25,16 +26,21 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         this.binhLuanPhimList = binhLuanPhims;
         this.deleteListener = listener;
     }
-    public void removeComment(int position) {
-        binhLuanPhimList.remove(position);
-        notifyItemRemoved(position);
-    }
+
     public String getCommentUserId(int position) {
         return binhLuanPhimList.get(position).getUserId();
     }
+
     public String getCommentText(int position) {
-        return binhLuanPhimList.get(position).getCommentText(); // Giả sử bạn có phương thức getCommentText() trong lớp BinhLuanPhim
+        return binhLuanPhimList.get(position).getCommentText();
     }
+
+    public void removeCommentAt(int position) {
+        binhLuanPhimList.remove(position); // Xóa bình luận khỏi danh sách
+        notifyItemRemoved(position); // Thông báo RecyclerView xóa item ở vị trí này
+        notifyItemRangeChanged(position, binhLuanPhimList.size()); // Thông báo RecyclerView cập nhật lại các item còn lại
+    }
+
 
     @NonNull
     @Override
@@ -48,7 +54,6 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         BinhLuanPhim binhLuanPhim = binhLuanPhimList.get(position);
         holder.binding.tvTenNguoiDung.setText(binhLuanPhim.getUserName());
         holder.binding.tvBinhLuan.setText(binhLuanPhim.getCommentText());
-        // Định dạng thời gian tùy theo yêu cầu
         holder.binding.tvNgayBinhLuan.setText(DateFormat.getDateTimeInstance().format(binhLuanPhim.timestamp));
     }
 
@@ -62,21 +67,17 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         public MovieViewHolder(@NonNull ItemBinhluanphimBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-            // Gọi hàm xóa bình luận khi nút được nhấn
-            binding.btnXoaBinhLuan.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int position = getAdapterPosition(); // Lấy vị trí hiện tại của ViewHolder
-                    if (position != RecyclerView.NO_POSITION) { // Kiểm tra vị trí hợp lệ
-                        deleteListener.xoaBinhLuan(position); // Gọi hàm xóa bình luận
-                    }
+            binding.btnXoaBinhLuan.setOnClickListener(view -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    deleteListener.xoaBinhLuan(position);
                 }
             });
         }
     }
-    // Khai báo interface
+
     public interface OnCommentDeleteListener {
         void xoaBinhLuan(int position);
     }
-
 }
+
