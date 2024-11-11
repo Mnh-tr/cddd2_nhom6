@@ -189,7 +189,6 @@ public class ThemPhimActivity extends AppCompatActivity {
     }
 
     private void layDuLieuQuocGia() {
-        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference quocGiaRef = FirebaseDatabase.getInstance().getReference("quocGia");
         quocGiaRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -211,7 +210,6 @@ public class ThemPhimActivity extends AppCompatActivity {
 
                 // Đặt giá trị mặc định
                 binding.spinnerCountry.setSelection(0);
-                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -400,22 +398,16 @@ public class ThemPhimActivity extends AppCompatActivity {
                         binding.radioFree.setChecked(false);
                         binding.radioPremium.setChecked(true);
                     }
-
+                    binding.selectedGenresText.setText("Thể loại đã chọn: " + theLoai);
 
                     for (int i = 0; i < quocGiaList.size(); i++) {
                         String country = quocGiaList.get(i);
                         if (country.equals(quocGia)){
                             binding.spinnerCountry.setSelection(i);
-                            Toast.makeText(ThemPhimActivity.this, quocGia+"::::"+country+i, Toast.LENGTH_SHORT).show();
+                            binding.progressBar.setVisibility(View.GONE);
                             break;
                         }
                     }
-
-
-
-                    binding.selectedGenresText.setText("Thể loại đã chọn: " + theLoai);
-                    binding.progressBar.setVisibility(View.GONE);
-
                 }
             }
 

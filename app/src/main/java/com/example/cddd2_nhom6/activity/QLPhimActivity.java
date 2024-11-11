@@ -116,7 +116,6 @@ public class QLPhimActivity extends AppCompatActivity {
 
         // Xử lý sự kiện xóa phim khi nhấn vào icon xóa
         binding.deleteIcon.setOnClickListener(v -> {
-            binding.progressBar.setVisibility(View.VISIBLE);
             List<QLPhim> selectedMovies = adapter.getSelectedMovies();
 
             // Kiểm tra nếu có phim được chọn
@@ -138,7 +137,6 @@ public class QLPhimActivity extends AppCompatActivity {
                 // Hiển thị thông báo nếu không có phim nào được chọn
                 Toast.makeText(this, "Không có phim nào được chọn", Toast.LENGTH_SHORT).show();
             }
-            binding.progressBar.setVisibility(View.GONE);
         });
 
         // Xử lý sự kiện khi nhấn nút chọn tất cả
@@ -153,7 +151,6 @@ public class QLPhimActivity extends AppCompatActivity {
     }
 
     private void xulySpiner() {
-        binding.progressBar.setVisibility(View.VISIBLE);
         List<String> goiOptions = Arrays.asList("All", "Thường", "Vip");
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, goiOptions);
@@ -165,8 +162,7 @@ public class QLPhimActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedGoi = parent.getItemAtPosition(position).toString();
                 // Gọi lại fetchMoviesFromFirebase() để tải lại dữ liệu phim từ Firebase
-                fetchMoviesFromFirebase(selectedGoi);
-                binding.progressBar.setVisibility(View.GONE);// Truyền loại gói phim vào đây
+                fetchMoviesFromFirebase(selectedGoi);// Truyền loại gói phim vào đây
             }
 
             @Override
@@ -206,12 +202,13 @@ public class QLPhimActivity extends AppCompatActivity {
         // Cập nhật lại giao diện
         adapter.getSelectedMovies().clear(); // Xóa danh sách phim đã chọn
         adapter.notifyDataSetChanged(); // Cập nhật RecyclerView
-        binding.deleteIcon.setVisibility(View.GONE); // Ẩn icon xóa sau khi xóa
         Toast.makeText(this, "Đã xóa phim", Toast.LENGTH_SHORT).show();
     }
 
     private void fetchMoviesFromFirebase(String goiType) {
+
         binding.progressBar.setVisibility(View.VISIBLE);
+
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Movies");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -235,6 +232,7 @@ public class QLPhimActivity extends AppCompatActivity {
                 String a = binding.spinnerTimGoi.getSelectedItem().toString().trim();
                 filterMoviesByGoi(a, phimList);  // Lọc theo gói sau khi lọc theo ngày
                 binding.progressBar.setVisibility(View.GONE);
+
             }
 
             @Override

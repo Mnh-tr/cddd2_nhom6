@@ -106,7 +106,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         });
 
         binding.btnHomNay.setOnClickListener(view -> {
-
             updateSelectedButton(binding.btnHomNay);
             layThongTinDangKy();
             layThongTInDoanhThu();
@@ -142,7 +141,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         });
         // Lắng nghe sự kiện khi nhấn nút "1 năm qua"
         binding.btnNam.setOnClickListener(view -> {
-
             updateSelectedButton(binding.btnNam);
             layThongTinDKTrongKhoangThoiGian(365);
             laythongtinDoanhThuTrongKhoang(365);
@@ -163,7 +161,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 }
                 binding.tvLuotDangKyAmount.setText(""+ slDangKy);
                 xulyBieuDo();
-                binding.progressBar.setVisibility(View.GONE);
+
             }
 
             @Override
@@ -189,7 +187,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvGoiVIPAmount.setText("" + goi);
 
                 xulyBieuDo();
-                binding.progressBar.setVisibility(View.GONE);
 
             }
 
@@ -273,7 +270,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         });
     }
     private void layThongTinDKTrongKhoangThoiGian(int soNgay) {
-        binding.progressBar.setVisibility(View.VISIBLE);
+
         calendar.setTimeInMillis(System.currentTimeMillis()); // Đặt lại về hiện tại
         long startTime = LayThoigianCachDay(soNgay);
         long endTime = System.currentTimeMillis();
@@ -294,7 +291,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvLuotDangKyAmount.setText("" + userCount);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
-                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -305,7 +301,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     }
 
     private void layThongTInDoanhThu() {
-        binding.progressBar.setVisibility(View.VISIBLE);
         LayThoigianNgayHomNay(); // 23:59:59 hôm nay
 
         dataThanhToan.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -341,7 +336,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvGoiVIPAmount.setText("" + goi);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
-                binding.progressBar.setVisibility(View.GONE);
+
             }
 
             @Override
@@ -352,8 +347,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     }
     // doanh thu
     private void laythongtinDoanhThuTrongKhoang(int soNgay) {
-
-        binding.progressBar.setVisibility(View.VISIBLE);
         long startTime = LayThoigianCachDay(soNgay);
         long endTime = System.currentTimeMillis();
 
@@ -390,7 +383,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvGoiVIPAmount.setText("" + goi);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
-                binding.progressBar.setVisibility(View.GONE);
+
 
             }
 
