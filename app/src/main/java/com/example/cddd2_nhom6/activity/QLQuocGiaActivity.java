@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -139,5 +140,18 @@ public class QLQuocGiaActivity extends AppCompatActivity {
     private void datLaiForm() {
         binding.etQuocGia.setText("");
         binding.etLinkAnh.setText("");
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Giữ màn hình sáng khi ứng dụng hoạt động
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 }
