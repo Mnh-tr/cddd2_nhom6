@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
     private PhimAdapter phimAdapter;
     private DatabaseReference movieRef;
     private List<QLPhim> movieList;
+    private boolean isUserLoggedIn = false; // Biến để theo dõi trạng thái đăng nhập
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -158,6 +159,13 @@ public class MainActivity extends AppCompatActivity {
             } else if ("Thông tin cá nhân".equals(headerTitle)) {
                 Intent intent = new Intent(MainActivity.this, CaNhanActivity.class);
                 startActivity(intent);
+                return true; // Ngăn chặn mở rộng nhóm
+            }else if ("Admin".equals(headerTitle)) {
+                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                startActivity(intent);
+                return true; // Ngăn chặn mở rộng nhóm
+            }else if ("Đăng Xuất".equals(headerTitle)) {
+                dangXuat();
                 return true; // Ngăn chặn mở rộng nhóm
             }
 
@@ -274,7 +282,6 @@ public class MainActivity extends AppCompatActivity {
         emailUser  = sharedPreferences.getString("email", null);
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
         Log.d("id_loaiND Ban đầu", String.valueOf(idLoaiND));
-
     }
     private void theoDoiThayDoiTrenFirebase() {
         if (idUser != null) {
@@ -456,9 +463,53 @@ public class MainActivity extends AppCompatActivity {
         caiDat.add("Giao diện tối");
         listChildren.put("Cài Đặt", caiDat);
         listHeaders.add("Thông tin cá nhân");
+        listHeaders.add("Admin");
         listHeaders.add("Đăng Nhập");
-        listChildren.put("Đăng Nhập", new ArrayList<>());
-        listChildren.put("Thông tin cá nhân", new ArrayList<>());
+        if (idUser != null) {
+            if (idLoaiND == 3 || idLoaiND == 2) { // Kiểm tra nếu là admin
+                isUserLoggedIn = true; // Người dùng là admin
+
+                // Kiểm tra và thêm mục "Admin" nếu chưa có
+                if (!listHeaders.contains("Admin")) {
+                    listHeaders.add("Admin");
+                }
+
+                // Kiểm tra và thêm mục "Đăng Xuất" nếu chưa có
+                if (!listHeaders.contains("Đăng Xuất")) {
+                    listHeaders.add("Đăng Xuất");
+                }
+
+                // Xóa mục "Đăng Nhập" nếu tồn tại
+                listHeaders.remove("Đăng Nhập");
+
+            } else { // Người dùng thông thường
+                isUserLoggedIn = true;
+
+                // Xóa mục "Admin" nếu tồn tại
+                listHeaders.remove("Admin");
+
+                // Kiểm tra và thêm mục "Đăng Xuất" nếu chưa có
+                if (!listHeaders.contains("Đăng Xuất")) {
+                    listHeaders.add("Đăng Xuất");
+                }
+
+                // Xóa mục "Đăng Nhập" nếu tồn tại
+                listHeaders.remove("Đăng Nhập");
+            }
+        } else { // Người dùng chưa đăng nhập
+            isUserLoggedIn = false;
+
+            // Xóa các mục "Admin" và "Đăng Xuất" nếu tồn tại
+            listHeaders.remove("Admin");
+            listHeaders.remove("Đăng Xuất");
+
+            // Kiểm tra và thêm mục "Đăng Nhập" nếu chưa có
+            if (!listHeaders.contains("Đăng Nhập")) {
+                listHeaders.add("Đăng Nhập");
+            }
+        }
+
+
 
         // Lấy dữ liệu "Thể Loại" từ Firebase
         database.child("theLoai").addValueEventListener(new ValueEventListener() {
@@ -510,6 +561,37 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void dangXuat() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("status");
+
+            // Đặt trạng thái là "offline" trong Firebase Database
+            userStatusRef.setValue("offline").addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    // Thực hiện đăng xuất khỏi Firebase Auth
+                    FirebaseAuth.getInstance().signOut();
+
+                    // Xóa thông tin trong SharedPreferences
+                    SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.clear(); // Xóa tất cả dữ liệu trong SharedPreferences
+                    editor.apply();
+
+                    // Chuyển người dùng về MainActivity
+                    Intent intent = new Intent(this, MainActivity.class);
+                    startActivity(intent);
+
+                    Toast.makeText(this, "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Đăng xuất thất bại, vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
     private void hienThiPhimKKPhim(String theLoaiSlug, String quocGiaSlug) {
         int page = 1; // Hoặc thay đổi theo nhu cầu của bạn
         // Kiểm tra xem cả hai slug đều không null
@@ -1396,6 +1478,7 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
     @Override
     protected void onResume() {
         super.onResume();
