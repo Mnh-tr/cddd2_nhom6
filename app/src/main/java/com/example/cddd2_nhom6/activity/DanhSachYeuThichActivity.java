@@ -2,11 +2,13 @@ package com.example.cddd2_nhom6.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -40,6 +42,7 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
     private ApiService apiService;
     private DatabaseReference usersRef;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,8 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
         binding = ActivityFavoriteMoviesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot()); // Gán layout cho a
 
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
         apiService = ApiClient.getClient().create(ApiService.class);
 
         yeuThichRef = FirebaseDatabase.getInstance().getReference("Favorite");
@@ -168,7 +173,21 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
         });
     }
 
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
 
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
     @Override
     protected void onResume() {
         super.onResume();

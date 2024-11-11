@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -27,6 +29,7 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
     private DatabaseReference databaseReference; // Tham chiếu đến Realtime Database
     private String userId;
     private boolean isPasswordVisible = false;  // Trạng thái của mật khẩu
+    private boolean doubleBackToExitPressedOnce = false;  // Trạng thái của mật khẩu
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,8 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
         binding = ActivityChinhSuaThongTinBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //Goi chuc nang nhan 2 lan de thoat
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
         // Khởi tạo Firebase Realtime Database
         databaseReference = FirebaseDatabase.getInstance().getReference("Users");
@@ -204,6 +209,21 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
             return false;
         });
     }
+    // Thiết lập OnBackPressedDispatcher
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doubleBackToExitPressedOnce) {
+                finishAffinity();  // Thoát ứng dụng
+                return;
+            }
+            doubleBackToExitPressedOnce = true;
+            Toast.makeText(getApplicationContext(), "Nhấn thoát thêm một lần nữa", Toast.LENGTH_SHORT).show();
+
+            // Reset lại cờ sau 2 giây
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        }
+    };
     @Override
     protected void onResume() {
         super.onResume();

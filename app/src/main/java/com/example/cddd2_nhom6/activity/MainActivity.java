@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -37,6 +38,7 @@ import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.DSPhimAPiOphim;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.model.PhimAPiOphim;
+import com.example.cddd2_nhom6.model.QLPhim;
 import com.example.cddd2_nhom6.model.ThongBaoKhiUngDungTat;
 import com.example.cddd2_nhom6.model.ThongBaoTrenManHinh;
 import com.example.cddd2_nhom6.model.TruyCap;
@@ -91,6 +93,11 @@ public class MainActivity extends AppCompatActivity {
     private String theLoaiSlug = null;
     private String quocGiaSlug = null;
     private boolean doubleBackToExitPressedOnce = false;
+    private String selectedTheLoaiName;
+    private String selectedQuocGiaName;
+    private PhimAdapter phimAdapter;
+    private DatabaseReference movieRef;
+    private List<QLPhim> movieList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,6 +107,9 @@ public class MainActivity extends AppCompatActivity {
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
+
+        theoDoiThayDoiTrenFirebase();
+
         loc();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         updateUser();
@@ -132,9 +142,23 @@ public class MainActivity extends AppCompatActivity {
             loadTVShow();// Tải lại danh sách tvshow
             loadPhimLe();
             loadPhimHoatHinh();
-            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+            fetchMoviesFromFirebase();
+            binding.dsPhim.setVisibility(View.GONE);
             binding.recyclerViewMovies.setVisibility(View.GONE);
+            binding.recyclerTimKiem.setVisibility(View.GONE);
+            binding.dsPhimTimKiem.setVisibility(View.GONE);
         });
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        movieRef = database.getReference("movies"); // Đây là nơi lưu trữ thông tin phim trên Firebase
+
+        // Khởi tạo movieList và RecyclerView
+        movieList = new ArrayList<>();
+        phimAdapter = new PhimAdapter(this, movieList);
+        binding.recyclerViewphim.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerViewphim.setAdapter(phimAdapter);
+        // Load phim từ Firebase
+        fetchMoviesFromFirebase();
 
         apiService = ApiClient.getClient().create(ApiService.class);
         // Khởi tạo danh sách phim
@@ -154,25 +178,21 @@ public class MainActivity extends AppCompatActivity {
                 if ("Kkphim".equals(name)) {
                     binding.xemThemPhimBo.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSKkphimBo)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "series"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemPhimLe.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSKkphimPhimLe)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "movie"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemTVshow.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSKkphimHoatHinh)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "tvShow"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemHoatHinh.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSKkphimTvShow)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "hoathinh"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
@@ -180,25 +200,21 @@ public class MainActivity extends AppCompatActivity {
                 } else if ("Ophim".equals(name)) {
                     binding.xemThemPhimBo.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("seriesList", new ArrayList<>(DSOphimBo)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "series"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemPhimLe.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("phimLe", new ArrayList<>(DSOphimLe)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "movie"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemHoatHinh.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("hoatHinh", new ArrayList<>(DSOphimHoatHinh)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "hoathinh"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
                     binding.xemThemTVshow.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
-                        intent.putParcelableArrayListExtra("tVshow", new ArrayList<>(DSOphimTvShow)); // Chuyển danh sách phim bộ
                         intent.putExtra("type", "tvShow"); // Thêm loại phim bộ
                         startActivity(intent);
                     });
@@ -235,6 +251,62 @@ public class MainActivity extends AppCompatActivity {
         }
         // Khởi tạo và chạy banner
         loaDuLieuApiKhiThayDoi();
+    }
+    private void laythongtinUser(){
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        idUser = sharedPreferences.getString("id_user", null);
+        nameUser = sharedPreferences.getString("name", null);
+        emailUser  = sharedPreferences.getString("email", null);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
+        Log.d("id_loaiND Ban đầu", String.valueOf(idLoaiND));
+
+    }
+    private void theoDoiThayDoiTrenFirebase() {
+        if (idUser != null) {
+            DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+
+            // Tìm bản ghi có id_user khớp với idUser
+            usersRef.orderByChild("id_user").equalTo(idUser).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                            // Lấy dữ liệu mới từ Firebase
+                            String newName = userSnapshot.child("name").getValue(String.class);
+                            String newEmail = userSnapshot.child("email").getValue(String.class);
+                            Integer newIdLoaiND = userSnapshot.child("id_loaiND").getValue(Integer.class);
+
+                            if (newIdLoaiND != null) {
+                                // Cập nhật lại SharedPreferences với dữ liệu mới
+                                SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putString("name", newName);
+                                editor.putString("email", newEmail);
+                                editor.putInt("id_loaiND", newIdLoaiND);
+                                editor.apply();
+
+                                // Cập nhật biến trong Activity nếu cần thiết
+                                nameUser = newName;
+                                emailUser = newEmail;
+                                idLoaiND = newIdLoaiND;
+
+                                Log.d("id_loaiND sau khi cập nhập", String.valueOf(idLoaiND));
+                            } else {
+                                Log.e("Lỗi", "Giá trị id_loaiND null");
+                            }
+                        }
+                    } else {
+                        Log.e("Lỗi", "Không tìm thấy người dùng với id_user: " + idUser);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    // Xử lý lỗi nếu cần
+                    Log.e("FirebaseError", "Không thể lắng nghe thay đổi dữ liệu.", error.toException());
+                }
+            });
+        }
     }
 
     public static void kiemTraTruyCap(String idUser) {
@@ -291,10 +363,17 @@ public class MainActivity extends AppCompatActivity {
                 return true; // Đảm bảo không xử lý thêm các sự kiện khác
             }
 
+            // Cập nhật tên thể loại hoặc quốc gia đã chọn
             if ("Thể Loại".equals(header)) {
+                selectedTheLoaiName = selectedItem; // Lưu tên thể loại
                 theLoaiSlug = theLoaiSlugMap.get(selectedItem); // Lấy slug cho thể loại
+                // Cập nhật TextView hiển thị tên thể loại
+                binding.tvSlug.setText("Thể loại: " + selectedTheLoaiName);
             } else if ("Quốc Gia".equals(header)) {
+                selectedQuocGiaName = selectedItem; // Lưu tên quốc gia
                 quocGiaSlug = quocGiaSlugMap.get(selectedItem); // Lấy slug cho quốc gia
+                // Cập nhật TextView hiển thị tên quốc gia
+                binding.tvSlug.setText("Quốc gia: " + selectedQuocGiaName);
             }
 
             if (theLoaiSlug != null) {
@@ -303,10 +382,21 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onBaseUrlFetched(String name, String url) {
                         if ("Kkphim".equals(name)) {
-                            // Tải dữ liệu ban đầu
+                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimKKPhim(theLoaiSlug, null); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
+                                startActivity(intent);
+                            });
                         } else if ("Ophim".equals(name)) {
+                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimOPhim(theLoaiSlug, null); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
+                                startActivity(intent);
+                            });
                         }
                     }
 
@@ -321,10 +411,21 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onBaseUrlFetched(String name, String url) {
                         if ("Kkphim".equals(name)) {
-                            // Tải dữ liệu ban đầu
+                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimKKPhim(null, quocGiaSlug); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("quocgia", quocGiaSlug); // Thêm quốc gia
+                                startActivity(intent);
+                            });
                         } else if ("Ophim".equals(name)) {
+                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, new ArrayList<>())); // Tạo adapter mới
                             hienThiPhimOPhim(null, quocGiaSlug); // Hoặc xử lý theo cách bạn muốn
+                            binding.xemThemBoLoc.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                                intent.putExtra("quocgia", quocGiaSlug); // Thêm quốc gia
+                                startActivity(intent);
+                            });
                         }
                     }
 
@@ -421,21 +522,31 @@ public class MainActivity extends AppCompatActivity {
 
                         if (theLoaiKkphim.isEmpty()) {
                             Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho thể loại này.", Toast.LENGTH_SHORT).show();
-                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.dsPhim.setVisibility(View.GONE);
                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                            binding.recyclerTimKiem.setVisibility(View.GONE);
+                            binding.dsPhimTimKiem.setVisibility(View.GONE);
                             return;
+                        }
+                        // Giới hạn danh sách chỉ 9 phim
+                        if (theLoaiKkphim.size() > 9) {
+                            theLoaiKkphim = theLoaiKkphim.subList(0, 9);
                         }
 
                         binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, theLoaiKkphim));
-                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.dsPhim.setVisibility(View.VISIBLE);
                         binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                        binding.recyclerTimKiem.setVisibility(View.GONE);
+                        binding.dsPhimTimKiem.setVisibility(View.GONE);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.dsPhim.setVisibility(View.GONE);
                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                    binding.recyclerTimKiem.setVisibility(View.GONE);
+                    binding.dsPhimTimKiem.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, "Không thể tải dữ liệu thể loại", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -448,21 +559,31 @@ public class MainActivity extends AppCompatActivity {
 
                         if (quocGiaKkphim.isEmpty()) {
                             Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho quốc gia này.", Toast.LENGTH_SHORT).show();
-                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.dsPhim.setVisibility(View.GONE);
                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                            binding.recyclerTimKiem.setVisibility(View.GONE);
+                            binding.dsPhimTimKiem.setVisibility(View.GONE);
                             return;
+                        }
+                        // Giới hạn danh sách chỉ 9 phim
+                        if (quocGiaKkphim.size() > 9) {
+                            quocGiaKkphim = quocGiaKkphim.subList(0, 9);
                         }
 
                         binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, quocGiaKkphim));
-                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.dsPhim.setVisibility(View.VISIBLE);
                         binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                        binding.recyclerTimKiem.setVisibility(View.GONE);
+                        binding.dsPhimTimKiem.setVisibility(View.GONE);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.dsPhim.setVisibility(View.GONE);
+                    binding.dsPhimTimKiem.setVisibility(View.GONE);
                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                    binding.recyclerTimKiem.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, "Không thể tải dữ liệu quốc gia", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -481,21 +602,31 @@ public class MainActivity extends AppCompatActivity {
 
                         if (theLoaiOphim.isEmpty()) {
                             Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho thể loại này.", Toast.LENGTH_SHORT).show();
-                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.dsPhim.setVisibility(View.GONE);
                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                            binding.recyclerTimKiem.setVisibility(View.GONE);
+                            binding.dsPhimTimKiem.setVisibility(View.GONE);
                             return;
+                        }
+                        // Giới hạn danh sách chỉ 9 phim
+                        if (theLoaiOphim.size() > 9) {
+                            theLoaiOphim = theLoaiOphim.subList(0, 9);
                         }
 
                         binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, theLoaiOphim));
-                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.dsPhim.setVisibility(View.VISIBLE);
                         binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                        binding.recyclerTimKiem.setVisibility(View.GONE);
+                        binding.dsPhimTimKiem.setVisibility(View.GONE);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<DSResponseOphim> call, Throwable t) {
-                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.dsPhim.setVisibility(View.GONE);
+                    binding.dsPhimTimKiem.setVisibility(View.GONE);
                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                    binding.recyclerTimKiem.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, "Không thể tải dữ liệu thể loại", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -508,21 +639,31 @@ public class MainActivity extends AppCompatActivity {
 
                         if (quocGiaOphim.isEmpty()) {
                             Toast.makeText(MainActivity.this, "Không tìm thấy dữ liệu cho quốc gia này.", Toast.LENGTH_SHORT).show();
-                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                            binding.dsPhim.setVisibility(View.GONE);
                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                            binding.dsPhimTimKiem.setVisibility(View.GONE);
+                            binding.recyclerTimKiem.setVisibility(View.GONE);
                             return;
+                        }
+                        // Giới hạn danh sách chỉ 9 phim
+                        if (quocGiaOphim.size() > 9) {
+                            quocGiaOphim = quocGiaOphim.subList(0, 9);
                         }
 
                         binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, quocGiaOphim));
-                        binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
+                        binding.dsPhim.setVisibility(View.VISIBLE);
+                        binding.dsPhimTimKiem.setVisibility(View.GONE);
                         binding.recyclerViewMovies.setVisibility(View.VISIBLE);
+                        binding.recyclerTimKiem.setVisibility(View.GONE);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<DSResponseOphim> call, Throwable t) {
-                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                    binding.dsPhim.setVisibility(View.GONE);
+                    binding.dsPhimTimKiem.setVisibility(View.GONE);
                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                    binding.recyclerTimKiem.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, "Không thể tải dữ liệu quốc gia", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -575,14 +716,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("TruyCap", "Lỗi khi thêm truy cập: " + e.getMessage());
                 });
     }
-    private void laythongtinUser(){
-        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        idUser = sharedPreferences.getString("id_user", null);
-        nameUser = sharedPreferences.getString("name", null);
-        emailUser  = sharedPreferences.getString("email", null);
-        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
-    }
     private void updateUser(){
         // Tham chiếu đến NavigationView
         NavigationView navigationView = findViewById(R.id.navigationView);  // Giả sử NavigationView có id là nav_view
@@ -665,32 +799,36 @@ public class MainActivity extends AppCompatActivity {
                                         List<DSPhim> seriesKkphims = response.body().getData().getItems();
                                         // Nếu có kết quả, hiển thị kết quả tìm kiếm
                                         if (!seriesKkphims.isEmpty()) {
-                                            // Show the search results section
-                                            binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
-                                            binding.recyclerViewMovies.setVisibility(View.VISIBLE);
-
-                                            // Set up the adapter with search results
-                                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapter(MainActivity.this, seriesKkphims));
-                                        } else {
-                                            // If no results, hide the search results section
-                                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                            binding.dsPhimTimKiem.setVisibility(View.VISIBLE);
+                                            binding.recyclerTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
+                                            binding.recyclerTimKiem.setAdapter(new DSPhimAdapter(MainActivity.this, seriesKkphims));
+                                        } else {
+                                            binding.dsPhimTimKiem.setVisibility(View.GONE);
+                                            binding.recyclerTimKiem.setVisibility(View.GONE);
+                                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
                                             Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                         }
 
                                         // Đóng SearchView sau khi tìm kiếm
                                         searchView.clearFocus();
                                     } else {
-                                        binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                        binding.dsPhimTimKiem.setVisibility(View.GONE);
+                                        binding.recyclerTimKiem.setVisibility(View.GONE);
                                         binding.recyclerViewMovies.setVisibility(View.GONE);
+                                        binding.dsPhim.setVisibility(View.GONE);
                                         Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
                                 @Override
                                 public void onFailure(Call<DSPhimResponse> call, Throwable t) {
-                                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                    binding.dsPhimTimKiem.setVisibility(View.GONE);
+                                    binding.recyclerTimKiem.setVisibility(View.GONE);
                                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                                    binding.dsPhim.setVisibility(View.GONE);
                                     Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -724,32 +862,36 @@ public class MainActivity extends AppCompatActivity {
                                         List<DSPhimAPiOphim> seriesOphim = response.body().getData().getItems();
                                         // Nếu có kết quả, hiển thị kết quả tìm kiếm
                                         if (!seriesOphim.isEmpty()) {
-                                            // Show the search results section
-                                            binding.tvDanhSachTimKiem.setVisibility(View.VISIBLE);
-                                            binding.recyclerViewMovies.setVisibility(View.VISIBLE);
-
-                                            // Set up the adapter with search results
-                                            binding.recyclerViewMovies.setAdapter(new DSPhimAdapterOphim(MainActivity.this, seriesOphim));
-                                        } else {
-                                            // If no results, hide the search results section
-                                            binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                            binding.dsPhimTimKiem.setVisibility(View.VISIBLE);
+                                            binding.recyclerTimKiem.setVisibility(View.VISIBLE);
                                             binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
+                                            binding.recyclerTimKiem.setAdapter(new DSPhimAdapterOphim(MainActivity.this, seriesOphim));
+                                        } else {
+                                            binding.dsPhimTimKiem.setVisibility(View.GONE);
+                                            binding.recyclerTimKiem.setVisibility(View.GONE);
+                                            binding.recyclerViewMovies.setVisibility(View.GONE);
+                                            binding.dsPhim.setVisibility(View.GONE);
                                             Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                         }
 
                                         // Đóng SearchView sau khi tìm kiếm
                                         searchView.clearFocus();
                                     } else {
-                                        binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                        binding.dsPhimTimKiem.setVisibility(View.GONE);
+                                        binding.recyclerTimKiem.setVisibility(View.GONE);
                                         binding.recyclerViewMovies.setVisibility(View.GONE);
+                                        binding.dsPhim.setVisibility(View.GONE);
                                         Toast.makeText(MainActivity.this, "Không tìm thấy phim", Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
                                 @Override
                                 public void onFailure(Call<DSResponseOphim> call, Throwable t) {
-                                    binding.tvDanhSachTimKiem.setVisibility(View.GONE);
+                                    binding.dsPhimTimKiem.setVisibility(View.GONE);
+                                    binding.recyclerTimKiem.setVisibility(View.GONE);
                                     binding.recyclerViewMovies.setVisibility(View.GONE);
+                                    binding.dsPhim.setVisibility(View.GONE);
                                     Toast.makeText(MainActivity.this, "Lỗi khi tìm kiếm", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -796,12 +938,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerViews() {
-        binding.recyclerViewMovies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.recyclerViewMovies.setLayoutManager(new GridLayoutManager(this, 3));
+        binding.recyclerTimKiem.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recyclerViewSeries.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recyclerViewtvShow.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recyclerViewphimle.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recyclerViewphimhoathinh.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.recyclerViewphim.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
     }
+    private void fetchMoviesFromFirebase() {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Movies");
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                movieList.clear(); // Xóa dữ liệu cũ (nếu có)
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    // Lấy dữ liệu từ snapshot
+                    QLPhim movie = snapshot.getValue(QLPhim.class);
+                    if (movie != null) {
+                        // Kiểm tra và thêm vào danh sách
+                        movieList.add(movie);
+                    }
+                }
+                // Cập nhật RecyclerView sau khi có dữ liệu
+                phimAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("MainActivity", "Failed to fetch data", databaseError.toException());
+            }
+        });
+    }
+
+
     private void loadSeries() {
         int page = 1;
 

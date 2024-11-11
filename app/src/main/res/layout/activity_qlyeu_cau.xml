@@ -6,11 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#FFF"
     tools:context=".activity.QLYeuCauActivity">
 
     <!-- Nút quay lại và tiêu đề -->
     <LinearLayout
-        android:background="#FFA0A0"
+        android:background="@drawable/header_gradient"
         android:padding="16dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -37,7 +38,7 @@
             android:text="Danh Sách Yêu Cầu"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:textColor="@color/pink" />
+            android:textColor="@color/admin_text" />
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"

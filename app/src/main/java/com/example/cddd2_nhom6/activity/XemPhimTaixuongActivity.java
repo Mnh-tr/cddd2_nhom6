@@ -3,9 +3,12 @@ package com.example.cddd2_nhom6.activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
@@ -29,8 +32,6 @@ public class XemPhimTaixuongActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_downloaded_movie);
         playerView = findViewById(R.id.playerView);
-
-
 
         // Lấy tên phim từ Intent
         String movieName = getIntent().getStringExtra("movie_name");
@@ -114,5 +115,16 @@ public class XemPhimTaixuongActivity extends AppCompatActivity {
             }
         }
         return movieDir;
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 }

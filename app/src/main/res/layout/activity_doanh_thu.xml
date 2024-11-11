@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1A1A1A"
+    android:background="#696969"
     android:orientation="vertical">
 
     <!-- Thanh tiêu đề -->
@@ -232,7 +232,7 @@
 
             <!-- Biểu đồ doanh thu -->
             <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/bieuDoDoanhThu"
+                android:id="@+id/lineChart"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:layout_margin="16dp"

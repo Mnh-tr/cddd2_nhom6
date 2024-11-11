@@ -1,77 +1,75 @@
 package com.example.cddd2_nhom6.adapter;
-import android.app.Activity;
 
-import android.view.View;
+import android.content.Context;
+import android.content.Intent;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import java.util.List;
-
+import com.example.cddd2_nhom6.activity.ChiTietPhimActivity;
+import com.example.cddd2_nhom6.activity.ChiTietPhimFirebaseActivity;
 import com.example.cddd2_nhom6.databinding.ItemPhimBinding;
 import com.example.cddd2_nhom6.model.Phim;
-public class PhimAdapter extends RecyclerView.Adapter<PhimAdapter.MovieViewHolder> {
-    private Activity context;
-    private List<Phim> movies;
-    private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
+import com.example.cddd2_nhom6.model.QLPhim;
 
-    public PhimAdapter(Activity context, List<Phim> movies) {
+import java.util.List;
+
+public class PhimAdapter extends RecyclerView.Adapter<PhimAdapter.PhimViewHolder> {
+
+    private Context context;
+    private List<QLPhim> movieList;
+
+    public PhimAdapter(Context context, List<QLPhim> movieList) {
         this.context = context;
-        this.movies = movies;
-    }
-
-    public void setRecyclerViewItemClickListener(OnRecyclerViewItemClickListener listener) {
-        recyclerViewItemClickListener = listener;
+        this.movieList = movieList;
     }
 
     @NonNull
     @Override
-    public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemPhimBinding binding = ItemPhimBinding.inflate(context.getLayoutInflater(), parent, false);
-        return new MovieViewHolder(binding);
+    public PhimViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Sử dụng ViewBinding cho item_movie
+        ItemPhimBinding binding = ItemPhimBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new PhimViewHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
-        Phim movie = movies.get(position);
+    public void onBindViewHolder(@NonNull PhimViewHolder holder, int position) {
+        QLPhim movie = movieList.get(position);
+
+        // Đặt dữ liệu vào các thành phần view
+
         holder.binding.movieTitle.setText(movie.getName());
         holder.binding.movieYear.setText(String.valueOf(movie.getYear()));
 
-        // Sử dụng Glide để load hình ảnh
-        Glide.with(context)  // Sử dụng context đã được cung cấp
+        // Sử dụng Glide để load ảnh từ URL
+        Glide.with(context)
                 .load(movie.getPoster_url())
                 .into(holder.binding.moviePoster);
 
+        // Bắt sự kiện click vào item
+        holder.itemView.setOnClickListener(v -> {
+            // Lấy slug của phim từ item
+            String movieSlug = movie.getId_movie();
 
-
-        /// Luu Position mới cho Holder
-        final int pos = position;
-        holder.position = pos;
+            // Tạo Intent để chuyển đến ChiTietPhimActivity
+            Intent intent = new Intent(holder.itemView.getContext(), ChiTietPhimFirebaseActivity.class);
+            intent.putExtra("slug", movieSlug); // Truyền slug phim cho ChiTietPhimActivity
+            holder.itemView.getContext().startActivity(intent);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return movies.size();
+        return movieList.size();
     }
 
-    public class MovieViewHolder extends RecyclerView.ViewHolder {
-        ItemPhimBinding binding;
-        int position;
-        public MovieViewHolder(@NonNull ItemPhimBinding binding) {
+    public static class PhimViewHolder extends RecyclerView.ViewHolder {
+        private final ItemPhimBinding binding;
+
+        public PhimViewHolder(ItemPhimBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    recyclerViewItemClickListener.onItemClick(view, position);
-                }
-            });
         }
-    }
-
-    // Interface để xử lý sự kiện click
-    public interface OnRecyclerViewItemClickListener {
-        void onItemClick(View view, int position);
     }
 }
