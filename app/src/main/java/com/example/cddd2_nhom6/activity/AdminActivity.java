@@ -153,6 +153,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
 
     private void hienThiTatCaThongTin() {
 
+        binding.progressBar.setVisibility(View.VISIBLE);
         dataUser.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -162,6 +163,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 }
                 binding.tvLuotDangKyAmount.setText(""+ slDangKy);
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -187,6 +189,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvGoiVIPAmount.setText("" + goi);
 
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
 
             }
 
@@ -207,6 +210,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvTruyCapAmount.setText("" + soluongTruycap);
 
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -214,6 +218,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
 
             }
         });
+
 
 
     }
@@ -235,7 +240,9 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
 
 
     private void layThongTinDangKy() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         LayThoigianNgayHomNay();
+
 
         dataUser.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -256,6 +263,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvLuotDangKyAmount.setText("" + userTodayCount);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -265,6 +273,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         });
     }
     private void layThongTinDKTrongKhoangThoiGian(int soNgay) {
+        binding.progressBar.setVisibility(View.VISIBLE);
         calendar.setTimeInMillis(System.currentTimeMillis()); // Đặt lại về hiện tại
         long startTime = LayThoigianCachDay(soNgay);
         long endTime = System.currentTimeMillis();
@@ -285,6 +294,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvLuotDangKyAmount.setText("" + userCount);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -295,6 +305,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     }
 
     private void layThongTInDoanhThu() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         LayThoigianNgayHomNay(); // 23:59:59 hôm nay
 
         dataThanhToan.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -330,6 +341,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvGoiVIPAmount.setText("" + goi);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -341,6 +353,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     // doanh thu
     private void laythongtinDoanhThuTrongKhoang(int soNgay) {
 
+        binding.progressBar.setVisibility(View.VISIBLE);
         long startTime = LayThoigianCachDay(soNgay);
         long endTime = System.currentTimeMillis();
 
@@ -377,6 +390,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvGoiVIPAmount.setText("" + goi);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
 
             }
 
@@ -390,6 +404,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     }
     // Truy Caap
     private void layThongTinTruyCapHomNay() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         LayThoigianNgayHomNay(); // 23:59:59 hôm nay
 
         dataTruyCap.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -417,6 +432,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvTruyCapAmount.setText("" + count);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
             }
 
 
@@ -428,7 +444,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         });
     }
     private void layThongTinTruyCapTrongKhoangThoiGian(int soNgay) {
-
+        binding.progressBar.setVisibility(View.VISIBLE);
         long startTime = LayThoigianCachDay(soNgay);
         long endTime = System.currentTimeMillis();
 
@@ -459,6 +475,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 binding.tvTruyCapAmount.setText("" + count);
                 // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
                 xulyBieuDo();
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -580,7 +597,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.itemQLPhim){
             Intent  myIntent = new Intent(AdminActivity.this, QLPhimActivity.class);
             startActivity(myIntent);

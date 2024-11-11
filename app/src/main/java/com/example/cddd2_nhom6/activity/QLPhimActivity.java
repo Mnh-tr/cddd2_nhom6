@@ -86,7 +86,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
     private void xulyButton() {
 
-        binding.ivThoat.setOnClickListener(new View.OnClickListener() {
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(QLPhimActivity.this, AdminActivity.class);
@@ -116,6 +116,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
         // Xử lý sự kiện xóa phim khi nhấn vào icon xóa
         binding.deleteIcon.setOnClickListener(v -> {
+            binding.progressBar.setVisibility(View.VISIBLE);
             List<QLPhim> selectedMovies = adapter.getSelectedMovies();
 
             // Kiểm tra nếu có phim được chọn
@@ -137,6 +138,7 @@ public class QLPhimActivity extends AppCompatActivity {
                 // Hiển thị thông báo nếu không có phim nào được chọn
                 Toast.makeText(this, "Không có phim nào được chọn", Toast.LENGTH_SHORT).show();
             }
+            binding.progressBar.setVisibility(View.GONE);
         });
 
         // Xử lý sự kiện khi nhấn nút chọn tất cả
@@ -151,6 +153,7 @@ public class QLPhimActivity extends AppCompatActivity {
     }
 
     private void xulySpiner() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         List<String> goiOptions = Arrays.asList("All", "Thường", "Vip");
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, goiOptions);
@@ -162,7 +165,8 @@ public class QLPhimActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedGoi = parent.getItemAtPosition(position).toString();
                 // Gọi lại fetchMoviesFromFirebase() để tải lại dữ liệu phim từ Firebase
-                fetchMoviesFromFirebase(selectedGoi);  // Truyền loại gói phim vào đây
+                fetchMoviesFromFirebase(selectedGoi);
+                binding.progressBar.setVisibility(View.GONE);// Truyền loại gói phim vào đây
             }
 
             @Override
@@ -207,6 +211,7 @@ public class QLPhimActivity extends AppCompatActivity {
     }
 
     private void fetchMoviesFromFirebase(String goiType) {
+        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Movies");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -229,6 +234,7 @@ public class QLPhimActivity extends AppCompatActivity {
                 }
                 String a = binding.spinnerTimGoi.getSelectedItem().toString().trim();
                 filterMoviesByGoi(a, phimList);  // Lọc theo gói sau khi lọc theo ngày
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -305,6 +311,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
 
     private void fetchGoiFromFirebase() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference goiRef = FirebaseDatabase.getInstance().getReference("Goi");
         goiRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -316,6 +323,7 @@ public class QLPhimActivity extends AppCompatActivity {
                         goiList.add(goi);
                     }
                 }
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override

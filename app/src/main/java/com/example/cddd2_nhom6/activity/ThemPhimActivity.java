@@ -47,6 +47,7 @@ public class ThemPhimActivity extends AppCompatActivity {
     private ArrayList<String> selectedGenresList = new ArrayList<>();
     private HashMap<String, String> goiMap = new HashMap<>();
     private DatabaseReference database;
+    ArrayList<String> quocGiaList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +135,7 @@ public class ThemPhimActivity extends AppCompatActivity {
 
 
     private void layDuLieuTheLoai() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference theLoaiRef = FirebaseDatabase.getInstance().getReference("theLoai");
         theLoaiRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -175,6 +177,8 @@ public class ThemPhimActivity extends AppCompatActivity {
                             .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
                             .show();
                 });
+
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -185,11 +189,12 @@ public class ThemPhimActivity extends AppCompatActivity {
     }
 
     private void layDuLieuQuocGia() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference quocGiaRef = FirebaseDatabase.getInstance().getReference("quocGia");
         quocGiaRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                ArrayList<String> quocGiaList = new ArrayList<>();
+
                 quocGiaList.add("Chọn quốc gia"); // Thêm tùy chọn mặc định đầu tiên
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -206,6 +211,7 @@ public class ThemPhimActivity extends AppCompatActivity {
 
                 // Đặt giá trị mặc định
                 binding.spinnerCountry.setSelection(0);
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -216,6 +222,7 @@ public class ThemPhimActivity extends AppCompatActivity {
     }
 
     private void themPhimVaoFirebase() {
+
         // Lấy giá trị từ các trường nhập liệu
         String tenPhim = binding.edtTitle.getText().toString().trim();
         String moTa = binding.edtDescription.getText().toString().trim();
@@ -351,6 +358,7 @@ public class ThemPhimActivity extends AppCompatActivity {
     }
 
     private void layDuLieuPhim(String idMovie) {
+        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference movieRef = FirebaseDatabase.getInstance().getReference("Movies").child(idMovie);
         movieRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -392,9 +400,21 @@ public class ThemPhimActivity extends AppCompatActivity {
                         binding.radioFree.setChecked(false);
                         binding.radioPremium.setChecked(true);
                     }
-                    // cho them vao firebase
-                    binding.spinnerCountry.setSelection(getSpinnerPosition(binding.spinnerCountry,quocGia));
+
+
+                    for (int i = 0; i < quocGiaList.size(); i++) {
+                        String country = quocGiaList.get(i);
+                        if (country.equals(quocGia)){
+                            binding.spinnerCountry.setSelection(i);
+                            Toast.makeText(ThemPhimActivity.this, quocGia+"::::"+country+i, Toast.LENGTH_SHORT).show();
+                            break;
+                        }
+                    }
+
+
+
                     binding.selectedGenresText.setText("Thể loại đã chọn: " + theLoai);
+                    binding.progressBar.setVisibility(View.GONE);
 
                 }
             }
