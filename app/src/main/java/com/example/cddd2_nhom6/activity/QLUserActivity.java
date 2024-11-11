@@ -3,21 +3,16 @@ package com.example.cddd2_nhom6.activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cddd2_nhom6.R;
