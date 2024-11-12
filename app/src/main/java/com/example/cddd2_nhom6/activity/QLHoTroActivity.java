@@ -1,7 +1,9 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -39,7 +41,13 @@ public class QLHoTroActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         binding = ActivityQlHoTroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+// Thiết lập ActionBar và DrawerLayout
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Thông Tin Hỗ Trợ"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+        }
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         // Nhận dữ liệu từ Intent
@@ -59,7 +67,6 @@ public class QLHoTroActivity extends AppCompatActivity {
                 .error(R.drawable.ic_notification)
                 .into(binding.ivHinhanh);
 
-        binding.btnBack.setOnClickListener(v -> onBackPressed());
         binding.btnSaveChanges.setOnClickListener(v -> sendHoTro(id_user));
     }
 
@@ -137,5 +144,15 @@ public class QLHoTroActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);  // Tắt giữ màn hình sáng khi dừng hoạt động
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, AdminActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

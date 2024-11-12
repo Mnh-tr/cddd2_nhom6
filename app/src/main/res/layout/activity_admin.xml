@@ -44,6 +44,7 @@
             android:layout_height="match_parent"
             android:background="@color/background_color"
             android:orientation="vertical">
+
             <!-- Time Filter Buttons -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -102,12 +103,30 @@
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 
+
+            <FrameLayout
+                android:id="@+id/progressBar"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <ProgressBar
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                     />
+            </FrameLayout>
+
+
+
+
             <!-- Stats Cards Grid -->
             <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:fillViewport="true">
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
