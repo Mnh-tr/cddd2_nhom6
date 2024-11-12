@@ -1,11 +1,16 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -17,21 +22,23 @@ import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.hls.HlsMediaSource;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.ui.PlayerView;
-
+import com.example.cddd2_nhom6.databinding.ActivityPlayDownloadedMovieBinding;
 import com.example.cddd2_nhom6.R;
 
 import java.io.File;
 
 @OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
 public class XemPhimTaixuongActivity extends AppCompatActivity {
+    private ActivityPlayDownloadedMovieBinding binding;
     private ExoPlayer player;
-    private PlayerView playerView;
+    private boolean isFullScreen = false;
+    private LinearLayout.LayoutParams originalPlayerViewParams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_play_downloaded_movie);
-        playerView = findViewById(R.id.playerView);
+        binding = ActivityPlayDownloadedMovieBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         // Lấy tên phim từ Intent
         String movieName = getIntent().getStringExtra("movie_name");
@@ -60,7 +67,7 @@ public class XemPhimTaixuongActivity extends AppCompatActivity {
                     .build();
 
             // Liên kết player với PlayerView
-            playerView.setPlayer(player);
+            binding.playerView.setPlayer(player);
 
             // Sử dụng HlsMediaSource để phát tệp HLS
             Uri hlsUri = Uri.fromFile(m3u8File);
@@ -77,6 +84,45 @@ public class XemPhimTaixuongActivity extends AppCompatActivity {
             Toast.makeText(this, "Không tìm thấy tệp playlist để phát phim!", Toast.LENGTH_SHORT).show();
             finish();
         }
+        binding.playerView.findViewById(R.id.btnFullScreen).setOnClickListener(v -> phongToPhim());
+        // Lưu LayoutParams ban đầu
+        originalPlayerViewParams = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+    }
+
+    // Hàm phong to
+    private void phongToPhim() {
+        if (isFullScreen) {
+            // Quay về chế độ portrait
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+            // Hiện thanh trạng thái và thanh điều hướng
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+
+            // Thiết lập chiều cao của PlayerView về 250dp
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250, getResources().getDisplayMetrics());
+            binding.playerView.setLayoutParams(params);
+            // Thoát fullscreen và khôi phục LayoutParams ban đầu
+            binding.playerView.setLayoutParams(originalPlayerViewParams);
+        } else {
+            // Chuyển sang chế độ landscape
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+            // Ẩn thanh trạng thái và thanh điều hướng
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+            // Thiết lập chiều cao của PlayerView để chiếm toàn bộ chiều cao màn hình
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            binding.playerView.setLayoutParams(params);
+        }
+
+        isFullScreen = !isFullScreen; // Đổi trạng thái fullscreen
     }
 
     @Override

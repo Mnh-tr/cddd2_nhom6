@@ -90,6 +90,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         super.onCreate(savedInstanceState);
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
         setContentView(binding.getRoot()); // Đặt layout cho Activity
+
         apiService = ApiClient.getClient().create(ApiService.class);
         taiPhim = new TaiPhim(apiService, this);
         setControl();

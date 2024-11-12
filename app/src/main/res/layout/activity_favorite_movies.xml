@@ -36,7 +36,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#414441"
+                android:background="#00405d"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
                 <ImageView

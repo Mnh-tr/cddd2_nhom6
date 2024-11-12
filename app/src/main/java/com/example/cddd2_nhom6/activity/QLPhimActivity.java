@@ -86,7 +86,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
     private void xulyButton() {
 
-        binding.ivThoat.setOnClickListener(new View.OnClickListener() {
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(QLPhimActivity.this, AdminActivity.class);
@@ -162,7 +162,7 @@ public class QLPhimActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedGoi = parent.getItemAtPosition(position).toString();
                 // Gọi lại fetchMoviesFromFirebase() để tải lại dữ liệu phim từ Firebase
-                fetchMoviesFromFirebase(selectedGoi);  // Truyền loại gói phim vào đây
+                fetchMoviesFromFirebase(selectedGoi);// Truyền loại gói phim vào đây
             }
 
             @Override
@@ -202,11 +202,13 @@ public class QLPhimActivity extends AppCompatActivity {
         // Cập nhật lại giao diện
         adapter.getSelectedMovies().clear(); // Xóa danh sách phim đã chọn
         adapter.notifyDataSetChanged(); // Cập nhật RecyclerView
-        binding.deleteIcon.setVisibility(View.GONE); // Ẩn icon xóa sau khi xóa
         Toast.makeText(this, "Đã xóa phim", Toast.LENGTH_SHORT).show();
     }
 
     private void fetchMoviesFromFirebase(String goiType) {
+
+        binding.progressBar.setVisibility(View.VISIBLE);
+
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Movies");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -229,6 +231,8 @@ public class QLPhimActivity extends AppCompatActivity {
                 }
                 String a = binding.spinnerTimGoi.getSelectedItem().toString().trim();
                 filterMoviesByGoi(a, phimList);  // Lọc theo gói sau khi lọc theo ngày
+                binding.progressBar.setVisibility(View.GONE);
+
             }
 
             @Override
@@ -305,6 +309,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
 
     private void fetchGoiFromFirebase() {
+        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference goiRef = FirebaseDatabase.getInstance().getReference("Goi");
         goiRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -316,6 +321,7 @@ public class QLPhimActivity extends AppCompatActivity {
                         goiList.add(goi);
                     }
                 }
+                binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override

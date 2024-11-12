@@ -8,52 +8,21 @@
     android:orientation="vertical"
     android:background="#4D4D4D"
     tools:context=".activity.DSThongBaoActivity">
-    <!-- Nút quay lại và tiêu đề -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#1E1E1E"
+        android:background="@drawable/header_gradient"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
         <ImageView
-            android:id="@+id/ivThem"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="right"
-            android:layout_marginRight="20dp"
+            android:id="@+id/ivThemThongBao"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="end"
+            android:layout_marginRight="16dp"
             android:src="@drawable/baseline_add_24"/>
     </androidx.appcompat.widget.Toolbar>
-    <!-- Nút quay lại và tiêu đề -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="10dp"
-        android:background="@drawable/rounded_search_bar"
-        android:padding="5dp"
-        android:gravity="center_vertical">
-        <!-- Icon tìm kiếm -->
-        <ImageView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/search"
-            android:clickable="true"
-            android:padding="8dp" />
-
-        <!-- EditText cho tìm kiếm -->
-        <EditText
-            android:id="@+id/searchEditText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Tìm kiếm Thông báo"
-            android:background="@null"
-            android:textColorHint="#ffffff"
-            android:textColor="#ffffff"
-            android:padding="8dp"
-            android:inputType="text" />
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

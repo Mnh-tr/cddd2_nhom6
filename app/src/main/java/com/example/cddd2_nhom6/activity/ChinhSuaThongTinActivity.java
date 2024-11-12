@@ -1,10 +1,12 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -34,7 +36,6 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityChinhSuaThongTinBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -55,10 +56,16 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
 
         // Thiết lập sự kiện cho nút Lưu
         binding.btnLuu.setOnClickListener(view -> thayDoiMatKhau());
-        binding.btnThoat.setOnClickListener(view -> finish()); // Đóng activity nếu nhấn Huỷ
         xemMatKhauCu();
         xemMatKhauMoi();
         xemMatKhauMoiNhapLai();
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Chỉnh sửa thông tin"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+
+        }
     }
 
     private void thayDoiMatKhau() {
@@ -224,6 +231,15 @@ public class ChinhSuaThongTinActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     @Override
     protected void onResume() {
         super.onResume();

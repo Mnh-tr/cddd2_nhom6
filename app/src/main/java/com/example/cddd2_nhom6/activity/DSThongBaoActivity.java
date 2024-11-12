@@ -38,16 +38,9 @@ public class DSThongBaoActivity extends AppCompatActivity implements ThongBaoAda
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityDsthongBaoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Thiết lập ActionBar và DrawerLayout
-        setSupportActionBar(binding.toolbar);
-        // Kiểm tra xem ActionBar đã được khởi tạo chưa
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Quản lý Doanh Thu"); // Đặt tên mới cho Toolbar
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
-        }
+
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         // Khởi tạo Firebase Realtime Database
@@ -55,14 +48,17 @@ public class DSThongBaoActivity extends AppCompatActivity implements ThongBaoAda
         binding.recyclerViewApis.setLayoutManager(new LinearLayoutManager(this));
         thongBaoAdapter = new ThongBaoAdapter(DSThongBaoActivity.this,thongBaoList);
         binding.recyclerViewApis.setAdapter(thongBaoAdapter);
-        binding.ivThem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DSThongBaoActivity.this, QLThongBaoActivity.class);
-                startActivity(intent);
-            }
-        });
         getThongBaoFromDatabase();
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Quản lý thông báo"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+        }
+        binding.ivThemThongBao.setOnClickListener(v -> {
+            Intent intent = new Intent(DSThongBaoActivity.this, QLThongBaoActivity.class);
+            startActivity(intent);
+        });
     }
     private void getThongBaoFromDatabase() {
         DatabaseReference thongBaoRef = FirebaseDatabase.getInstance().getReference().child("ThongBao");
@@ -140,7 +136,6 @@ public class DSThongBaoActivity extends AppCompatActivity implements ThongBaoAda
     public void onItemClick(View view, ThongBao thongBao) {
         hienDialogThongBao(thongBao);
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

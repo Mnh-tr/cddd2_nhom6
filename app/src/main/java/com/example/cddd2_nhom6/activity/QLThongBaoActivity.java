@@ -44,17 +44,8 @@ public class QLThongBaoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityQlThongBaoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // Thiết lập ActionBar và DrawerLayout
-        setSupportActionBar(binding.toolbar);
-        // Kiểm tra xem ActionBar đã được khởi tạo chưa
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Quản lý Thông báo"); // Đặt tên mới cho Toolbar
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
-        }
 
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
@@ -71,6 +62,12 @@ public class QLThongBaoActivity extends AppCompatActivity {
         // Khởi tạo Firebase Realtime Database
         thongBaoRef = FirebaseDatabase.getInstance().getReference().child("ThongBao");
         listenForNotifications();
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Quản lý thông báo"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+        }
     }
 
 
@@ -207,7 +204,7 @@ public class QLThongBaoActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            Intent intent = new Intent(this, DSThongBaoActivity.class);
+            Intent intent = new Intent(this, AdminActivity.class);
             startActivity(intent);
             return true;
         }
