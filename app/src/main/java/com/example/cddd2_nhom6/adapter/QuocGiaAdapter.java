@@ -2,6 +2,7 @@ package com.example.cddd2_nhom6.adapter;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ItemQuocgiaBinding;
+import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.QuocGia;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -54,6 +56,7 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
         // Set the position for further use in the ViewHolder
         final int pos = position;
         holder.position = pos;
+        holder.bind(quocGia);
     }
 
     @Override
@@ -68,7 +71,8 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
         public QuocGiaViewHolder(@NonNull ItemQuocgiaBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-
+        }
+        public void bind (QuocGia quocgia){
             // Xử lý nút Sửa
             binding.btnEdit.setOnClickListener(v -> {
                 new AlertDialog.Builder(context)
@@ -77,8 +81,11 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
                         .setPositiveButton("Có", (dialog, which) -> {
                             // Hiển thị form chỉnh sửa
                             binding.editQuocGia.setVisibility(View.VISIBLE);
+                            binding.editLink.setVisibility(View.VISIBLE);
                             binding.btnSave.setVisibility(View.VISIBLE);
                             binding.editQuocGia.requestFocus();
+                            binding.editQuocGia.setText(quocGiaList.get(position).getName());
+                            binding.editLink.setText(quocGiaList.get(position).getImageLink());
                         })
                         .setNegativeButton("Không", (dialog, which) -> dialog.dismiss())
                         .show();
@@ -115,22 +122,44 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
             // Xử lý nút Lưu
             binding.btnSave.setOnClickListener(v -> {
                 String newName = binding.editQuocGia.getText().toString();
-                if (!newName.isEmpty()) {
-                    String quocGiaId = String.valueOf(quocGiaList.get(position).getId());
-                    quocGiaRef.child(quocGiaId).child("name").setValue(newName)
+                String newImageLink = binding.editLink.getText().toString();
+
+                if (!newName.isEmpty() && !newImageLink.isEmpty()) {
+                    String quocGiaId = String.valueOf(quocgia.getId());
+                    quocGiaRef.child(quocGiaId).child("name").setValue(newName);
+                    quocGiaRef.child(quocGiaId).child("imageLink").setValue(newImageLink)
                             .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(context, "Đã cập nhật quốc gia!", Toast.LENGTH_SHORT).show();
-                                quocGiaList.get(position).setName(newName); // Cập nhật tên quốc gia trong danh sách
+                                Toast.makeText(context, "Đã cập nhật quốc gia và link hình ảnh!", Toast.LENGTH_SHORT).show();
+                                // Cập nhật trong danh sách
+                                quocgia.setName(newName);
+                                quocgia.setImageLink(newImageLink);
+
+                                // Ẩn các trường nhập liệu
                                 binding.editQuocGia.setVisibility(View.GONE);
+                                binding.editLink.setVisibility(View.GONE);
                                 binding.btnSave.setVisibility(View.GONE);
-                                notifyItemChanged(position);  // Cập nhật lại item trong RecyclerView
+
+                                // Cập nhật lại item trong RecyclerView
+                                notifyItemChanged(position);
                             })
                             .addOnFailureListener(e -> {
-                                Toast.makeText(context, "Lỗi khi cập nhật quốc gia!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context, "Lỗi khi cập nhật dữ liệu!", Toast.LENGTH_SHORT).show();
                             });
                 } else {
-                    Toast.makeText(context, "Tên quốc gia không được để trống!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Tên quốc gia và link hình ảnh không được để trống!", Toast.LENGTH_SHORT).show();
                 }
+            });
+
+            // Lắng nghe sự kiện nhấn ra ngoài để ẩn các trường chỉnh sửa
+            binding.getRoot().setOnTouchListener((v, event) -> {
+                // Kiểm tra xem có phải là sự kiện nhấn ra ngoài vùng chỉnh sửa không
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // Nếu người dùng nhấn ra ngoài, ẩn các trường nhập liệu
+                    binding.editQuocGia.setVisibility(View.GONE);
+                    binding.editLink.setVisibility(View.GONE);
+                    binding.btnSave.setVisibility(View.GONE);
+                }
+                return false;
             });
         }
     }

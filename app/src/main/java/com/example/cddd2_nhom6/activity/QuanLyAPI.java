@@ -162,6 +162,7 @@ public class QuanLyAPI extends AppCompatActivity {
 
                     // Tạo API mới
                     Map<String, Object> apiMoi = new HashMap<>();
+                    apiMoi.put("id", apiId);
                     apiMoi.put("name", name);
                     apiMoi.put("url", url);
 
@@ -189,16 +190,17 @@ public class QuanLyAPI extends AppCompatActivity {
 
     private void layDanhSachApiTuFirebase() {
         //tham chieu database
-        thamChieuDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+        thamChieuDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 danhSachApi.clear();
                 //lay api tu firebase
                 DataSnapshot apiListSnapshot = snapshot.child("api_list");
                 for (DataSnapshot apiSnapshot : apiListSnapshot.getChildren()) {
+                    String apiId = apiSnapshot.getKey();
                     String ten = apiSnapshot.child("name").getValue(String.class);
                     String url = apiSnapshot.child("url").getValue(String.class);
-                    danhSachApi.add(new ApiModel(ten, url));
+                    danhSachApi.add(new ApiModel(apiId,ten, url));
                 }
                 apiAdapter.notifyDataSetChanged();
             }
@@ -248,7 +250,7 @@ public class QuanLyAPI extends AppCompatActivity {
         //kiem tra ten va url
         if (!tenMoi.isEmpty() && !urlMoi.isEmpty()) {
             //tham chieu database
-            thamChieuDatabase.child("api_list").orderByChild("name").equalTo(api.getName()).addListenerForSingleValueEvent(new ValueEventListener() {
+            thamChieuDatabase.child("api_list").orderByChild("name").equalTo(api.getName()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
@@ -282,7 +284,7 @@ public class QuanLyAPI extends AppCompatActivity {
         String tenApiCanXoa = api.getName();
         DatabaseReference apiListRef = thamChieuDatabase.child("api_list");
         //lay ten api tu firebase
-        apiListRef.orderByChild("name").equalTo(tenApiCanXoa).addListenerForSingleValueEvent(new ValueEventListener() {
+        apiListRef.orderByChild("name").equalTo(tenApiCanXoa).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
