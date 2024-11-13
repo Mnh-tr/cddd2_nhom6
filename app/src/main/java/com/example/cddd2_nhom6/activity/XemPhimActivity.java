@@ -48,6 +48,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.vanniktech.emoji.EmojiManager;
+import com.vanniktech.emoji.EmojiPopup;
+import com.vanniktech.emoji.google.GoogleEmojiProvider;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,20 +87,24 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private LinearLayout.LayoutParams originalPlayerViewParams;
     private TaiPhim taiPhim;
     private DatabaseReference commentsRef;
-
+    private EmojiPopup emojiPopup;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EmojiManager.install(new GoogleEmojiProvider());
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
         setContentView(binding.getRoot()); // Đặt layout cho Activity
-
         apiService = ApiClient.getClient().create(ApiService.class);
         taiPhim = new TaiPhim(apiService, this);
         setControl();
         setEvent();
+
         // Lưu LayoutParams ban đầu
         originalPlayerViewParams = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
-
+        emojiPopup = EmojiPopup.Builder.fromRootView(findViewById(R.id.commentInputContainer))
+                .setOnEmojiPopupShownListener(() -> binding.btnEmoji.setImageResource(R.drawable.ic_emoji_hide))
+                .setOnEmojiPopupDismissListener(() -> binding.btnEmoji.setImageResource(R.drawable.ic_emoji))
+                .build(binding.commentInput);
         PlayerView.ControllerVisibilityListener visibilityListener = visibility -> {
             View btnFullScreen = binding.playerView.findViewById(R.id.btnFullScreen);
 
@@ -128,7 +135,13 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         KhoiTaoPhim();
         // Thiết lập sự kiện cho nút toàn màn hình
         movieSlug = getIntent().getStringExtra("slug");
-
+        binding.btnEmoji.setOnClickListener(v -> {
+            if (emojiPopup.isShowing()) {
+                emojiPopup.dismiss();
+            } else {
+                emojiPopup.toggle(); // Hiển thị hoặc ẩn Emoji picker
+            }
+        });
         binding.playerView.findViewById(R.id.btnFullScreen).setOnClickListener(v -> phongToPhim());
         apiService = ApiClient.getClient().create(ApiService.class);
         hienThiChiTietPhim();
@@ -162,18 +175,12 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         danhGiaPhim.kiemTraDanhGia();
         commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
         // Thêm sự kiện nhấn cho nút bình luận
-        binding.commentInput.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                // Kiểm tra xem người dùng có nhấn vào biểu tượng gửi (drawableEnd) không
-                if (event.getRawX() >= (binding.commentInput.getRight() - binding.commentInput.getCompoundDrawables()[2].getBounds().width())) {
-                    String comment = binding.commentInput.getText().toString();
-                    if (!comment.isEmpty()) {
-                        themBinhLuan(comment);// Gọi hàm thêm bình luận
-                    }
-                    return true; // Trả về true để xử lý sự kiện
-                }
+        binding.btnSend.setOnClickListener(v -> {
+            String comment = binding.commentInput.getText().toString();
+            if (!comment.isEmpty()) {
+                themBinhLuan(comment); // Gọi hàm thêm bình luận
+                binding.commentInput.setText(""); // Xóa nội dung sau khi gửi
             }
-            return false;
         });
         binding.btnDowload.setOnClickListener(v -> {
             String movieName = binding.tvMovieTitle.getText().toString();
