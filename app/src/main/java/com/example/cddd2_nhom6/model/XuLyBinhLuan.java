@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class BinhLuan {
+public class XuLyBinhLuan {
     private Context context;
     private DatabaseReference commentsRef;
     private DatabaseReference usersRef;
@@ -35,7 +35,7 @@ public class BinhLuan {
     private BinhLuanPhimAdapter binhLuanPhimAdapter;
     private List<BinhLuanPhim> binhLuanPhimList;
 
-    public BinhLuan(Context context, String movieSlug, BinhLuanPhimAdapter adapter, List<BinhLuanPhim> binhLuanList) {
+    public XuLyBinhLuan(Context context, String movieSlug, BinhLuanPhimAdapter adapter, List<BinhLuanPhim> binhLuanList) {
         this.context = context;
         this.movieSlug = movieSlug;
         this.binhLuanPhimAdapter = adapter;

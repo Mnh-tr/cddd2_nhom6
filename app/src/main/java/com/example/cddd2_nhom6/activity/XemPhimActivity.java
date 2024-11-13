@@ -1,12 +1,8 @@
 package com.example.cddd2_nhom6.activity;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -15,10 +11,7 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackException;
@@ -28,7 +21,7 @@ import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.cddd2_nhom6.model.BinhLuan;
+import com.example.cddd2_nhom6.model.XuLyBinhLuan;
 import com.giphy.sdk.core.models.Media;
 import com.giphy.sdk.ui.GPHContentType;
 import com.giphy.sdk.ui.Giphy;
@@ -47,24 +40,14 @@ import com.example.cddd2_nhom6.model.TaiPhim;
 import com.giphy.sdk.ui.views.GiphyDialogFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.vanniktech.emoji.EmojiManager;
 import com.vanniktech.emoji.EmojiPopup;
 import com.vanniktech.emoji.google.GoogleEmojiProvider;
-import com.giphy.sdk.ui.views.GiphyDialogFragment;
-import com.giphy.sdk.core.models.Media;
-import androidx.annotation.NonNull;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -81,7 +64,7 @@ public class XemPhimActivity extends AppCompatActivity{
     private ApiService apiService;
     private String movieSlug;
     private DatabaseReference favoritesRef;
-    private BinhLuan binhluan;
+    private XuLyBinhLuan binhluan;
     private BinhLuanPhimAdapter binhLuanPhimAdapter;
     private List<BinhLuanPhim> binhLuanPhimList = new ArrayList<>();
     private String idUser;
@@ -115,7 +98,7 @@ public class XemPhimActivity extends AppCompatActivity{
         binhLuanPhimAdapter = new BinhLuanPhimAdapter(this, binhLuanPhimList, listener);
         binding.rvComments.setLayoutManager(new GridLayoutManager(this, 1));
         binding.rvComments.setAdapter(binhLuanPhimAdapter);
-        binhluan = new BinhLuan(this, movieSlug, binhLuanPhimAdapter, binhLuanPhimList);
+        binhluan = new XuLyBinhLuan(this, movieSlug, binhLuanPhimAdapter, binhLuanPhimList);
         binhluan.taiBinhLuan(movieSlug);
         setContentView(binding.getRoot()); // Đặt layout cho Activity
         apiService = ApiClient.getClient().create(ApiService.class);

@@ -68,4 +68,6 @@ dependencies {
     implementation ("com.squareup.picasso:picasso:2.8")
     implementation ("com.vanniktech:emoji-google:0.9.0")
     implementation ("com.giphy.sdk:ui:2.3.15")
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+
 }

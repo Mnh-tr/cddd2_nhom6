@@ -138,8 +138,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="8dp"
-                    app:cardBackgroundColor="@color/black"
-                    app:cardCornerRadius="24dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="15dp"
                     app:cardElevation="4dp"
                     app:layout_constraintBottom_toBottomOf="parent">
 
@@ -182,6 +182,7 @@
                                     android:layout_marginEnd="12dp"
                                     android:background="?attr/selectableItemBackgroundBorderless"
                                     android:src="@drawable/ic_emoji"
+                                    app:tint="#FF9900"
                                     android:contentDescription="Insert emoji" />
 
                                 <ImageButton
@@ -191,6 +192,7 @@
                                     android:layout_marginEnd="12dp"
                                     android:background="?attr/selectableItemBackgroundBorderless"
                                     android:src="@drawable/ic_gif"
+                                    app:tint="#FF9900"
                                     android:contentDescription="Insert GIF" />
 
                                 <ImageButton
@@ -199,6 +201,7 @@
                                     android:layout_height="32dp"
                                     android:background="?attr/selectableItemBackgroundBorderless"
                                     android:src="@drawable/ic_attachment"
+                                    app:tint="#FF9900"
                                     android:contentDescription="Add attachment" />
                             </LinearLayout>
                         </LinearLayout>
@@ -214,7 +217,7 @@
                             android:insetBottom="0dp"
                             android:minWidth="0dp"
                             android:paddingHorizontal="16dp"
-                            android:text="Send"
+                            android:text="Gửi"
                             android:textColor="@color/white"
                             app:cornerRadius="20dp" />
                     </LinearLayout>
