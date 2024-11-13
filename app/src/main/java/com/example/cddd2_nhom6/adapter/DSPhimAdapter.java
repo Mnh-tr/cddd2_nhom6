@@ -11,7 +11,13 @@ import java.util.List;
 
 import com.example.cddd2_nhom6.activity.ChiTietPhimActivity;
 import com.example.cddd2_nhom6.databinding.ItemPhimBinding;
+import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.example.cddd2_nhom6.model.DSPhim;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimViewHolder>{
     private Activity context;  // Thêm biến Activity context
     private List<DSPhim> dsPhims;

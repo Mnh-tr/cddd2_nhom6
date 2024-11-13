@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
         emailUser  = sharedPreferences.getString("email", null);
-        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", -1);
         Log.d("id_loaiND Ban đầu", String.valueOf(idLoaiND));
     }
     private void theoDoiThayDoiTrenFirebase() {

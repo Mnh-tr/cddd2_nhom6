@@ -1,12 +1,16 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -18,12 +22,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.databinding.ActivityVipBinding;
 import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.databinding.DialogNotiLoginBinding;
+import com.example.cddd2_nhom6.databinding.DialogUserInfoBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 public class VipActivity extends AppCompatActivity {
     private ActivityVipBinding binding;
@@ -33,6 +41,7 @@ public class VipActivity extends AppCompatActivity {
     private int idLoaiND;
     private DatabaseReference yeuCauRef;
     private boolean doubleBackToExitPressedOnce = false;
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +49,12 @@ public class VipActivity extends AppCompatActivity {
         binding = ActivityVipBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
+
+        kiemTraNguoiDungHienADS();
         Toast.makeText(VipActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         // Kết nối tới Firebase
         yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
@@ -80,9 +92,17 @@ public class VipActivity extends AppCompatActivity {
         binding.btnDangKy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(VipActivity.this, ThanhToanActivity.class);
-                startActivity(intent);
-                finish();
+                Log.d("KiemTra id", "Found id_loaiUSer: " + idLoaiND);
+
+                if (idLoaiND != -1) {
+                    Intent intent = new Intent(VipActivity.this, ThanhToanActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    // hiển thị dialog người dùng chưa đăng nhập
+                    showLoginDialog();
+                    Toast.makeText(VipActivity.this, "Bạn cần đăng ký để thực hiện chức năng này", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -94,8 +114,22 @@ public class VipActivity extends AppCompatActivity {
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
         emailUser = sharedPreferences.getString("email", null);
-        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", -1);
 
+    }
+
+    private void kiemTraNguoiDungHienADS() {
+        Log.d("kiểm tra id loại người dùng", String.valueOf(idLoaiND));
+        if(idLoaiND <= 0 ){
+            // Tạo yêu cầu quảng cáo và tải quảng cáo
+            AdRequest adRequest = new AdRequest.Builder().build();
+            binding.adView.loadAd(adRequest);
+            binding.adView.setVisibility(View.VISIBLE);
+        }else {
+            // Hủy quảng cáo và ẩn AdView
+            binding.adView.destroy(); // Giải phóng tài nguyên quảng cáo
+            binding.adView.setVisibility(View.GONE); // Ẩn quảng cáo khỏi màn hình
+        }
     }
 
     private void kiemTraLoaiNguoiDung() {
@@ -216,6 +250,54 @@ public class VipActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void showLoginDialog() {
+        DialogNotiLoginBinding dialogBinding = DialogNotiLoginBinding.inflate(LayoutInflater.from(this));
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+        dialog.show();
+        // Đặt sự kiện cho nút "Đăng nhập"
+        dialogBinding.btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Xử lý sự kiện đăng nhập
+                Intent intent = new Intent(VipActivity.this, DangNhapActivity.class);
+                startActivity(intent);
+                finish();
+                dialog.dismiss();
+            }
+        });
+
+        // Đặt sự kiện cho nút "Tạo tài khoản mới"
+        dialogBinding.btnRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Xử lý sự kiện tạo tài khoản mới
+                Intent intent = new Intent(VipActivity.this, DangNhapActivity.class);
+                startActivity(intent);
+                finish();
+                dialog.dismiss();
+            }
+        });
+
+        // Đặt sự kiện cho nút "Để sau"
+        dialogBinding.btnSkip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Xử lý sự kiện bỏ qua
+                dialog.dismiss();
+            }
+        });
+
+        // Hiển thị dialog
+        dialog.show();
+    }
+
+
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override
@@ -231,14 +313,21 @@ public class VipActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (mAdView != null) {
+            mAdView.resume();
+        }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
     protected void onPause() {
+        if (mAdView != null) {
+            mAdView.pause();
+        }
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }

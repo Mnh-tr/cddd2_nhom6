@@ -84,9 +84,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     public int getItemCount() {
         return userList.size();
     }
-    private int dpToPx(int dp) {
-        return (int) (dp * context.getResources().getDisplayMetrics().density);
-    }
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         ItemUserBinding binding;
         int position;
