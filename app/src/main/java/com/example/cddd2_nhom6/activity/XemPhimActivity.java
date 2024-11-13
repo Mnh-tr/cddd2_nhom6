@@ -71,7 +71,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAdapter.OnCommentDeleteListener {
+public class XemPhimActivity extends AppCompatActivity{
     private ActivityXemPhimBinding binding; // Khai báo View Binding
     private ExoPlayer exoPlayer; // ExoPlayer để phát video
     private boolean isFullScreen = false;
@@ -104,7 +104,15 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         EmojiManager.install(new GoogleEmojiProvider());
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
         movieSlug = getIntent().getStringExtra("slug");
-        binhLuanPhimAdapter = new BinhLuanPhimAdapter(this, binhLuanPhimList, this);
+        BinhLuanPhimAdapter.OnCommentDeleteListener listener = new BinhLuanPhimAdapter.OnCommentDeleteListener() {
+            @Override
+            public void xoaBinhLuan(int position) {
+                // Logic xóa bình luận ở đây
+                binhluan.xoaBinhLuan(position);
+            }
+        };
+
+        binhLuanPhimAdapter = new BinhLuanPhimAdapter(this, binhLuanPhimList, listener);
         binding.rvComments.setLayoutManager(new GridLayoutManager(this, 1));
         binding.rvComments.setAdapter(binhLuanPhimAdapter);
         binhluan = new BinhLuan(this, movieSlug, binhLuanPhimAdapter, binhLuanPhimList);
@@ -129,8 +137,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                 btnFullScreen.setVisibility(View.GONE);
             }
         };
-
-
 // Áp dụng listener vào PlayerView
         // Áp dụng listener vào PlayerView
         binding.playerView.setControllerVisibilityListener(visibilityListener);
@@ -236,10 +242,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             }
         });
     }
-    public void xoaBinhLuan(int position) {
-        // Xử lý logic xóa bình luận tại vị trí position
-        binhluan.xoaBinhLuan(position);
-    }
+
 
     private void KhoiTaoPhim() {
         movieLink = getIntent().getStringExtra("movie_link"); // Đã sửa để lấy lại movieLink
@@ -311,7 +314,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         isFullScreen = !isFullScreen; // Đổi trạng thái fullscreen
     }
 
-
     private void hienThiChiTietPhim() {
         Call<ChiTietPhim> call = apiService.getChiTietPhim(movieSlug);
         call.enqueue(new Callback<ChiTietPhim>() {
@@ -382,9 +384,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         });
     }
 
-
-
-
     private void laythongtinUser() {
         // Lấy thông tin người dùng từ SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -394,7 +393,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
