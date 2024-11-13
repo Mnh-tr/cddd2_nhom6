@@ -28,6 +28,9 @@ import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.giphy.sdk.core.models.Media;
+import com.giphy.sdk.ui.GPHContentType;
+import com.giphy.sdk.ui.Giphy;
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.BinhLuanPhimAdapter;
 import com.example.cddd2_nhom6.adapter.TapPhimAdapter;
@@ -40,6 +43,7 @@ import com.example.cddd2_nhom6.model.DSPhimYeuThich;
 import com.example.cddd2_nhom6.model.DanhGiaPhim;
 import com.example.cddd2_nhom6.model.LichSuPhim;
 import com.example.cddd2_nhom6.model.TaiPhim;
+import com.giphy.sdk.ui.views.GiphyDialogFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -51,6 +55,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.vanniktech.emoji.EmojiManager;
 import com.vanniktech.emoji.EmojiPopup;
 import com.vanniktech.emoji.google.GoogleEmojiProvider;
+import com.giphy.sdk.ui.views.GiphyDialogFragment;
+import com.giphy.sdk.core.models.Media;
+import androidx.annotation.NonNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -91,6 +98,7 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Giphy.INSTANCE.configure(this, "5HgDd04QR0IJPDqSSlAWA5q65adlKwtd");
         EmojiManager.install(new GoogleEmojiProvider());
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
         setContentView(binding.getRoot()); // Đặt layout cho Activity
@@ -142,6 +150,37 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
                 emojiPopup.toggle(); // Hiển thị hoặc ẩn Emoji picker
             }
         });
+        binding.btnGif.setOnClickListener(v -> {
+            GiphyDialogFragment dialog = new GiphyDialogFragment();
+
+            // Thiết lập lắng nghe sự kiện chọn GIF
+            dialog.setGifSelectionListener(new GiphyDialogFragment.GifSelectionListener() {
+                @Override
+                public void onGifSelected(@NonNull Media media, @NonNull String searchTerm, @NonNull GPHContentType contentType) {
+                    // Lấy URL của GIF được chọn
+                    String gifUrl = media.getImages().getOriginal().getGifUrl();
+                    // Xử lý GIF URL, ví dụ: chèn GIF vào bình luận
+                    insertGifInComment(gifUrl);
+                }
+
+                @Override
+                public void onDismissed(@NonNull GPHContentType contentType) {
+                    // Đóng dialog khi người dùng hủy
+                    // Xử lý khi dialog bị đóng nếu cần
+                }
+
+                @Override
+                public void didSearchTerm(@NonNull String searchTerm) {
+                    // Xử lý khi người dùng tìm kiếm một từ khóa
+                    // Bạn có thể tùy chỉnh việc xử lý từ khóa tìm kiếm nếu cần
+                    Log.d("Giphy", "Searched term: " + searchTerm);
+                }
+            });
+
+            // Hiển thị dialog
+            dialog.show(getSupportFragmentManager(), "giphy_dialog");
+        });
+
         binding.playerView.findViewById(R.id.btnFullScreen).setOnClickListener(v -> phongToPhim());
         apiService = ApiClient.getClient().create(ApiService.class);
         hienThiChiTietPhim();
@@ -225,6 +264,10 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             exoPlayer.prepare();
             exoPlayer.play();
         }
+    }
+    private void insertGifInComment(String gifUrl) {
+        // Hiển thị GIF trong bình luận hoặc xử lý thêm tùy theo ý muốn
+        // Ví dụ: tải GIF vào một ImageView trong phần bình luận
     }
     // Hàm phong to
     private void phongToPhim() {
