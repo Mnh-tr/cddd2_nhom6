@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cddd2_nhom6.databinding.ItemBinhluanphimBinding;
+import com.example.cddd2_nhom6.model.BinhLuan;
 import com.example.cddd2_nhom6.model.BinhLuanPhim;
 import com.example.cddd2_nhom6.databinding.ItemBinhluanphimBinding;
 import com.example.cddd2_nhom6.model.BinhLuanPhim;
@@ -35,13 +36,6 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         return binhLuanPhimList.get(position).getCommentText();
     }
 
-    public void removeCommentAt(int position) {
-        binhLuanPhimList.remove(position); // Xóa bình luận khỏi danh sách
-        notifyItemRemoved(position); // Thông báo RecyclerView xóa item ở vị trí này
-        notifyItemRangeChanged(position, binhLuanPhimList.size()); // Thông báo RecyclerView cập nhật lại các item còn lại
-    }
-
-
     @NonNull
     @Override
     public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -55,6 +49,11 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         holder.binding.tvTenNguoiDung.setText(binhLuanPhim.getUserName());
         holder.binding.tvBinhLuan.setText(binhLuanPhim.getCommentText());
         holder.binding.tvNgayBinhLuan.setText(DateFormat.getDateTimeInstance().format(binhLuanPhim.timestamp));
+        holder.binding.btnXoaBinhLuan.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.xoaBinhLuan(position); // Gọi listener khi click nút xóa
+            }
+        });
     }
 
     @Override

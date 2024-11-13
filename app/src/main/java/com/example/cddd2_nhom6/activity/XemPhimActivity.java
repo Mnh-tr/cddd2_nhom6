@@ -28,6 +28,7 @@ import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.cddd2_nhom6.model.BinhLuan;
 import com.giphy.sdk.core.models.Media;
 import com.giphy.sdk.ui.GPHContentType;
 import com.giphy.sdk.ui.Giphy;
@@ -80,6 +81,9 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private ApiService apiService;
     private String movieSlug;
     private DatabaseReference favoritesRef;
+    private BinhLuan binhluan;
+    private BinhLuanPhimAdapter binhLuanPhimAdapter;
+    private List<BinhLuanPhim> binhLuanPhimList = new ArrayList<>();
     private String idUser;
     private String nameUser;
     private String emailUser;
@@ -87,8 +91,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
     private DatabaseReference usersRef;
     private String currentUserId;
     private LichSuPhim lichSuPhim;
-    private BinhLuanPhimAdapter binhLuanPhimAdapter;
-    private List<BinhLuanPhim> binhLuanPhimList = new ArrayList<>();
     private DSPhimYeuThich dsPhimYeuThich;
     private DanhGiaPhim danhGiaPhim;
     private LinearLayout.LayoutParams originalPlayerViewParams;
@@ -101,12 +103,17 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         Giphy.INSTANCE.configure(this, "5HgDd04QR0IJPDqSSlAWA5q65adlKwtd");
         EmojiManager.install(new GoogleEmojiProvider());
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
+        movieSlug = getIntent().getStringExtra("slug");
+        binhLuanPhimAdapter = new BinhLuanPhimAdapter(this, binhLuanPhimList, this);
+        binding.rvComments.setLayoutManager(new GridLayoutManager(this, 1));
+        binding.rvComments.setAdapter(binhLuanPhimAdapter);
+        binhluan = new BinhLuan(this, movieSlug, binhLuanPhimAdapter, binhLuanPhimList);
+        binhluan.taiBinhLuan(movieSlug);
         setContentView(binding.getRoot()); // Đặt layout cho Activity
         apiService = ApiClient.getClient().create(ApiService.class);
         taiPhim = new TaiPhim(apiService, this);
         setControl();
         setEvent();
-
         // Lưu LayoutParams ban đầu
         originalPlayerViewParams = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
         emojiPopup = EmojiPopup.Builder.fromRootView(findViewById(R.id.commentInputContainer))
@@ -134,15 +141,19 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         binding.rcvTapPhim.setLayoutManager(new GridLayoutManager(this, 2, RecyclerView.HORIZONTAL, false)); // Thiết lập RecyclerView
         // Khởi tạo Firebase Database
         favoritesRef = FirebaseDatabase.getInstance().getReference("favorites"); // Thay "favorites" bằng tên bảng của bạn
-        binhLuanPhimAdapter = new BinhLuanPhimAdapter(this, binhLuanPhimList, this);
         binding.rvComments.setLayoutManager(new GridLayoutManager(this, 1));
-        binding.rvComments.setAdapter(binhLuanPhimAdapter);
     }
 
     public void setEvent() {
         KhoiTaoPhim();
         // Thiết lập sự kiện cho nút toàn màn hình
-        movieSlug = getIntent().getStringExtra("slug");
+        binding.btnSend.setOnClickListener(v -> {
+            String comment = binding.commentInput.getText().toString();
+            if (!comment.isEmpty()) {
+                binhluan.themBinhLuan(comment); // Thêm bình luận
+                binding.commentInput.setText(""); // Xóa nội dung sau khi gửi
+            }
+        });
         binding.btnEmoji.setOnClickListener(v -> {
             if (emojiPopup.isShowing()) {
                 emojiPopup.dismiss();
@@ -187,7 +198,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         laythongtinUser();
         // Gọi hàm này sau khi người dùng nhấn vào phim hoặc sau khi thêm bình luận
-        taiBinhLuan(this.movieSlug);
         // Giả sử bạn đã đăng nhập và lấy ID người dùng từ Firebase Auth
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -214,13 +224,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         danhGiaPhim.kiemTraDanhGia();
         commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
         // Thêm sự kiện nhấn cho nút bình luận
-        binding.btnSend.setOnClickListener(v -> {
-            String comment = binding.commentInput.getText().toString();
-            if (!comment.isEmpty()) {
-                themBinhLuan(comment); // Gọi hàm thêm bình luận
-                binding.commentInput.setText(""); // Xóa nội dung sau khi gửi
-            }
-        });
         binding.btnDowload.setOnClickListener(v -> {
             String movieName = binding.tvMovieTitle.getText().toString();
             if (movieLink != null && !movieLink.isEmpty()) {
@@ -233,7 +236,10 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
             }
         });
     }
-
+    public void xoaBinhLuan(int position) {
+        // Xử lý logic xóa bình luận tại vị trí position
+        binhluan.xoaBinhLuan(position);
+    }
 
     private void KhoiTaoPhim() {
         movieLink = getIntent().getStringExtra("movie_link"); // Đã sửa để lấy lại movieLink
@@ -388,168 +394,6 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
 
     }
-    private void themBinhLuan(String comment) {
-        String userId = idUser; // ID của người dùng hiện tại
-        String movieSlug = this.movieSlug;
-
-        if (userId == null) {
-            // Hiển thị thông báo yêu cầu đăng nhập nếu chưa đăng nhập
-            new AlertDialog.Builder(this)
-                    .setTitle("Cần đăng nhập")
-                    .setMessage("Bạn cần đăng nhập để bình luận. Bạn có muốn đăng nhập ngay?")
-                    .setPositiveButton("Có", (dialog, which) -> {
-                        Intent intent = new Intent(XemPhimActivity.this, DangNhapActivity.class);
-                        startActivity(intent);
-                    })
-                    .setNegativeButton("Không", null)
-                    .show();
-            return;
-        }
-
-        // Lấy tên người dùng từ Firestore
-        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot userSnapshot) {
-                String name = nameUser != null ? nameUser : "Người dùng ẩn danh";
-                String formattedDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
-                BinhLuanPhim newComment = new BinhLuanPhim(userId, movieSlug, comment, System.currentTimeMillis(), name, formattedDate);
-
-                DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
-
-                commentsRef.push().setValue(newComment)
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(XemPhimActivity.this, "Bình luận đã được lưu!", Toast.LENGTH_SHORT).show();
-                            binding.commentInput.setText("");
-                        })
-                        .addOnFailureListener(e -> Toast.makeText(XemPhimActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(XemPhimActivity.this, "Lỗi khi lấy thông tin người dùng", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    public void xoaBinhLuan(int position) {
-        String userId = binhLuanPhimAdapter.getCommentUserId(position);
-        String movieSlug = this.movieSlug; // Slug của phim
-        String commentText = binhLuanPhimAdapter.getCommentText(position); // Nội dung bình luận
-
-        if (userId == null || userId.isEmpty()) {
-            Toast.makeText(XemPhimActivity.this, "Lỗi: Bình luận không hợp lệ!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Kiểm tra nếu người dùng hiện tại có quyền xóa bình luận
-        if (userId.equals(idUser)) {
-            new AlertDialog.Builder(XemPhimActivity.this)
-                    .setTitle("Xóa bình luận")
-                    .setMessage("Bạn có chắc chắn muốn xóa bình luận \"" + commentText + "\" không?")
-                    .setPositiveButton("Có", (dialog, which) -> {
-                        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
-
-                        // Truy vấn bình luận theo slug của phim
-                        commentsRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    String commentId = snapshot.getKey(); // Lấy ID của bình luận
-                                    String commentUserId = snapshot.child("userId").getValue(String.class);
-
-                                    // Kiểm tra người dùng có quyền xóa bình luận này không
-                                    if (commentUserId != null && commentUserId.equals(userId)) {
-                                        // Xóa bình luận khỏi Firebase
-                                        commentsRef.child(commentId).removeValue()
-                                                .addOnSuccessListener(aVoid -> {
-                                                    // Cập nhật giao diện ngay lập tức
-                                                    binhLuanPhimList.remove(position);
-                                                    binhLuanPhimAdapter.notifyItemRemoved(position);
-                                                    Toast.makeText(XemPhimActivity.this, "Bình luận đã được xóa!", Toast.LENGTH_SHORT).show();
-                                                })
-                                                .addOnFailureListener(e -> {
-                                                    Toast.makeText(XemPhimActivity.this, "Lỗi khi xóa bình luận: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                                });
-                                        break;
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(XemPhimActivity.this, "Lỗi khi kiểm tra bình luận", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    })
-                    .setNegativeButton("Không", (dialog, which) -> dialog.dismiss()) // Đóng dialog nếu người dùng hủy
-                    .show();
-        } else {
-            Toast.makeText(XemPhimActivity.this, "Bạn không có quyền xóa bình luận này!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    private void taiBinhLuan(String movieSlug) {
-        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
-
-        // Dọn dẹp danh sách bình luận trước khi thêm mới
-        binhLuanPhimList.clear();
-        binhLuanPhimAdapter.notifyDataSetChanged();
-
-        // Sử dụng ChildEventListener để chỉ xử lý khi có sự thay đổi tại các con
-        commentsRef.orderByChild("slug").equalTo(movieSlug).addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                String userId = snapshot.child("userId").getValue(String.class);
-                String commentText = snapshot.child("commentText").getValue(String.class);
-                String userName = snapshot.child("userName").getValue(String.class);
-                long timestamp = snapshot.child("timestamp").getValue(Long.class);
-
-                if (userId != null && commentText != null) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
-                    String formattedDate = sdf.format(new Date(timestamp));
-
-                    // Tạo bình luận mới và thêm vào danh sách
-                    BinhLuanPhim comment = new BinhLuanPhim(userId, movieSlug, commentText, timestamp, userName, formattedDate);
-                    binhLuanPhimList.add(0, comment);
-                    binhLuanPhimAdapter.notifyItemInserted(0);
-                }
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                // Xử lý khi bình luận bị thay đổi (nếu cần thiết)
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                // Xử lý khi bình luận bị xóa (nếu cần thiết)
-                String commentId = snapshot.getKey();
-                if (commentId != null) {
-                    // Tìm bình luận tương ứng trong danh sách và loại bỏ
-                    for (int i = 0; i < binhLuanPhimList.size(); i++) {
-                        BinhLuanPhim comment = binhLuanPhimList.get(i);
-                        if (comment.getId() != null && comment.getId().equals(commentId)) {
-                            binhLuanPhimList.remove(i); // Loại bỏ bình luận khỏi danh sách
-                            binhLuanPhimAdapter.notifyItemRemoved(i); // Cập nhật giao diện
-                            break;
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                // Không cần xử lý ở đây
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(XemPhimActivity.this, "Lỗi khi tải bình luận", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
 
     @Override
     protected void onDestroy() {
@@ -575,6 +419,5 @@ public class XemPhimActivity extends AppCompatActivity implements BinhLuanPhimAd
         // Giữ màn hình sáng khi ứng dụng hoạt động
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
-
 
 }
