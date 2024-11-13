@@ -1,12 +1,16 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -18,6 +22,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.databinding.ActivityVipBinding;
 import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.databinding.DialogNotiLoginBinding;
+import com.example.cddd2_nhom6.databinding.DialogUserInfoBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -80,9 +86,17 @@ public class VipActivity extends AppCompatActivity {
         binding.btnDangKy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(VipActivity.this, ThanhToanActivity.class);
-                startActivity(intent);
-                finish();
+                Log.d("KiemTra id", "Found id_loaiUSer: " + idLoaiND) ;
+
+                if(idLoaiND != -1){
+                    Intent intent = new Intent(VipActivity.this, ThanhToanActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else{
+                    // hiển thị dialog người dùng chưa đăng nhập
+                    showLoginDialog();
+                    Toast.makeText(VipActivity.this, "Bạn cần đăng ký để thực hiện chức năng này", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -94,7 +108,7 @@ public class VipActivity extends AppCompatActivity {
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
         emailUser = sharedPreferences.getString("email", null);
-        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", -1);
 
     }
 
@@ -216,6 +230,55 @@ public class VipActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void showLoginDialog() {
+        DialogNotiLoginBinding dialogBinding = DialogNotiLoginBinding.inflate(LayoutInflater.from(this));
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+        dialog.show();
+        // Đặt sự kiện cho nút "Đăng nhập"
+        dialogBinding.btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Xử lý sự kiện đăng nhập
+                Intent intent = new Intent(VipActivity.this, DangNhapActivity.class);
+                startActivity(intent);
+                finish();
+                dialog.dismiss();
+            }
+        });
+
+        // Đặt sự kiện cho nút "Tạo tài khoản mới"
+        dialogBinding.btnRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Xử lý sự kiện tạo tài khoản mới
+                Intent intent = new Intent(VipActivity.this, DangNhapActivity.class);
+                startActivity(intent);
+                finish();
+                dialog.dismiss();
+            }
+        });
+
+        // Đặt sự kiện cho nút "Để sau"
+        dialogBinding.btnSkip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Xử lý sự kiện bỏ qua
+                dialog.dismiss();
+            }
+        });
+
+        // Hiển thị dialog
+        dialog.show();
+    }
+
+
+
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override

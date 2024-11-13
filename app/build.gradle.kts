@@ -69,4 +69,6 @@ dependencies {
     implementation ("androidx.cardview:cardview:1.0.0")
 
     implementation ("com.squareup.picasso:picasso:2.8")
+
+    implementation ("com.airbnb.android:lottie:5.2.0")
 }

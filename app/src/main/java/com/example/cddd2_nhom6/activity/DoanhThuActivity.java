@@ -53,7 +53,7 @@ public class DoanhThuActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private ActivityDoanhThuBinding binding;
 
-    private HashMap<Integer, Long> monthlyRevenue;
+    private HashMap<Integer, Long> monthlyRevenue = new HashMap<>();;
     private long tongDTHomNay = 0;
     private long tongDT7Ngay = 0;
     private long tongDT1Thang = 0;
@@ -76,7 +76,7 @@ public class DoanhThuActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         // Kiểm tra xem ActionBar đã được khởi tạo chưa
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Quản lý Thông Báo"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setTitle("Quản lý Doanh Thu"); // Đặt tên mới cho Toolbar
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
         }
         // Thiết lập RecyclerView
@@ -92,30 +92,18 @@ public class DoanhThuActivity extends AppCompatActivity {
             // Bạn có thể mở một Activity khác để hiển thị chi tiết thanh toán nếu cần
         });
 
-
-
-        // Khởi tạo HashMap để lưu doanh thu theo tháng
-        monthlyRevenue = new HashMap<>();
-        for (int i = 1; i <= 12; i++) {
-            monthlyRevenue.put(i, 0L);
-        }
-
+        datLaiDoanhThuTheoThang();
+        layDuLieuFirebase();
         // Thiết lập Spinner năm
         thietLapSpinner();
 
         // Lắng nghe thay đổi của Spinner để cập nhật dữ liệu
         caiDatSuKienChonNam();
-        // Lắng nghe sự thay đổi dữ liệu trong thời gian thực
-        loadDuLieuDoanhThu();
-        layDuLieuVaHienThiBieuDo();
         loadLichSuThanhToan();
     }
     private void loadLichSuThanhToan() {
         // Hiển thị ProgressBar trong khi tải dữ liệu
         binding.progressBar.setVisibility(View.VISIBLE);
-
-        // Tham chiếu đến bảng LichSuThanhToan trong Firebase
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
 
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -151,34 +139,49 @@ public class DoanhThuActivity extends AppCompatActivity {
         super.onDestroy();
         binding = null;  // Giải phóng View Binding khi Activity bị hủy
     }
-    private void loadDuLieuDoanhThu() {
-        // Lắng nghe sự thay đổi trong toàn bộ "LichSuThanhToan"
+    private void layDuLieuFirebase() {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        datLaiDoanhThuTheoThang();
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                // Xóa lại các giá trị để tính lại
+                // Xóa các giá trị cũ
+                lichSuTTList.clear();
                 tongDTHomNay = 0;
                 tongDT7Ngay = 0;
                 tongDT1Thang = 0;
                 tongGDHomNay = 0;
 
-                // Duyệt qua tất cả các bản ghi giao dịch
+                // Xử lý dữ liệu mới từ Firebase
                 for (DataSnapshot childSnapshot : snapshot.getChildren()) {
-                    String ngayXacNhan = childSnapshot.child("ngayXacNhan").getValue(String.class);
-                    Long soTien = childSnapshot.child("soTien").getValue(Long.class);
+                    LichSuThanhToan thanhToan = childSnapshot.getValue(LichSuThanhToan.class);
+                    if (thanhToan != null) {
+                        lichSuTTList.add(thanhToan);
+                        String ngayXacNhan = thanhToan.getNgayXacNhan();
+                        Long soTien = thanhToan.getSoTien();
 
-                    if (ngayXacNhan != null && soTien != null) {
-                        tinhDoanhThu(ngayXacNhan, soTien);
+                        if (ngayXacNhan != null && soTien != null) {
+                            tinhDoanhThu(ngayXacNhan, soTien);
+                            capNhatDoanhThuHangThang(ngayXacNhan, soTien);
+                        }
                     }
                 }
 
-                // Cập nhật lại UI sau khi tính toán xong
+                // Cập nhật UI và biểu đồ
                 capNhapDuLieu();
+                hienThiBieuDo();
+
+                // Ẩn ProgressBar khi hoàn tất
+                binding.progressBar.setVisibility(View.GONE);
+
+                // Thông báo adapter rằng dữ liệu đã thay đổi
+                adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                // Xử lý lỗi nếu có
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(DoanhThuActivity.this, "Lỗi khi tải dữ liệu", Toast.LENGTH_SHORT).show();
                 Log.e("DoanhThuActivity", "Lỗi khi lắng nghe dữ liệu: " + error.getMessage());
             }
         });
@@ -216,8 +219,6 @@ public class DoanhThuActivity extends AppCompatActivity {
 
     private void capNhapDuLieu() {
         // Cập nhật UI thông qua binding (các biến sẽ tự động hiển thị trên giao diện)
-
-
         binding.tvTongDoanhThu.setText(dinhDangTien(Double.valueOf(tongDTHomNay)));
         binding.tvDoanhThu7Ngay.setText(dinhDangTien(Double.valueOf(tongDT7Ngay)));
         binding.tvDoanhThu1Thang.setText(dinhDangTien(Double.valueOf(tongDT1Thang)));
@@ -227,9 +228,10 @@ public class DoanhThuActivity extends AppCompatActivity {
     private void hienThiBieuDo() {
         ArrayList<Entry> entries = new ArrayList<>();
 
-        // Chuẩn bị dữ liệu từ HashMap để vẽ biểu đồ
         for (int month = 1; month <= 12; month++) {
-            entries.add(new Entry(month, monthlyRevenue.get(month)));
+            long revenue = monthlyRevenue.getOrDefault(month, 0L);
+            Log.d("DoanhThuActivity", "Tháng " + month + ": " + revenue); // Kiểm tra dữ liệu
+            entries.add(new Entry(month, revenue));
         }
 
         // Tạo LineDataSet và thiết lập cho biểu đồ
@@ -246,7 +248,7 @@ public class DoanhThuActivity extends AppCompatActivity {
 
         // // Thiết lập cho trục X (hiển thị từ tháng 1 đến tháng 12)
         XAxis xAxis = binding.lineChart.getXAxis();
-        xAxis.setGranularity(1f);// Khoảng cách giữa các nhãn trục X
+        xAxis.setGranularity(1f);// Khoảng cách giữ các nhãn trục X
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setLabelCount(12);// Đặt số lượng nhãn trục X là 12
         xAxis.setAxisMinimum(1f);
@@ -267,41 +269,16 @@ public class DoanhThuActivity extends AppCompatActivity {
             SimpleDateFormat monthFormat = new SimpleDateFormat("MM", Locale.getDefault());
             int month = Integer.parseInt(monthFormat.format(transactionDate));
 
+
+            // Kiểm tra và cộng dồn doanh thu cho tháng tương ứng
+            long currentRevenue = monthlyRevenue.getOrDefault(month, 0L);
             // Cộng dồn doanh thu cho tháng tương ứng
-            monthlyRevenue.put(month, monthlyRevenue.get(month) + soTien);
+            monthlyRevenue.put(month, currentRevenue + soTien);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    private void layDuLieuVaHienThiBieuDo() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                // Reset dữ liệu doanh thu hàng tháng
-                for (int i = 1; i <= 12; i++) {
-                    monthlyRevenue.put(i, 0L);
-                }
 
-                // Duyệt qua tất cả các bản ghi giao dịch
-                for (DataSnapshot childSnapshot : snapshot.getChildren()) {
-                    String ngayXacNhan = childSnapshot.child("ngayXacNhan").getValue(String.class);
-                    Long soTien = childSnapshot.child("soTien").getValue(Long.class);
-
-                    if (ngayXacNhan != null && soTien != null) {
-                        capNhatDoanhThuHangThang(ngayXacNhan, soTien);
-                    }
-                }
-
-                // Hiển thị biểu đồ
-                hienThiBieuDo();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Xử lý lỗi nếu có
-            }
-        });
-    }
 
     private void hienThiChiTietLSThanhToan(LichSuThanhToan thanhToan){
         DialogLichsuThanhtoanBinding dialogBinding = DialogLichsuThanhtoanBinding.inflate(LayoutInflater.from(this));
@@ -320,7 +297,7 @@ public class DoanhThuActivity extends AppCompatActivity {
         dialogBinding.tvNgayHetHan.setText(thanhToan.getNgayHetHan());
 
 
-        // Xử lý các sự kiện liên quan đến thanh toán (ví dụ: nút Xác nhận thanh toán)
+        // Xử lý các sự kiện liên quan đến thanh toán
         dialogBinding.btnDong.setOnClickListener(v -> {
             dialog.dismiss();
         });
@@ -352,6 +329,7 @@ public class DoanhThuActivity extends AppCompatActivity {
     }
 
     private String dinhDangTien(Double doanhThu){
+        if (doanhThu == null) return "0";
         DecimalFormat decimalFormat = new DecimalFormat("#,###");
         String formattedDoanhThu = decimalFormat.format(doanhThu);
         return formattedDoanhThu;
@@ -370,7 +348,7 @@ public class DoanhThuActivity extends AppCompatActivity {
         binding.spinnerYear.setSelection(yearsList.indexOf(currentYear));
 
         // Tải dữ liệu ban đầu cho năm hiện tại
-        taiDuLieuChoNamDuocChon(currentYear);
+        //taiDuLieuChoNamDuocChon(currentYear);
     }
 
     // Hàm lắng nghe sự kiện khi chọn năm trên Spinner
