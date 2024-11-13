@@ -190,7 +190,6 @@ public class QLUserActivity extends AppCompatActivity {
     }
 
     private void laySoLuongYeuCauHomNay() {
-        DatabaseReference yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String ngayHienTai = sdf.format(new Date());
