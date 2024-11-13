@@ -52,7 +52,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     implementation ("com.google.android.exoplayer:exoplayer:2.17.1")
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation ("com.google.firebase:firebase-auth:21.0.1")
+    implementation ("com.google.firebase:firebase-auth:20.0.0")
     implementation ("com.google.firebase:firebase-database:20.0.0")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
     //exoplayer
@@ -61,7 +61,7 @@ dependencies {
     implementation("androidx.media3:media3-ui:1.4.1")
     implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
-    implementation ("com.google.firebase:firebase-messaging:23.0.0")
+    implementation ("com.google.firebase:firebase-messaging:20.0.0")
     implementation ("com.google.android.material:material:1.8.0")
 
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
@@ -70,5 +70,5 @@ dependencies {
 
     implementation ("com.squareup.picasso:picasso:2.8")
 
-    implementation ("com.airbnb.android:lottie:5.2.0")
+    implementation ("com.google.android.gms:play-services-ads:22.0.0")
 }

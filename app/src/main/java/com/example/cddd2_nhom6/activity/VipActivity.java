@@ -30,6 +30,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 public class VipActivity extends AppCompatActivity {
     private ActivityVipBinding binding;
@@ -39,6 +41,7 @@ public class VipActivity extends AppCompatActivity {
     private int idLoaiND;
     private DatabaseReference yeuCauRef;
     private boolean doubleBackToExitPressedOnce = false;
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +49,12 @@ public class VipActivity extends AppCompatActivity {
         binding = ActivityVipBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
+
+        kiemTraNguoiDungHienADS();
         Toast.makeText(VipActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         // Kết nối tới Firebase
         yeuCauRef = FirebaseDatabase.getInstance().getReference("YeuCau");
@@ -86,13 +92,13 @@ public class VipActivity extends AppCompatActivity {
         binding.btnDangKy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("KiemTra id", "Found id_loaiUSer: " + idLoaiND) ;
+                Log.d("KiemTra id", "Found id_loaiUSer: " + idLoaiND);
 
-                if(idLoaiND != -1){
+                if (idLoaiND != -1) {
                     Intent intent = new Intent(VipActivity.this, ThanhToanActivity.class);
                     startActivity(intent);
                     finish();
-                }else{
+                } else {
                     // hiển thị dialog người dùng chưa đăng nhập
                     showLoginDialog();
                     Toast.makeText(VipActivity.this, "Bạn cần đăng ký để thực hiện chức năng này", Toast.LENGTH_SHORT).show();
@@ -110,6 +116,20 @@ public class VipActivity extends AppCompatActivity {
         emailUser = sharedPreferences.getString("email", null);
         idLoaiND = sharedPreferences.getInt("id_loaiND", -1);
 
+    }
+
+    private void kiemTraNguoiDungHienADS() {
+        Log.d("kiểm tra id loại người dùng", String.valueOf(idLoaiND));
+        if(idLoaiND <= 0 ){
+            // Tạo yêu cầu quảng cáo và tải quảng cáo
+            AdRequest adRequest = new AdRequest.Builder().build();
+            binding.adView.loadAd(adRequest);
+            binding.adView.setVisibility(View.VISIBLE);
+        }else {
+            // Hủy quảng cáo và ẩn AdView
+            binding.adView.destroy(); // Giải phóng tài nguyên quảng cáo
+            binding.adView.setVisibility(View.GONE); // Ẩn quảng cáo khỏi màn hình
+        }
     }
 
     private void kiemTraLoaiNguoiDung() {
@@ -278,7 +298,6 @@ public class VipActivity extends AppCompatActivity {
     }
 
 
-
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override
@@ -294,14 +313,21 @@ public class VipActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (mAdView != null) {
+            mAdView.resume();
+        }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
     protected void onPause() {
+        if (mAdView != null) {
+            mAdView.pause();
+        }
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }

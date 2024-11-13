@@ -50,7 +50,6 @@ public class QLUserActivity extends AppCompatActivity {
 
     // danh sách người dùng góc
     private List<User> originalUserList;
-    private ValueEventListener userValueEventListener;
     private boolean doubleBackToExitPressedOnce = false;
 
     @Override
