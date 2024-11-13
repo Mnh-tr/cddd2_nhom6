@@ -3,11 +3,16 @@ package com.example.cddd2_nhom6.model;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+
+import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.activity.DangNhapActivity;
 import com.example.cddd2_nhom6.adapter.BinhLuanPhimAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -159,9 +164,11 @@ public class XuLyBinhLuan {
                 if (userId != null && commentText != null) {
                     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
                     String formattedDate = sdf.format(new Date(timestamp));
-
+                    // Tìm ImageView trong ViewHolder
+                    boolean isGif = commentText.contains("https://") && (commentText.endsWith(".gif") || commentText.contains(".gif?"));
                     // Tạo bình luận mới và thêm vào danh sách
                     BinhLuanPhim comment = new BinhLuanPhim(userId, movieSlug, commentText, timestamp, userName, formattedDate);
+                    comment.setGif(isGif);
                     binhLuanPhimList.add(0, comment);
                     binhLuanPhimAdapter.notifyItemInserted(0);
                 }
@@ -197,6 +204,45 @@ public class XuLyBinhLuan {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(context, "Lỗi khi tải bình luận", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    public void insertGifInComment(String gifUrl) {
+        if (idUser == null) {
+            new android.app.AlertDialog.Builder(context)
+                    .setTitle("Cần đăng nhập")
+                    .setMessage("Bạn cần đăng nhập để bình luận. Bạn có muốn đăng nhập ngay?")
+                    .setPositiveButton("Có", (dialog, which) -> {
+                        context.startActivity(new Intent(context, DangNhapActivity.class));
+                    })
+                    .setNegativeButton("Không", null)
+                    .show();
+            return;
+        }
+
+        // Lấy thông tin người dùng từ Firebase để lưu vào bình luận
+        usersRef.child(idUser).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                // Lấy tên người dùng, nếu không có thì dùng "Người dùng ẩn danh"
+                String name = nameUser != null ? nameUser : "Người dùng ẩn danh";
+                String formattedDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
+
+                // Tạo đối tượng bình luận mới với GIF URL
+                BinhLuanPhim newComment = new BinhLuanPhim(idUser, movieSlug, gifUrl, System.currentTimeMillis(), name, formattedDate);
+
+                // Thêm bình luận vào Firebase
+                commentsRef.push().setValue(newComment)
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(context, "Bình luận đã được lưu!", Toast.LENGTH_SHORT).show();
+                            binhLuanPhimAdapter.notifyDataSetChanged();  // Cập nhật giao diện
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(context, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(context, "Lỗi khi lấy thông tin người dùng", Toast.LENGTH_SHORT).show();
             }
         });
     }

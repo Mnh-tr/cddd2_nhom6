@@ -69,5 +69,11 @@
             android:text="Binh Luan"
             android:textColor="#00405d"
             android:textSize="16sp" />
+        <ImageView
+            android:id="@+id/imageViewGif"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:contentDescription="GIF bình luận"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

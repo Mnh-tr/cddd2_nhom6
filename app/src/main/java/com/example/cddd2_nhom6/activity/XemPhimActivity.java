@@ -1,5 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.util.TypedValue;
@@ -40,14 +42,20 @@ import com.example.cddd2_nhom6.model.TaiPhim;
 import com.giphy.sdk.ui.views.GiphyDialogFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.vanniktech.emoji.EmojiManager;
 import com.vanniktech.emoji.EmojiPopup;
 import com.vanniktech.emoji.google.GoogleEmojiProvider;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -160,7 +168,7 @@ public class XemPhimActivity extends AppCompatActivity{
                     // Lấy URL của GIF được chọn
                     String gifUrl = media.getImages().getOriginal().getGifUrl();
                     // Xử lý GIF URL, ví dụ: chèn GIF vào bình luận
-                    insertGifInComment(gifUrl);
+                   binhluan.insertGifInComment(gifUrl);
                 }
 
                 @Override
@@ -257,10 +265,8 @@ public class XemPhimActivity extends AppCompatActivity{
             exoPlayer.play();
         }
     }
-    private void insertGifInComment(String gifUrl) {
-        // Hiển thị GIF trong bình luận hoặc xử lý thêm tùy theo ý muốn
-        // Ví dụ: tải GIF vào một ImageView trong phần bình luận
-    }
+
+
     // Hàm phong to
     private void phongToPhim() {
         if (isFullScreen) {
