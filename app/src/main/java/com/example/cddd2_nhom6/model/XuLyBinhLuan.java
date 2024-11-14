@@ -17,7 +17,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import org.ocpsoft.prettytime.PrettyTime;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -158,8 +158,8 @@ public class XuLyBinhLuan {
 
                 if (userId != null && commentText != null) {
                     // Sử dụng PrettyTime để hiển thị thời gian thân thiện
-                    PrettyTime prettyTime = new PrettyTime();
-                    String formattedDate = prettyTime.format(new Date(timestamp));
+                    ThoiGianBL thoiGianBL = new ThoiGianBL();
+                    String formattedDate = thoiGianBL.format(new Date(timestamp));
                     // Tìm ImageView trong ViewHolder
                     boolean isGif = commentText.contains("https://") && (commentText.endsWith(".gif") || commentText.contains(".gif?"));
                     // Tạo bình luận mới và thêm vào danh sách

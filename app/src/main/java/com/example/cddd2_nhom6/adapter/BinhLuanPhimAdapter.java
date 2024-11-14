@@ -8,7 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.cddd2_nhom6.databinding.ItemBinhluanphimBinding;
 import com.example.cddd2_nhom6.model.BinhLuanPhim;
-import org.ocpsoft.prettytime.PrettyTime;
+import com.example.cddd2_nhom6.model.ThoiGianBL;
+
 import java.util.Date;
 import java.util.List;
 
@@ -48,8 +49,8 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         holder.binding.tvTenNguoiDung.setText(binhLuanPhim.getUserName());
         holder.binding.tvBinhLuan.setText(binhLuanPhim.getCommentText());
         // Sử dụng PrettyTime để định dạng ngày giờ thành kiểu "X phút trước"
-        PrettyTime prettyTime = new PrettyTime();
-        String formattedDate = prettyTime.format(new Date(binhLuanPhim.timestamp));
+        ThoiGianBL thoiGianBL = new ThoiGianBL();
+        String formattedDate = thoiGianBL.format(new Date(binhLuanPhim.timestamp));
         holder.binding.tvNgayBinhLuan.setText(formattedDate);
         if (binhLuanPhim.isGif()) {
             // Hiển thị GIF và ẩn văn bản URL
