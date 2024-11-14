@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,14 +22,17 @@ import java.util.List;
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     private List<User> userList;
     private Context context; // Giả sử bạn có một lớp User để đại diện cho người dùng
-    private static OnRecyclerViewItemClickListener  recyclerViewItemClickListener;
+    private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
+
     public UserAdapter(List<User> userList, Context context) {
         this.userList = userList;
         this.context = context;
     }
+
     public void setRecyclerViewItemClickListener(OnRecyclerViewItemClickListener listener) {
         recyclerViewItemClickListener = listener;
     }
+
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -44,7 +48,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.binding.tvMaUser.setText(user.getId_user());
         holder.binding.tvUserStatus.setText(user.getStatus());
         holder.binding.tvGoi.setText(user.getGoi());
-        Log.d("kiểm tra gói", "gói: " + user.getGoi());
+
         // Đổi màu dựa trên trạng thái (online/offline)
         if (user.getStatus().equals("online")) {
             holder.binding.tvUserStatus.setTextColor(ContextCompat.getColor(context, R.color.green));  // Màu xanh lá cho online
@@ -70,6 +74,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_manager);
                 holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.manager_text));
                 break;
+            case "Owner":
+                holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_pro);
+                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.manager_text));
+                break;
             default:
                 holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_normal);
                 holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.normal_text));
@@ -84,9 +92,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     public int getItemCount() {
         return userList.size();
     }
+
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         ItemUserBinding binding;
         int position;
+
         public UserViewHolder(@NonNull ItemUserBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
@@ -108,13 +118,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     public interface OnRecyclerViewItemClickListener {
         void onItemClick(View view, int position);
     }
+
     // Phương thức để cập nhật dữ liệu và thông báo RecyclerView
     public void updateData(List<User> newList) {
         userList.clear();
         userList.addAll(newList);
         notifyDataSetChanged();
     }
-
 
 
 }

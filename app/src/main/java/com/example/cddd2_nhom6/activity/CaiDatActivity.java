@@ -116,7 +116,7 @@ public class CaiDatActivity extends AppCompatActivity {
                     Integer idLoaiND = snapshot.getValue(Integer.class);
 
                     // Kiểm tra nếu người dùng là admin
-                    if (idLoaiND != null && idLoaiND == 2 || idLoaiND == 3) {
+                    if (idLoaiND != null && idLoaiND == 2 || idLoaiND == 3|| idLoaiND == 4) {
                         binding.cvDangXuat.setVisibility(View.VISIBLE); // Hiển thị nút admin
                     } else {
                         binding.cvDangXuat.setVisibility(View.GONE); // Ẩn nút admin

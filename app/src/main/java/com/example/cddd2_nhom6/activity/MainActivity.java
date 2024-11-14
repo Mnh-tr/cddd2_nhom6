@@ -466,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         listHeaders.add("Admin");
         listHeaders.add("Đăng Nhập");
         if (idUser != null) {
-            if (idLoaiND == 3 || idLoaiND == 2) { // Kiểm tra nếu là admin
+            if (idLoaiND == 3 || idLoaiND == 2 || idLoaiND == 4) { // Kiểm tra nếu là admin
                 isUserLoggedIn = true; // Người dùng là admin
 
                 // Kiểm tra và thêm mục "Admin" nếu chưa có
