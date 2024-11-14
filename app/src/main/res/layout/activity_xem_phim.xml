@@ -164,6 +164,7 @@
                                 android:hint="Viết bình luận ở đây..."
                                 android:inputType="textMultiLine"
                                 android:maxLines="4"
+                                android:maxLength="200"
                                 android:minHeight="36dp"
                                 android:textColor="@color/text_primary"
                                 android:textColorHint="@color/text_secondary"

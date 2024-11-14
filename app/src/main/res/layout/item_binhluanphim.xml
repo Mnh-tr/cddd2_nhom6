@@ -47,7 +47,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="20/10/2024 20:45:57"
                     android:textColor="#00405d"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -71,9 +70,12 @@
             android:textSize="16sp" />
         <ImageView
             android:id="@+id/imageViewGif"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:visibility="gone"
-            android:contentDescription="GIF bình luận"/>
+            android:contentDescription="GIF bình luận"
+            android:scaleType="fitCenter"
+            android:maxWidth="100dp"
+            android:maxHeight="100dp"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

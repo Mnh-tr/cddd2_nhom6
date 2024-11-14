@@ -69,7 +69,6 @@ dependencies {
     implementation ("com.vanniktech:emoji-google:0.9.0")
     implementation ("com.giphy.sdk:ui:2.3.15")
     implementation ("de.hdodenhof:circleimageview:3.1.0")
-
-
+    implementation ("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
     implementation ("com.google.android.gms:play-services-ads:22.0.0")
 }

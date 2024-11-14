@@ -3,16 +3,10 @@ package com.example.cddd2_nhom6.model;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-
-import com.bumptech.glide.Glide;
-import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.activity.DangNhapActivity;
 import com.example.cddd2_nhom6.adapter.BinhLuanPhimAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,6 +17,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import org.ocpsoft.prettytime.PrettyTime;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -72,8 +67,8 @@ public class XuLyBinhLuan {
             @Override
             public void onDataChange(@NonNull DataSnapshot userSnapshot) {
                 String name = nameUser != null ? nameUser : "Người dùng ẩn danh";
-                String formattedDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
-                BinhLuanPhim newComment = new BinhLuanPhim(idUser, movieSlug, comment, System.currentTimeMillis(), name, formattedDate);
+                long timestamp = System.currentTimeMillis();
+                BinhLuanPhim newComment = new BinhLuanPhim(idUser, movieSlug, comment, timestamp, name, null);
 
                 commentsRef.push().setValue(newComment)
                         .addOnSuccessListener(aVoid -> {
@@ -103,7 +98,7 @@ public class XuLyBinhLuan {
         if (userId.equals(idUser)) {
             new AlertDialog.Builder(context)
                     .setTitle("Xóa bình luận")
-                    .setMessage("Bạn có chắc chắn muốn xóa bình luận \"" + commentText + "\" không?")
+                    .setMessage("Bạn có chắc chắn muốn xóa bình luận này không?")
                     .setPositiveButton("Có", (dialog, which) -> {
                         DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
 
@@ -162,8 +157,9 @@ public class XuLyBinhLuan {
                 long timestamp = snapshot.child("timestamp").getValue(Long.class);
 
                 if (userId != null && commentText != null) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
-                    String formattedDate = sdf.format(new Date(timestamp));
+                    // Sử dụng PrettyTime để hiển thị thời gian thân thiện
+                    PrettyTime prettyTime = new PrettyTime();
+                    String formattedDate = prettyTime.format(new Date(timestamp));
                     // Tìm ImageView trong ViewHolder
                     boolean isGif = commentText.contains("https://") && (commentText.endsWith(".gif") || commentText.contains(".gif?"));
                     // Tạo bình luận mới và thêm vào danh sách
@@ -207,7 +203,7 @@ public class XuLyBinhLuan {
             }
         });
     }
-    public void insertGifInComment(String gifUrl) {
+    public void themGifvaoBinhLuan(String gifUrl) {
         if (idUser == null) {
             new android.app.AlertDialog.Builder(context)
                     .setTitle("Cần đăng nhập")

@@ -3,15 +3,13 @@ package com.example.cddd2_nhom6.adapter;
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.example.cddd2_nhom6.databinding.ItemBinhluanphimBinding;
 import com.example.cddd2_nhom6.model.BinhLuanPhim;
-
-import java.text.DateFormat;
+import org.ocpsoft.prettytime.PrettyTime;
+import java.util.Date;
 import java.util.List;
 
 public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapter.MovieViewHolder> {
@@ -49,7 +47,10 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         BinhLuanPhim binhLuanPhim = binhLuanPhimList.get(position);
         holder.binding.tvTenNguoiDung.setText(binhLuanPhim.getUserName());
         holder.binding.tvBinhLuan.setText(binhLuanPhim.getCommentText());
-        holder.binding.tvNgayBinhLuan.setText(DateFormat.getDateTimeInstance().format(binhLuanPhim.timestamp));
+        // Sử dụng PrettyTime để định dạng ngày giờ thành kiểu "X phút trước"
+        PrettyTime prettyTime = new PrettyTime();
+        String formattedDate = prettyTime.format(new Date(binhLuanPhim.timestamp));
+        holder.binding.tvNgayBinhLuan.setText(formattedDate);
         if (binhLuanPhim.isGif()) {
             // Hiển thị GIF và ẩn văn bản URL
             holder.binding.tvBinhLuan.setVisibility(View.GONE);  // Ẩn text nếu là GIF
