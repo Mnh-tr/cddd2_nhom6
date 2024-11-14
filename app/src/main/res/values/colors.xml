@@ -73,4 +73,7 @@
     <color name="colorText">#FFFFFF</color>
     <color name="colorTextSecondary">#BDBDBD</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="unreadColor">#FFDDDD</color> <!-- Color for chưa đọc -->
+    <color name="readColor">#DDFFDD</color>   <!-- Color for đã đọc -->
 </resources>
