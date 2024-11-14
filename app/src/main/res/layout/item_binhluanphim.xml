@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
+    android:layout_marginTop="4dp"
     android:backgroundTint="@color/white"
     android:elevation="4dp"
     app:cardCornerRadius="12dp">
@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="3dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -64,7 +64,8 @@
             android:id="@+id/tvBinhLuan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="8dp"
             android:text="Binh Luan"
             android:textColor="#00405d"
             android:textSize="16sp" />

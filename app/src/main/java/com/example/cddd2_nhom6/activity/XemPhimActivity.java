@@ -82,7 +82,7 @@ public class XemPhimActivity extends AppCompatActivity{
     private TaiPhim taiPhim;
     private DatabaseReference commentsRef;
     private EmojiPopup emojiPopup;
-    private ImageButton btnAddToFavorites,btnDowload;
+    private ImageButton btnAddToFavorites,btnDowload,btnReport;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +92,7 @@ public class XemPhimActivity extends AppCompatActivity{
         View customControls = binding.playerView.findViewById(R.id.custom_player_controls);
         btnAddToFavorites = customControls.findViewById(R.id.btnAddToFavorites);
         btnDowload = customControls.findViewById(R.id.btnDowload);
+        btnReport = customControls.findViewById(R.id.btnReport);
         movieSlug = getIntent().getStringExtra("slug");
         BinhLuanPhimAdapter.OnCommentDeleteListener listener = new BinhLuanPhimAdapter.OnCommentDeleteListener() {
             @Override
@@ -117,21 +118,8 @@ public class XemPhimActivity extends AppCompatActivity{
                 .setOnEmojiPopupShownListener(() -> binding.btnEmoji.setImageResource(R.drawable.ic_emoji_hide))
                 .setOnEmojiPopupDismissListener(() -> binding.btnEmoji.setImageResource(R.drawable.ic_emoji))
                 .build(binding.commentInput);
-        PlayerView.ControllerVisibilityListener visibilityListener = visibility -> {
-            View btnFullScreen = binding.playerView.findViewById(R.id.btnFullScreen);
-
-            if (visibility == View.VISIBLE) {
-                btnFullScreen.setVisibility(View.VISIBLE);
-            } else {
-                btnFullScreen.setVisibility(View.GONE);
-            }
-        };
-// Áp dụng listener vào PlayerView
-        // Áp dụng listener vào PlayerView
-        binding.playerView.setControllerVisibilityListener(visibilityListener);
-
+        anHienNutDk();
     }
-
     public void setControl() {
         binding.rcvTapPhim.setLayoutManager(new GridLayoutManager(this, 2, RecyclerView.HORIZONTAL, false)); // Thiết lập RecyclerView
         // Khởi tạo Firebase Database
@@ -300,6 +288,28 @@ public class XemPhimActivity extends AppCompatActivity{
         }
 
         isFullScreen = !isFullScreen; // Đổi trạng thái fullscreen
+    }
+    public void anHienNutDk (){
+        View customControls = binding.playerView.findViewById(R.id.custom_player_controls);
+        PlayerView.ControllerVisibilityListener visibilityListener = visibility -> {
+            View btnFullScreen = binding.playerView.findViewById(R.id.btnFullScreen);
+            btnAddToFavorites = customControls.findViewById(R.id.btnAddToFavorites);
+            btnDowload = customControls.findViewById(R.id.btnDowload);
+            btnReport = customControls.findViewById(R.id.btnReport);
+            if (visibility == View.VISIBLE) {
+                btnFullScreen.setVisibility(View.VISIBLE);
+                btnAddToFavorites.setVisibility(View.VISIBLE);
+                btnDowload.setVisibility(View.VISIBLE);
+                btnReport.setVisibility(View.VISIBLE);
+            } else {
+                btnFullScreen.setVisibility(View.GONE);
+                btnAddToFavorites.setVisibility(View.GONE);
+                btnDowload.setVisibility(View.GONE);
+                btnReport.setVisibility(View.GONE);
+            }
+        };
+        // Áp dụng listener vào PlayerView
+        binding.playerView.setControllerVisibilityListener(visibilityListener);
     }
 
     private void hienThiChiTietPhim() {
