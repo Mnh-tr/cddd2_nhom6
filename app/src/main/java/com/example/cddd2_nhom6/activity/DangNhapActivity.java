@@ -13,20 +13,34 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityDangNhapBinding;
 import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
-import com.example.cddd2_nhom6.model.LoaiNguoiDung;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 
 public class DangNhapActivity extends AppCompatActivity {
@@ -36,22 +50,147 @@ public class DangNhapActivity extends AppCompatActivity {
     private DatabaseReference usersRef;
     private ActivityDangNhapBinding binding;
     private boolean isPasswordVisible = false;  // Trạng thái của mật khẩu
+    private static final int RC_SIGN_IN = 9001;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         binding = ActivityDangNhapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
         MainActivity.truycap = false;
+        // Kiểm tra xem người dùng đã đăng nhập chưa
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String userId = sharedPreferences.getString("id_user", null);
+        if (userId != null) {
+            // Nếu người dùng đã đăng nhập, chuyển ngay đến MainActivity
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear(); // Xóa tất cả dữ liệu
+            editor.apply();
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(DangNhapActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
         // Khởi tạo FirebaseAuth và DatabaseReference
         mAuth = FirebaseAuth.getInstance();
         usersRef = FirebaseDatabase.getInstance().getReference("Users"); // Đảm bảo rằng bạn đã khởi tạo đúng đường dẫn
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
 
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
+        binding.btnGoogleSignIn.setOnClickListener(v -> {
+            Intent signInIntent = googleSignInClient.getSignInIntent();
+            signInLauncher.launch(signInIntent);
+        });
         xulyDangNhap();
         taoTaiKhoan();
         xemMatKhau();
 
+    }
 
+    private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                    handleSignInResult(task);
+                } else {
+                    Log.e("DangNhapActivity", "Google Sign In Failed: " +
+                            (result.getData() != null ? result.getData().toString() : "No data"));
+                }
+            });
+
+
+    // Trong onCreate(), thay vì gọi startActivityForResult, bạn gọi signInLauncher.launch():
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            firebaseAuthWithGoogle(account);
+        } catch (ApiException e) {
+            Toast.makeText(this, "Đăng nhập Google thất bại: " + e.getStatusMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        // Thêm đoạn này để lưu thông tin user vào database
+                        usersRef.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (!dataSnapshot.exists()) {
+                                    // Tạo user mới trong database nếu chưa tồn tại
+                                    Map<String, Object> userMap = new HashMap<>();
+                                    // Tạo ID ngẫu nhiên theo format FNxxxxx
+                                    String randomId = "FN" + new Random().nextInt(900) + 100;
+
+                                    userMap.put("id_user", randomId);
+                                    userMap.put("name", user.getDisplayName());
+                                    userMap.put("email", user.getEmail());
+                                    userMap.put("id_loaiND", 0); // Mặc định là user thường
+                                    userMap.put("status", "offline");
+                                    userMap.put("created_at", ServerValue.TIMESTAMP);
+                                    userMap.put("updated_at", ServerValue.TIMESTAMP);
+                                    // Không cần password vì đăng nhập qua Google
+
+                                    usersRef.child(user.getUid()).setValue(userMap).addOnCompleteListener(databaseTask -> {
+                                        if (databaseTask.isSuccessful()) {
+                                            // Lưu thông tin vào SharedPreferences
+                                            SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                                            editor.putString("id_user", randomId);  // Lưu id_user tự tạo
+                                            editor.putString("name", user.getDisplayName());
+                                            editor.putString("email", user.getEmail());
+                                            editor.putInt("id_loaiND", 0);
+                                            editor.apply();
+
+                                            // Chuyển đến MainActivity
+                                            Intent intent = new Intent(DangNhapActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            Log.e("DangNhapActivity", "Lỗi khi lưu user vào database", databaseTask.getException());
+                                            Toast.makeText(DangNhapActivity.this, "Lỗi khi lưu thông tin người dùng", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                } else {
+                                    // User đã tồn tại, lấy thông tin và lưu vào SharedPreferences
+                                    String idUser = dataSnapshot.child("id_user").getValue(String.class);
+                                    String hoTen = dataSnapshot.child("name").getValue(String.class);
+                                    String email = dataSnapshot.child("email").getValue(String.class);
+                                    Integer idLoaiND = dataSnapshot.child("id_loaiND").getValue(Integer.class);
+
+                                    SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putString("id_user", idUser);
+                                    editor.putString("name", hoTen);
+                                    editor.putString("email", email);
+                                    editor.putInt("id_loaiND", idLoaiND != null ? idLoaiND : 0);
+                                    editor.apply();
+
+                                    // Chuyển đến MainActivity
+                                    Intent intent = new Intent(DangNhapActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Toast.makeText(DangNhapActivity.this, "Lỗi khi kiểm tra thông tin người dùng", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        Toast.makeText(DangNhapActivity.this, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void taoTaiKhoan() {
@@ -65,6 +204,7 @@ public class DangNhapActivity extends AppCompatActivity {
             }
         });
     }
+
     private void xemMatKhau() {
         // Thiết lập sự kiện nhấn vào biểu tượng con mắt
         binding.edtMk.setOnTouchListener((v, event) -> {
@@ -90,6 +230,7 @@ public class DangNhapActivity extends AppCompatActivity {
             return false;
         });
     }
+
     private void xulyDangNhap() {
         // Xử lý sự kiện khi bấm đăng nhập
         binding.loginButton.setOnClickListener(new View.OnClickListener() {
@@ -126,15 +267,14 @@ public class DangNhapActivity extends AppCompatActivity {
                                 Integer idLoaiND = dataSnapshot.child("id_loaiND").getValue(Integer.class);
 
 
-                                    // Lưu thông tin vào SharedPreferences
-                                    SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                                    editor.putString("id_user", idUser);
-                                    editor.putString("name", hoTen);
-                                    editor.putString("email", email);
-                                    editor.putInt("id_loaiND", idLoaiND);
-                                    editor.apply();
-
+                                // Lưu thông tin vào SharedPreferences
+                                SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putString("id_user", idUser);
+                                editor.putString("name", hoTen);
+                                editor.putString("email", email);
+                                editor.putInt("id_loaiND", idLoaiND);
+                                editor.apply();
 
 
                                 // Chuyển đến màn hình chính
