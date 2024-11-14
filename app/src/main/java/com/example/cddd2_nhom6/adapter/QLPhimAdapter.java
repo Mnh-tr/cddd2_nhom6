@@ -25,8 +25,8 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
     private List<Goi> goiList;
     private List<QLPhim> selectedMovies = new ArrayList<>(); // Danh sách phim được chọn
     private boolean multiSelectMode = false;
-    private OnMovieSelectListener onMovieSelectListener;
-    private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
+    private OnMovieSelectListener onMovieSelectListener;//Được gọi khi số lượng phim được chọn thay đổi.
+    private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;//Lắng nghe các sự kiện click trên item của RecyclerView
 
     // Interface để thông báo về trạng thái lựa chọn phim
     public interface OnMovieSelectListener {
@@ -64,7 +64,6 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
         holder.binding.tenphim.setText(currentPhim.getName());
         holder.binding.nam.setText(currentPhim.getYear());
 
-        //String time = getKieuPhimNameById(String.valueOf(currentPhim.getTime()));
         String a = "Phim lẻ: ";
         holder.binding.thoiluong.setText( a + currentPhim.getTime()+"p");
 
@@ -90,7 +89,6 @@ public class QLPhimAdapter extends RecyclerView.Adapter<QLPhimAdapter.QLPhimView
         } else {
             holder.binding.itemView.setBackgroundResource(R.drawable.movie_item_background); // Màu nền mặc định
         }
-
 
     }
 
