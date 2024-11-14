@@ -2,7 +2,40 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/transparent">
+    <ImageButton
+        android:id="@+id/btnAddToFavorites"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="200dp"
+        android:layout_marginBottom="18dp"
+        android:background="?attr/selectableItemBackground"
+        android:src="@drawable/baseline_favorite_24" />
+    <ImageButton
+        android:id="@+id/btnDowload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="150dp"
+        android:layout_marginBottom="18dp"
+        android:background="?attr/selectableItemBackground"
+        app:tint="#FFF"
+        android:src="@drawable/baseline_file_download_24" />
+    <ImageButton
+        android:id="@+id/btnReport"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="18dp"
+        android:background="?attr/selectableItemBackground"
+        android:src="@drawable/baseline_report_24"
+        app:tint="#FFF" />
     <ImageButton
         android:id="@+id/btnFullScreen"
         android:layout_width="wrap_content"

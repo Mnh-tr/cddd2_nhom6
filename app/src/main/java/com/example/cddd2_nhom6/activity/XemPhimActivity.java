@@ -8,6 +8,8 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -80,12 +82,16 @@ public class XemPhimActivity extends AppCompatActivity{
     private TaiPhim taiPhim;
     private DatabaseReference commentsRef;
     private EmojiPopup emojiPopup;
+    private ImageButton btnAddToFavorites,btnDowload;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Giphy.INSTANCE.configure(this, "5HgDd04QR0IJPDqSSlAWA5q65adlKwtd");
         EmojiManager.install(new GoogleEmojiProvider());
         binding = ActivityXemPhimBinding.inflate(getLayoutInflater()); // Khởi tạo View Binding
+        View customControls = binding.playerView.findViewById(R.id.custom_player_controls);
+        btnAddToFavorites = customControls.findViewById(R.id.btnAddToFavorites);
+        btnDowload = customControls.findViewById(R.id.btnDowload);
         movieSlug = getIntent().getStringExtra("slug");
         BinhLuanPhimAdapter.OnCommentDeleteListener listener = new BinhLuanPhimAdapter.OnCommentDeleteListener() {
             @Override
@@ -196,8 +202,9 @@ public class XemPhimActivity extends AppCompatActivity{
         dsPhimYeuThich = new DSPhimYeuThich(this, binding, movieSlug);
         // Kiểm tra và cập nhật màu nút trái tim
         dsPhimYeuThich.kiemTraYeuThich();
+
         // Thêm sự kiện nhấn cho nút thêm vào danh sách yêu thích
-        binding.btnAddToFavorites.setOnClickListener(v -> dsPhimYeuThich.themYeuThich());
+        btnAddToFavorites.setOnClickListener(v -> dsPhimYeuThich.themYeuThich());
         String movieSlug = this.movieSlug;
         // Xử lý khi người dùng đánh giá phim
         binding.ratingBar.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
@@ -213,7 +220,7 @@ public class XemPhimActivity extends AppCompatActivity{
         danhGiaPhim.kiemTraDanhGia();
         commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
         // Thêm sự kiện nhấn cho nút bình luận
-        binding.btnDowload.setOnClickListener(v -> {
+        btnDowload.setOnClickListener(v -> {
             String movieName = binding.tvMovieTitle.getText().toString();
             if (movieLink != null && !movieLink.isEmpty()) {
                 // Hiện thông báo "Đang tải..."
