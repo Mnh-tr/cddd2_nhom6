@@ -1,6 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="wrap_content"
     android:layout_margin="10dp"
     android:background="#00405d">
 
@@ -61,11 +61,22 @@
         android:visibility="gone" />
 
     <!-- Nút để lưu thay đổi (Đưa nút lưu xuống dưới 2 icon Sửa và Xóa) -->
+    <EditText
+        android:id="@+id/editLink"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imgQuocGia"
+        android:layout_marginTop="50dp"
+        android:hint="Nhập link"
+        android:padding="8dp"
+        android:textColor="@color/white"
+        android:visibility="gone" />
+
     <Button
         android:id="@+id/btnSave"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="65dp"
         android:text="Lưu"
         android:layout_below="@id/btnEdit"
         android:layout_alignParentEnd="true"

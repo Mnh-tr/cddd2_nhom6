@@ -3,7 +3,6 @@ package com.example.cddd2_nhom6.activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,11 +47,9 @@ public class QLUserActivity extends AppCompatActivity {
     private DatabaseReference usersRef;
     private DatabaseReference loaiNguoiDungRef;
     private HashMap<Long, String> loaiMap;
-    private ArrayList<String> danhSachGoi;
-    private boolean isLoaiNguoiDungLoaded = false;
+
     // danh sách người dùng góc
     private List<User> originalUserList;
-    private ValueEventListener userValueEventListener;
     private boolean doubleBackToExitPressedOnce = false;
 
     @Override
@@ -93,7 +90,6 @@ public class QLUserActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedStatus = parent.getItemAtPosition(position).toString();
                 String searchQuery = binding.searchEditText.getText().toString();
-                //filterUsersByStatus(selectedStatus);
                 filterUsers(searchQuery, selectedStatus);
             }
 
@@ -111,13 +107,8 @@ public class QLUserActivity extends AppCompatActivity {
         userAdapter.setRecyclerViewItemClickListener(new UserAdapter.OnRecyclerViewItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Log.d("kiểm tra load người dùng", String.valueOf(isLoaiNguoiDungLoaded));
-                if (isLoaiNguoiDungLoaded) {
                     User UserChitiet = userList.get(position);
                     digLogChiTietUser(UserChitiet);
-                } else {
-                    Toast.makeText(QLUserActivity.this, "Đang tải dữ liệu, vui lòng chờ...", Toast.LENGTH_SHORT).show();
-                }
             }
         });
         // Lấy giá trị mặc định từ Spinner và lọc dữ liệu ngay từ đầu
@@ -132,7 +123,6 @@ public class QLUserActivity extends AppCompatActivity {
             }
         });
 
-        loadDuLieu();
     }
     private void digLogChiTietUser(User clickedUser){
         DialogUserInfoBinding dialogBinding = DialogUserInfoBinding.inflate(LayoutInflater.from(this));
@@ -141,7 +131,7 @@ public class QLUserActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(QLUserActivity.this, android.R.layout.simple_spinner_item, danhSachGoi);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(QLUserActivity.this, android.R.layout.simple_spinner_item, new ArrayList<>(loaiMap.values()));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         dialogBinding.spinnerUserType.setAdapter(adapter);
 
@@ -310,7 +300,7 @@ public class QLUserActivity extends AppCompatActivity {
                     Long createdAt = userSnapshot.child("created_at").getValue(Long.class);
                     String email = userSnapshot.child("email").getValue(String.class);
                     String firebaseKey = userSnapshot.getKey();
-                    // Lấy `type` từ `loaiMap` dựa trên `idLoaiND`, nếu không có thì gán là "Thường"
+                    // Lấy `type` từ `loaiMap` dựa trên `idLoaiND`, nếu không có thì gán là "Loading..."
                     String goi = loaiMap.getOrDefault(idLoaiND, "Loading...");
 
                     Log.d("kiểm tra gói", "gói ở ql user: " + goi);
@@ -341,7 +331,6 @@ public class QLUserActivity extends AppCompatActivity {
     }
 
     private void loadLoaiNguoiDung() {
-        danhSachGoi = new ArrayList<>();
         loaiNguoiDungRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -350,11 +339,10 @@ public class QLUserActivity extends AppCompatActivity {
                     Long id = loaiSnapshot.child("id").getValue(Long.class);
                     String type = loaiSnapshot.child("type").getValue(String.class);
                     if (id != null && type != null) {
-                        danhSachGoi.add(type);
                         loaiMap.put(id, type);
                     }
                 }
-                isLoaiNguoiDungLoaded = true;
+                loadDuLieu();
             }
 
             @Override
@@ -365,12 +353,8 @@ public class QLUserActivity extends AppCompatActivity {
     }
 
     private int getSpinnerPosition(Long idLoaiND) {
-        String type = loaiMap.get(idLoaiND); // Lấy `type` từ `loaiMap` dựa trên `id_loaiND`
-        if (type != null) {
-            int position = danhSachGoi.indexOf(type);
-            return position; // Trả về vị trí của `type` trong `danhSachGoi`
-        }
-        return 0; // Trả về 0 (mặc định) nếu không tìm thấy
+        ArrayList<Long> keys = new ArrayList<>(loaiMap.keySet());
+        return keys.indexOf(idLoaiND);
     }
     private void filterUsersByStatus(String status) {
         List<User> filteredList = new ArrayList<>();

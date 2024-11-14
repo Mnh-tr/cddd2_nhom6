@@ -22,5 +22,9 @@
         <item name="android:background">@android:color/transparent</item>
         <item name="android:popupBackground">#3C3C3C</item>
     </style>
+    <style name="LoginDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
     <style name="Theme.Cddd2_nhom6" parent="Base.Theme.Cddd2_nhom6" />
 </resources>

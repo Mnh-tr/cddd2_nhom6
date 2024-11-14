@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -19,6 +20,8 @@ import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.ApiAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.databinding.ActivityQuanLyApiBinding;
+import com.example.cddd2_nhom6.databinding.DialogAddApiBinding;
+import com.example.cddd2_nhom6.databinding.DialogAddCategoryBinding;
 import com.example.cddd2_nhom6.model.ApiModel;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,7 +30,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class QuanLyAPI extends AppCompatActivity {
 
@@ -99,20 +104,103 @@ public class QuanLyAPI extends AppCompatActivity {
         binding.rvApiList.setAdapter(apiAdapter);
 
 //        binding.exitIcon.setOnClickListener(v -> finish());
+        binding.btnAddapi.setOnClickListener(v -> hienThiDialogThem(-1, null));
     }
+
+    private void hienThiDialogThem(int position, String currentName) {
+        // Tạo dialog và sử dụng View Binding cho dialog
+        Dialog dialog = new Dialog(QuanLyAPI.this);
+        DialogAddApiBinding dialogBinding = DialogAddApiBinding.inflate(getLayoutInflater());
+        dialog.setContentView(dialogBinding.getRoot());
+        dialogBinding.edtName.setText(""); // Nếu là thêm, thì để trống
+        dialogBinding.edtLink.setText(""); // Nếu là thêm, thì để trống
+
+        // Set background bo tròn cho dialog
+        dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_rounded_background);
+        dialog.getWindow().setLayout(800, 600); // Tùy chỉnh kích thước
+
+        // Set sự kiện khi nhấn nút "Thêm/Cập nhật" trong dialog
+        dialogBinding.btnThem.setOnClickListener(v -> {
+            String name = dialogBinding.edtName.getText().toString();
+            String link = dialogBinding.edtLink.getText().toString();
+            if (!name.isEmpty() && !link.isEmpty()) {
+                // Nếu là thêm
+                new androidx.appcompat.app.AlertDialog.Builder(QuanLyAPI.this)
+                        .setTitle("Xác nhận thêm")
+                        .setMessage("Bạn có muốn thêm thể loại này không?")
+                        .setPositiveButton("Có", (dialog1, which) -> {
+                            themApi(name, link);
+                        })
+                        .setNegativeButton("Không", null) // Không làm gì nếu nhấn "Không"
+                        .show();
+            }
+            dialog.dismiss(); // Đóng dialog sau khi thêm hoặc cập nhật
+        });
+
+        // Hiển thị dialog
+        dialog.show();
+    }
+    private void themApi(String name, String url) {
+        // Kiểm tra đầu vào
+        if (!name.isEmpty() && !url.isEmpty()) {
+            // Tham chiếu đến api_list
+            thamChieuDatabase.child("api_list").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    // Lấy ID lớn nhất hiện tại trong api_list
+                    long maxId = 0;
+                    for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
+                        long id = Long.parseLong(apiSnapshot.getKey()); // Lấy key (ID) của mỗi API
+                        if (id > maxId) {
+                            maxId = id; // Tìm ID lớn nhất
+                        }
+                    }
+
+                    // Tạo ID mới là maxId + 1
+                    long newId = maxId + 1;
+                    String apiId = String.valueOf(newId); // Chuyển đổi ID thành chuỗi
+
+                    // Tạo API mới
+                    Map<String, Object> apiMoi = new HashMap<>();
+                    apiMoi.put("id", apiId);
+                    apiMoi.put("name", name);
+                    apiMoi.put("url", url);
+
+                    // Lưu API mới vào api_list với ID là số nguyên
+                    thamChieuDatabase.child("api_list").child(apiId).setValue(apiMoi)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(QuanLyAPI.this, "API đã được thêm thành công!", Toast.LENGTH_SHORT).show();
+                                layDanhSachApiTuFirebase(); // Cập nhật danh sách
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(QuanLyAPI.this, "Lỗi khi thêm API: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(QuanLyAPI.this, "Lỗi khi lấy dữ liệu API: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(QuanLyAPI.this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
 
     private void layDanhSachApiTuFirebase() {
         //tham chieu database
-        thamChieuDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+        thamChieuDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 danhSachApi.clear();
                 //lay api tu firebase
                 DataSnapshot apiListSnapshot = snapshot.child("api_list");
                 for (DataSnapshot apiSnapshot : apiListSnapshot.getChildren()) {
+                    String apiId = apiSnapshot.getKey();
                     String ten = apiSnapshot.child("name").getValue(String.class);
                     String url = apiSnapshot.child("url").getValue(String.class);
-                    danhSachApi.add(new ApiModel(ten, url));
+                    danhSachApi.add(new ApiModel(apiId,ten, url));
                 }
                 apiAdapter.notifyDataSetChanged();
             }
@@ -162,7 +250,7 @@ public class QuanLyAPI extends AppCompatActivity {
         //kiem tra ten va url
         if (!tenMoi.isEmpty() && !urlMoi.isEmpty()) {
             //tham chieu database
-            thamChieuDatabase.child("api_list").orderByChild("name").equalTo(api.getName()).addListenerForSingleValueEvent(new ValueEventListener() {
+            thamChieuDatabase.child("api_list").orderByChild("name").equalTo(api.getName()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
@@ -196,7 +284,7 @@ public class QuanLyAPI extends AppCompatActivity {
         String tenApiCanXoa = api.getName();
         DatabaseReference apiListRef = thamChieuDatabase.child("api_list");
         //lay ten api tu firebase
-        apiListRef.orderByChild("name").equalTo(tenApiCanXoa).addListenerForSingleValueEvent(new ValueEventListener() {
+        apiListRef.orderByChild("name").equalTo(tenApiCanXoa).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
@@ -234,6 +322,7 @@ public class QuanLyAPI extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Toast.makeText(QuanLyAPI.this, "Lỗi khi lưu API: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override
@@ -249,6 +338,7 @@ public class QuanLyAPI extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -260,6 +350,7 @@ public class QuanLyAPI extends AppCompatActivity {
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

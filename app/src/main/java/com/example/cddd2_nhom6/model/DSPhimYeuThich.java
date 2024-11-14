@@ -3,6 +3,8 @@ package com.example.cddd2_nhom6.model;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -21,12 +23,16 @@ public class DSPhimYeuThich {
     private String idUser;
     private Context context;
     private String movieSlug;
+    private ImageButton btnAddToFavorites,btnDowload;
     private ActivityXemPhimBinding binding;
 
     public DSPhimYeuThich(Context context, ActivityXemPhimBinding binding, String movieSlug) {
         this.context = context;
         this.binding = binding;
         this.movieSlug = movieSlug;
+        View customControls = binding.playerView.findViewById(R.id.custom_player_controls);
+        btnAddToFavorites = customControls.findViewById(R.id.btnAddToFavorites);
+
         laythongtinUser();
     }
     private void laythongtinUser() {
@@ -79,7 +85,7 @@ public class DSPhimYeuThich {
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(context, "Đã xóa khỏi danh sách yêu thích!", Toast.LENGTH_SHORT).show();
                                 // Đổi màu trái tim về trắng
-                                binding.btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24);
+                                btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24);
                             })
                             .addOnFailureListener(e -> Toast.makeText(context, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 } else {
@@ -89,7 +95,7 @@ public class DSPhimYeuThich {
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(context, "Đã thêm vào yêu thích!", Toast.LENGTH_SHORT).show();
                                 // Đổi màu trái tim thành đỏ
-                                binding.btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24_red);
+                                btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24_red);
                             })
                             .addOnFailureListener(e -> Toast.makeText(context, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 }
@@ -125,10 +131,10 @@ public class DSPhimYeuThich {
                 }
                 // Nếu phim đã tồn tại, đổi màu nút thành đỏ
                 if (movieExists) {
-                    binding.btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24_red);
+                    btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24_red);
                 } else {
                     // Nếu phim chưa tồn tại, để màu trắng
-                    binding.btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24);
+                    btnAddToFavorites.setImageResource(R.drawable.baseline_favorite_24);
                 }
             }
 

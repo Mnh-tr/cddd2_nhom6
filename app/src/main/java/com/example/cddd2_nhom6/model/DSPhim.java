@@ -23,6 +23,7 @@ public class DSPhim implements DSPhimAPI {
     private List<Category> category;
     private List<Country> country;
 
+
     protected DSPhim(Parcel in) {
         _id = in.readString();
         name = in.readString();
