@@ -1,19 +1,16 @@
 package com.example.cddd2_nhom6.adapter;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.bumptech.glide.Glide;
 import com.example.cddd2_nhom6.databinding.ItemBinhluanphimBinding;
 import com.example.cddd2_nhom6.model.BinhLuanPhim;
-import com.example.cddd2_nhom6.databinding.ItemBinhluanphimBinding;
-import com.example.cddd2_nhom6.model.BinhLuanPhim;
+import com.example.cddd2_nhom6.model.ThoiGianBL;
 
-import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapter.MovieViewHolder> {
@@ -35,13 +32,6 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
         return binhLuanPhimList.get(position).getCommentText();
     }
 
-    public void removeCommentAt(int position) {
-        binhLuanPhimList.remove(position); // Xóa bình luận khỏi danh sách
-        notifyItemRemoved(position); // Thông báo RecyclerView xóa item ở vị trí này
-        notifyItemRangeChanged(position, binhLuanPhimList.size()); // Thông báo RecyclerView cập nhật lại các item còn lại
-    }
-
-
     @NonNull
     @Override
     public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -51,10 +41,34 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
 
     @Override
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
+        // Kiểm tra nếu vị trí hợp lệ
+        if (position < 0 || position >= binhLuanPhimList.size()) {
+            return;  // Nếu không hợp lệ, thoát ra
+        }
         BinhLuanPhim binhLuanPhim = binhLuanPhimList.get(position);
         holder.binding.tvTenNguoiDung.setText(binhLuanPhim.getUserName());
         holder.binding.tvBinhLuan.setText(binhLuanPhim.getCommentText());
-        holder.binding.tvNgayBinhLuan.setText(DateFormat.getDateTimeInstance().format(binhLuanPhim.timestamp));
+        // Sử dụng PrettyTime để định dạng ngày giờ thành kiểu "X phút trước"
+        ThoiGianBL thoiGianBL = new ThoiGianBL();
+        String formattedDate = thoiGianBL.format(new Date(binhLuanPhim.timestamp));
+        holder.binding.tvNgayBinhLuan.setText(formattedDate);
+        if (binhLuanPhim.isGif()) {
+            // Hiển thị GIF và ẩn văn bản URL
+            holder.binding.tvBinhLuan.setVisibility(View.GONE);  // Ẩn text nếu là GIF
+            holder.binding.imageViewGif.setVisibility(View.VISIBLE);
+            Glide.with(context)
+                    .load(binhLuanPhim.getCommentText())  // Lấy URL GIF từ commentText
+                    .into(holder.binding.imageViewGif);
+        } else {
+            // Hiển thị bình luận văn bản thông thường
+            holder.binding.tvBinhLuan.setVisibility(View.VISIBLE);
+            holder.binding.imageViewGif.setVisibility(View.GONE);  // Ẩn ImageView nếu không phải GIF
+        }
+        holder.binding.btnXoaBinhLuan.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.xoaBinhLuan(position); // Gọi listener khi click nút xóa
+            }
+        });
     }
 
     @Override

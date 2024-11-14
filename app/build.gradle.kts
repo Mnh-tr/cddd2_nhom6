@@ -52,7 +52,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     implementation ("com.google.android.exoplayer:exoplayer:2.17.1")
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation ("com.google.firebase:firebase-auth:20.0.0")
+    implementation ("com.google.firebase:firebase-auth:22.3.0")
     implementation ("com.google.firebase:firebase-database:20.0.0")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
     //exoplayer
@@ -63,12 +63,13 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation ("com.google.firebase:firebase-messaging:20.0.0")
     implementation ("com.google.android.material:material:1.8.0")
-
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
-
     implementation ("androidx.cardview:cardview:1.0.0")
-
     implementation ("com.squareup.picasso:picasso:2.8")
-
+    implementation ("com.vanniktech:emoji-google:0.9.0")
+    implementation ("com.giphy.sdk:ui:2.3.15")
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    implementation ("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
     implementation ("com.google.android.gms:play-services-ads:22.0.0")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 }
