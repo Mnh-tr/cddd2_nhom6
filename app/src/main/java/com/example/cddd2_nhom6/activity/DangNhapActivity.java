@@ -90,6 +90,15 @@ public class DangNhapActivity extends AppCompatActivity {
         taoTaiKhoan();
         xemMatKhau();
 
+        binding.forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DangNhapActivity.this, QuenMatKhauActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
     }
 
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(

@@ -33,6 +33,9 @@ android {
     buildFeatures{
         viewBinding= true;
     }
+    packagingOptions {
+        exclude ("META-INF/DEPENDENCIES")  // Loại bỏ tệp trùng lặp
+    }
 }
 
 dependencies {
@@ -72,4 +75,8 @@ dependencies {
     implementation ("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
     implementation ("com.google.android.gms:play-services-ads:22.0.0")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation ("com.sun.mail:android-mail:1.6.5")
+    implementation ("com.sun.mail:android-activation:1.6.5")
+    implementation ("com.sendgrid:sendgrid-java:4.7.1")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.1")
 }
