@@ -12,28 +12,33 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 public class ThongBaoKhiUngDungTat extends FirebaseMessagingService {
-    private static final String CHANNEL_ID = "KênhDịchVụForeground";
+    private static final String CHANNEL_ID = "ThongBaoChannel";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
+        String title = "";
+        String message = "";
+
         // Kiểm tra nếu thông điệp chứa dữ liệu
         if (remoteMessage.getData().size() > 0) {
-            String title = remoteMessage.getData().get("title");
-            String message = remoteMessage.getData().get("message");
-
-            // Hiển thị thông báo
-            hienThiThongBao(title, message);
+            title = remoteMessage.getData().get("title");
+            message = remoteMessage.getData().get("message");
+            // Hiển thị thông báo khi ứng dụng chạy ngầm hoặc đang hoạt động
+            if (title != null && message != null) {
+                hienThiThongBao(title, message);
+            }
         }
 
         // Kiểm tra nếu thông điệp chứa thông báo
         if (remoteMessage.getNotification() != null) {
-            String title = remoteMessage.getNotification().getTitle();
-            String message = remoteMessage.getNotification().getBody();
-
-            // Hiển thị thông báo
-            hienThiThongBao(title, message);
+            title = remoteMessage.getNotification().getTitle();
+            message = remoteMessage.getNotification().getBody();
+            // Hiển thị thông báo khi ứng dụng đang tắt
+            if (title != null && message != null) {
+                hienThiThongBao(title, message);
+            }
         }
     }
 
@@ -49,25 +54,28 @@ public class ThongBaoKhiUngDungTat extends FirebaseMessagingService {
 
         // Tạo và hiển thị thông báo
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
+                .setSmallIcon(R.drawable.logo)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                 .setAutoCancel(true);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(1, builder.build());
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
     private void taoKenhThongBao() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Kênh Dịch Vụ Foreground",
+                    "Thông Báo Mới",
                     NotificationManager.IMPORTANCE_HIGH
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
+            if (manager != null) {
+                manager.createNotificationChannel(serviceChannel);
+            }
         }
     }
 }

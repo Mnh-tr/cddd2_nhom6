@@ -38,7 +38,6 @@ public class QLHoTroActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityQlHoTroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 // Thiết lập ActionBar và DrawerLayout
@@ -149,7 +148,7 @@ public class QLHoTroActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            Intent intent = new Intent(this, AdminActivity.class);
+            Intent intent = new Intent(this, DSHoTroActivity.class);
             startActivity(intent);
             return true;
         }

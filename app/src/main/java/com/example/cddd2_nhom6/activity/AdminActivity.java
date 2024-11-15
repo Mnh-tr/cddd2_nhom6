@@ -616,6 +616,9 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         }else if(id == R.id.itemQLQuocGia){
             Intent myIntent = new Intent(AdminActivity.this, QLQuocGiaActivity.class);
             startActivity(myIntent);
+        }else if(id == R.id.itemHoTro){
+            Intent myIntent = new Intent(AdminActivity.this, DSHoTroActivity.class);
+            startActivity(myIntent);
         }
         binding.drawerLayout.closeDrawer(GravityCompat.START);
         return true;

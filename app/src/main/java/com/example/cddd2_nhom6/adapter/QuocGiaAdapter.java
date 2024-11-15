@@ -97,7 +97,7 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
                         .setMessage("Bạn có chắc chắn muốn xóa quốc gia này không?")
                         .setPositiveButton("Có", (dialog, which) -> {
                             // Lấy ID của quốc gia cần xóa
-                            long quocGiaId = quocGiaList.get(position).getId();
+                            long quocGiaId = quocgia.getId();
 
                             // Xóa quốc gia khỏi Firebase bằng ID
                             quocGiaRef.child(String.valueOf(quocGiaId)).removeValue()

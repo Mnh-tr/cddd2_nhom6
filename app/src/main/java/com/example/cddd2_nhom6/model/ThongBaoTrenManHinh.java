@@ -114,13 +114,13 @@ public class ThongBaoTrenManHinh {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT| PendingIntent.FLAG_IMMUTABLE);
 
 
-
         // Tạo thông báo
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification) // Biểu tượng thông báo
+                .setSmallIcon(R.drawable.logo) // Biểu tượng thông báo
                 .setContentTitle(tieuDe) // Tiêu đề thông báo
                 .setContentText(noiDung) // Nội dung thông báo
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT) // Đặt mức độ ưu tiên
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // Đặt mức độ ưu tiên
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(noiDung))
                 .setAutoCancel(true) // Tự động xóa thông báo khi người dùng nhấn vào
                 .setContentIntent(pendingIntent); // Gán PendingIntent cho thông báo
 

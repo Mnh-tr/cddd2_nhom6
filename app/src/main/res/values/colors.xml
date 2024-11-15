@@ -67,4 +67,5 @@
     <color name="status_pending_end">#FF4C29</color>
     <color name="status_completed_start">#2ECC71</color>
     <color name="status_completed_end">#27AE60</color>
+    <color name="indicator_color">#2196F3</color>
 </resources>
