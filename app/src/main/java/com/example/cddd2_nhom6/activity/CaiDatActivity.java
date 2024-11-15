@@ -14,6 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityCaiDatBinding;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -113,7 +116,7 @@ public class CaiDatActivity extends AppCompatActivity {
                     Integer idLoaiND = snapshot.getValue(Integer.class);
 
                     // Kiểm tra nếu người dùng là admin
-                    if (idLoaiND != null && idLoaiND == 2 || idLoaiND == 3) {
+                    if (idLoaiND != null && idLoaiND == 2 || idLoaiND == 3|| idLoaiND == 4) {
                         binding.cvDangXuat.setVisibility(View.VISIBLE); // Hiển thị nút admin
                     } else {
                         binding.cvDangXuat.setVisibility(View.GONE); // Ẩn nút admin
@@ -140,7 +143,8 @@ public class CaiDatActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // Thực hiện đăng xuất khỏi Firebase Auth
                     FirebaseAuth.getInstance().signOut();
-
+                    GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_SIGN_IN);
+                    googleSignInClient.signOut();
                     // Xóa thông tin trong SharedPreferences
                     SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();

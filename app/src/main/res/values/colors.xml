@@ -68,4 +68,13 @@
     <color name="status_completed_start">#2ECC71</color>
     <color name="status_completed_end">#27AE60</color>
     <color name="indicator_color">#2196F3</color>
+
+    <color name="colorPrimary1">#FF4081</color>
+    <color name="colorBackground">#1E1E1E</color>
+    <color name="colorText">#FFFFFF</color>
+    <color name="colorTextSecondary">#BDBDBD</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="unreadColor">#FFDDDD</color> <!-- Color for chưa đọc -->
+    <color name="readColor">#DDFFDD</color>   <!-- Color for đã đọc -->
 </resources>

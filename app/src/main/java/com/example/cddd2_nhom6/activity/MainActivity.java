@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
         emailUser  = sharedPreferences.getString("email", null);
-        idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
+        idLoaiND = sharedPreferences.getInt("id_loaiND", -1);
         Log.d("id_loaiND Ban đầu", String.valueOf(idLoaiND));
     }
     private void theoDoiThayDoiTrenFirebase() {
@@ -466,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         listHeaders.add("Admin");
         listHeaders.add("Đăng Nhập");
         if (idUser != null) {
-            if (idLoaiND == 3 || idLoaiND == 2) { // Kiểm tra nếu là admin
+            if (idLoaiND == 3 || idLoaiND == 2 || idLoaiND == 4) { // Kiểm tra nếu là admin
                 isUserLoggedIn = true; // Người dùng là admin
 
                 // Kiểm tra và thêm mục "Admin" nếu chưa có
