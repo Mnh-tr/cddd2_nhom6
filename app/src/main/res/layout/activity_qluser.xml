@@ -14,10 +14,9 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-
         android:elevation="4dp"
         app:titleTextColor="#FFFFFF"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
         <RelativeLayout
             android:layout_width="wrap_content"

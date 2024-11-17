@@ -74,10 +74,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_manager);
                 holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.manager_text));
                 break;
-            case "Owner":
-                holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_pro);
-                holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.manager_text));
-                break;
             default:
                 holder.binding.tvGoi.setBackgroundResource(R.drawable.membership_normal);
                 holder.binding.tvGoi.setTextColor(ContextCompat.getColor(context, R.color.normal_text));
