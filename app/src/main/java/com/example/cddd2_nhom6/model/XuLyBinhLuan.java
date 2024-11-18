@@ -68,9 +68,13 @@ public class XuLyBinhLuan {
             public void onDataChange(@NonNull DataSnapshot userSnapshot) {
                 String name = nameUser != null ? nameUser : "Người dùng ẩn danh";
                 long timestamp = System.currentTimeMillis();
-                BinhLuanPhim newComment = new BinhLuanPhim(idUser, movieSlug, comment, timestamp, name, null);
+                BinhLuanPhim newComment = new BinhLuanPhim(idUser, comment, timestamp, name, null);
 
-                commentsRef.push().setValue(newComment)
+                // Sử dụng movieSlug làm khóa chính cho phần Comments
+                DatabaseReference slugRef = commentsRef.child(movieSlug).push();
+
+                // Lưu bình luận mới vào khóa `slugRef`
+                slugRef.setValue(newComment)
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(context, "Bình luận đã được lưu!", Toast.LENGTH_SHORT).show();
                             binhLuanPhimAdapter.notifyDataSetChanged();
@@ -84,6 +88,7 @@ public class XuLyBinhLuan {
             }
         });
     }
+
     public void xoaBinhLuan(int position) {
         String userId = binhLuanPhimAdapter.getCommentUserId(position);
         String movieSlug = this.movieSlug; // Slug của phim
@@ -100,12 +105,13 @@ public class XuLyBinhLuan {
                     .setTitle("Xóa bình luận")
                     .setMessage("Bạn có chắc chắn muốn xóa bình luận này không?")
                     .setPositiveButton("Có", (dialog, which) -> {
-                        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
+                        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments").child(movieSlug);
 
-                        // Truy vấn bình luận theo slug của phim
-                        commentsRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
+                        // Truy vấn tất cả các bình luận dưới movieSlug
+                        commentsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                // Duyệt qua tất cả bình luận dưới movieSlug
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                     String commentId = snapshot.getKey(); // Lấy ID của bình luận
                                     String commentUserId = snapshot.child("userId").getValue(String.class);
@@ -123,7 +129,7 @@ public class XuLyBinhLuan {
                                                 .addOnFailureListener(e -> {
                                                     Toast.makeText(context, "Lỗi khi xóa bình luận: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                                 });
-                                        break;
+                                        break; // Dừng vòng lặp khi tìm thấy bình luận cần xóa
                                     }
                                 }
                             }
@@ -140,30 +146,33 @@ public class XuLyBinhLuan {
             Toast.makeText(context, "Bạn không có quyền xóa bình luận này!", Toast.LENGTH_SHORT).show();
         }
     }
+
     public void taiBinhLuan(String movieSlug) {
-        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
+        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments").child(movieSlug);
 
         // Dọn dẹp danh sách bình luận trước khi thêm mới
         binhLuanPhimList.clear();
         binhLuanPhimAdapter.notifyDataSetChanged();
 
-        // Sử dụng ChildEventListener để chỉ xử lý khi có sự thay đổi tại các con
-        commentsRef.orderByChild("slug").equalTo(movieSlug).addChildEventListener(new ChildEventListener() {
+        // Sử dụng ChildEventListener để lấy tất cả các bình luận trong slug cụ thể
+        commentsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 String userId = snapshot.child("userId").getValue(String.class);
                 String commentText = snapshot.child("commentText").getValue(String.class);
                 String userName = snapshot.child("userName").getValue(String.class);
-                long timestamp = snapshot.child("timestamp").getValue(Long.class);
+                Long timestamp = snapshot.child("timestamp").getValue(Long.class);
 
-                if (userId != null && commentText != null) {
+                if (userId != null && commentText != null && timestamp != null) {
                     // Sử dụng PrettyTime để hiển thị thời gian thân thiện
                     ThoiGianBL thoiGianBL = new ThoiGianBL();
                     String formattedDate = thoiGianBL.format(new Date(timestamp));
-                    // Tìm ImageView trong ViewHolder
+
+                    // Kiểm tra xem bình luận có chứa GIF hay không
                     boolean isGif = commentText.contains("https://") && (commentText.endsWith(".gif") || commentText.contains(".gif?"));
+
                     // Tạo bình luận mới và thêm vào danh sách
-                    BinhLuanPhim comment = new BinhLuanPhim(userId, movieSlug, commentText, timestamp, userName, formattedDate);
+                    BinhLuanPhim comment = new BinhLuanPhim(userId, commentText, timestamp, userName, formattedDate);
                     comment.setGif(isGif);
                     binhLuanPhimList.add(0, comment);
                     binhLuanPhimAdapter.notifyItemInserted(0);
@@ -177,7 +186,6 @@ public class XuLyBinhLuan {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                // Xử lý khi bình luận bị xóa (nếu cần thiết)
                 String commentId = snapshot.getKey();
                 if (commentId != null) {
                     // Tìm bình luận tương ứng trong danh sách và loại bỏ
@@ -203,6 +211,7 @@ public class XuLyBinhLuan {
             }
         });
     }
+
     public void themGifvaoBinhLuan(String gifUrl) {
         if (idUser == null) {
             new android.app.AlertDialog.Builder(context)
@@ -225,10 +234,11 @@ public class XuLyBinhLuan {
                 String formattedDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 
                 // Tạo đối tượng bình luận mới với GIF URL
-                BinhLuanPhim newComment = new BinhLuanPhim(idUser, movieSlug, gifUrl, System.currentTimeMillis(), name, formattedDate);
+                BinhLuanPhim newComment = new BinhLuanPhim(idUser, gifUrl, System.currentTimeMillis(), name, formattedDate);
 
-                // Thêm bình luận vào Firebase
-                commentsRef.push().setValue(newComment)
+                // Thêm bình luận vào Firebase dưới khóa của movieSlug
+                DatabaseReference slugRef = commentsRef.child(movieSlug).push();
+                slugRef.setValue(newComment)
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(context, "Bình luận đã được lưu!", Toast.LENGTH_SHORT).show();
                             binhLuanPhimAdapter.notifyDataSetChanged();  // Cập nhật giao diện
@@ -242,6 +252,7 @@ public class XuLyBinhLuan {
             }
         });
     }
+
     public void laythongtinUser() {
         SharedPreferences sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         idUser = sharedPreferences.getString("id_user", null);

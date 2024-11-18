@@ -74,6 +74,7 @@ dependencies {
     implementation ("de.hdodenhof:circleimageview:3.1.0")
     implementation ("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
     implementation ("com.google.android.gms:play-services-ads:22.0.0")
+
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation ("com.sun.mail:android-mail:1.6.5")
     implementation ("com.sun.mail:android-activation:1.6.5")

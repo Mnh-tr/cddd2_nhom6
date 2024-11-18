@@ -3,7 +3,6 @@ package com.example.cddd2_nhom6.model;
 public class BinhLuanPhim {
     public String id;
     public String userId;
-    public String slug;
     public String commentText;
     public long timestamp;
     private String userName; // Thêm trường tên người dùng
@@ -16,9 +15,8 @@ public class BinhLuanPhim {
 
     // Constructor
 
-    public BinhLuanPhim(String userId, String slug, String commentText, long timestamp, String userName, String formattedDate) {
+    public BinhLuanPhim(String userId, String commentText, long timestamp, String userName, String formattedDate) {
         this.userId = userId;
-        this.slug = slug;
         this.commentText = commentText;
         this.timestamp = timestamp;
         this.userName = userName;
@@ -33,15 +31,6 @@ public class BinhLuanPhim {
 
     public String getUserId() {
         return userId;
-    }
-
-
-    public String getSlug() {
-        return slug;
-    }
-
-    public void setSlug(String userName) {
-        this.slug = userName;
     }
 
     public String getCommentText() {

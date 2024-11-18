@@ -20,13 +20,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityDangNhapBinding;
-import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.BuildConfig;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -41,6 +41,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+
+import timber.log.Timber;
 
 
 public class DangNhapActivity extends AppCompatActivity {
@@ -58,7 +60,9 @@ public class DangNhapActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         binding = ActivityDangNhapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
         MainActivity.truycap = false;
         // Kiểm tra xem người dùng đã đăng nhập chưa
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -101,36 +105,44 @@ public class DangNhapActivity extends AppCompatActivity {
 
     }
 
+    // Đối tượng signInLauncher sử dụng ActivityResultLauncher<Intent> để xử lý kết quả đăng nhập Google
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
+            // Đăng ký ActivityResultLauncher với StartActivityForResult contract
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
+                // Kiểm tra kết quả trả về: nếu thành công (RESULT_OK) và có dữ liệu (result.getData() không null)
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    // Tạo một tác vụ GoogleSignInAccount từ dữ liệu trả về để xử lý thông tin đăng nhập
                     Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                    handleSignInResult(task);
+                    // Gọi hàm handleSignInResult để xử lý kết quả đăng nhập Google
+                    xuLyDangNhap(task);
                 } else {
-                    Log.e("DangNhapActivity", "Google Sign In Failed: " +
-                            (result.getData() != null ? result.getData().toString() : "No data"));
+                    // Nếu đăng nhập thất bại, ghi log lỗi với thông tin chi tiết
+                    Timber.e("Google Sign In Failed: %s", result.getData() != null ? result.getData().toString() : "No data");
+
                 }
             });
-
-
     // Trong onCreate(), thay vì gọi startActivityForResult, bạn gọi signInLauncher.launch():
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+    private void xuLyDangNhap(Task<GoogleSignInAccount> completedTask) {
         try {
+            // Lấy thông tin tài khoản Google từ kết quả đăng nhập
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            firebaseAuthWithGoogle(account);
+
+            // Nếu lấy thành công tài khoản, tiếp tục đăng nhập vào Firebase với thông tin Google này
+            dangNhapFirebaseBangGoogle(account);
         } catch (ApiException e) {
+            // Nếu xảy ra lỗi trong quá trình đăng nhập Google, hiển thị thông báo lỗi cho người dùng
             Toast.makeText(this, "Đăng nhập Google thất bại: " + e.getStatusMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+    private void dangNhapFirebaseBangGoogle(GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        // Thêm đoạn này để lưu thông tin user vào database
+                        // Lưu thông tin user vào database
                         usersRef.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
