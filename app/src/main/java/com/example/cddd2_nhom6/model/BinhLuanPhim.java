@@ -9,6 +9,7 @@ public class BinhLuanPhim {
     private String formattedDate; // Thêm trường ngày giờ định dạng
     private String commentId;
     private boolean isGif;
+    private String avatarUrl;
 
     // Constructor không đối số và có đối số
     public BinhLuanPhim() {}

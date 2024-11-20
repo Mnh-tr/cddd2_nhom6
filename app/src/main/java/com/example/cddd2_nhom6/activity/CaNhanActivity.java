@@ -54,7 +54,7 @@ public class CaNhanActivity extends AppCompatActivity {
     private ActivityCanhanBinding binding;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String idUser;
-    private  String nameUser;
+    private String nameUser;
     private String emailUser;
     private int idLoaiND;
     private boolean isUserLoggedIn = false; // Biến để theo dõi trạng thái đăng nhập
@@ -84,13 +84,15 @@ public class CaNhanActivity extends AppCompatActivity {
         clearAvatarCache();
 
     }
-    public void setControl(){
+
+    public void setControl() {
         watchedMoviesList = new ArrayList<>();
         lichSuAdapter = new LichSuAdapter(CaNhanActivity.this, watchedMoviesList);
         binding.rcvLichSu.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.rcvLichSu.setAdapter(lichSuAdapter);
     }
-    public void setEven(){
+
+    public void setEven() {
         laythongtinUser();
         Toast.makeText(CaNhanActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         binding.tvTenNguoiDung.setText(nameUser);
@@ -156,12 +158,10 @@ public class CaNhanActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             imageUri = data.getData();
-
-            // Hiển thị ảnh đã chọn
-            binding.userAvatar.setImageURI(imageUri);
-
-            // Upload ảnh lên Cloudinary
-            uploadToCloudinary(imageUri);
+            if (!isDestroyed() && !isFinishing()) {
+                binding.userAvatar.setImageURI(imageUri);
+                uploadToCloudinary(imageUri);
+            }
         }
     }
 
@@ -227,6 +227,7 @@ public class CaNhanActivity extends AppCompatActivity {
                     });
         }
     }
+
     private void loadUserAvatar() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -236,14 +237,17 @@ public class CaNhanActivity extends AppCompatActivity {
                     if (dataSnapshot.exists()) {
                         String avatarUrl = dataSnapshot.child("avatarUrl").getValue(String.class);
                         if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                            // Sử dụng Glide để load và hiển thị avatar
-                            Glide.with(CaNhanActivity.this)
-                                    .load(avatarUrl)
-                                    .placeholder(R.drawable.profile) // Ảnh mặc định khi đang load
-                                    .error(R.drawable.profile) // Ảnh hiển thị khi lỗi
-                                    .circleCrop() // Cắt ảnh thành hình tròn
-                                    .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache ảnh
-                                    .into(binding.userAvatar);
+                            // Kiểm tra xem Activity có bị hủy không
+                            if (!isDestroyed() && !isFinishing()) {
+                                // Sử dụng Glide để load và hiển thị avatar
+                                Glide.with(CaNhanActivity.this)
+                                        .load(avatarUrl)
+                                        .placeholder(R.drawable.profile) // Ảnh mặc định khi đang load
+                                        .error(R.drawable.profile) // Ảnh hiển thị khi lỗi
+                                        .circleCrop() // Cắt ảnh thành hình tròn
+                                        .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache ảnh
+                                        .into(binding.userAvatar);
+                            }
                         } else {
                             // Nếu không có avatar, hiển thị ảnh mặc định
                             binding.userAvatar.setImageResource(R.drawable.profile);
@@ -261,11 +265,12 @@ public class CaNhanActivity extends AppCompatActivity {
         }
     }
 
-    private void laythongtinUser(){
+
+    private void laythongtinUser() {
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
-        emailUser  = sharedPreferences.getString("email", null);
+        emailUser = sharedPreferences.getString("email", null);
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
     }
 
@@ -285,9 +290,9 @@ public class CaNhanActivity extends AppCompatActivity {
                     intent = new Intent(CaNhanActivity.this, MainActivity.class);
                 } else if (item.getItemId() == R.id.nav_vip) {
                     intent = new Intent(CaNhanActivity.this, VipActivity.class);
-                } else if(item.getItemId() == R.id.nav_profile) {
-                    return  true;
-                }else if (item.getItemId() == R.id.nav_download) {
+                } else if (item.getItemId() == R.id.nav_profile) {
+                    return true;
+                } else if (item.getItemId() == R.id.nav_download) {
                     intent = new Intent(CaNhanActivity.this, TaiPhimActivity.class);
                 }
                 // Pass the selected item to the new Activity
@@ -302,6 +307,7 @@ public class CaNhanActivity extends AppCompatActivity {
             }
         });
     }
+
     private void hienThiLichSuXem() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -336,7 +342,7 @@ public class CaNhanActivity extends AppCompatActivity {
                                     ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
                                     movieItem.setSlug(movieSlug);
                                     movieItem.setEpisodeCurrent(episodeName);
-                                    watchedMoviesList.add(0,movieItem);
+                                    watchedMoviesList.add(0, movieItem);
                                     lichSuAdapter.notifyItemChanged(0);
                                     chiTietPhim(movieSlug, movieItem); // Lấy chi tiết phim
                                 }
@@ -456,6 +462,7 @@ public class CaNhanActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -469,6 +476,7 @@ public class CaNhanActivity extends AppCompatActivity {
         // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+
     private void clearAvatarCache() {
         Glide.get(this).clearMemory();
         new Thread(() -> {
@@ -479,8 +487,8 @@ public class CaNhanActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Clear Glide resources
-        Glide.with(this).clear(binding.userAvatar);
+        if (!isDestroyed()) {
+            Glide.with(this).clear(binding.userAvatar);
+        }
     }
-
 }
