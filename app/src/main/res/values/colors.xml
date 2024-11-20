@@ -74,6 +74,6 @@
     <color name="colorTextSecondary">#BDBDBD</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="unreadColor">#FFDDDD</color> <!-- Color for chưa đọc -->
-    <color name="readColor">#DDFFDD</color>   <!-- Color for đã đọc -->
+    <color name="colorUnread">#FFE0B2</color> <!-- Ví dụ màu cho tin chưa đọc -->
+    <color name="colorRead">#E0E0E0</color> <!-- Ví dụ màu cho tin đã đọc -->
 </resources>

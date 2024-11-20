@@ -163,17 +163,17 @@
                 android:orientation="horizontal"
                 android:layout_marginTop="16dp">
 
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnTuChoi"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/button_tuchoi"
-                    android:text="Đã xử lý"
-                    android:textAllCaps="false"
-                    android:textColor="#546E7A"
-                    android:textSize="16sp" />
+<!--                <androidx.appcompat.widget.AppCompatButton-->
+<!--                    android:id="@+id/btnTuChoi"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="48dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:layout_marginEnd="8dp"-->
+<!--                    android:background="@drawable/button_tuchoi"-->
+<!--                    android:text="Đã xử lý"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:textColor="#546E7A"-->
+<!--                    android:textSize="16sp" />-->
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnConfirm"
