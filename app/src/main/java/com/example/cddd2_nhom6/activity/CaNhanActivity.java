@@ -2,8 +2,10 @@ package com.example.cddd2_nhom6.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,10 +15,16 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.LichSuAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
@@ -34,7 +42,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -54,7 +64,8 @@ public class CaNhanActivity extends AppCompatActivity {
     private List<ChiTietPhim.MovieItem> watchedMoviesList;
     private LichSuAdapter lichSuAdapter;
     private boolean doubleBackToExitPressedOnce = false;
-
+    private static final int PICK_IMAGE_REQUEST = 100;
+    private Uri imageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +79,9 @@ public class CaNhanActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
         setControl();
         setEven();
+        initCloudinary();
+        loadUserAvatar();
+        clearAvatarCache();
 
     }
     public void setControl(){
@@ -99,7 +113,12 @@ public class CaNhanActivity extends AppCompatActivity {
                 finish();
             }
         });
-
+        binding.userAvatar.setOnClickListener(view -> {
+            // Mở bộ chọn ảnh
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(intent, 100);
+        });
         binding.tvXemtatca.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,7 +138,128 @@ public class CaNhanActivity extends AppCompatActivity {
 
     }
 
+    private void initCloudinary() {
+        Map config = new HashMap();
+        config.put("cloud_name", "dkjybdmwh");
+        config.put("api_key", "636117553374141");
+        config.put("api_secret", "FZ-WutItTS0BQoTqxtjztr1ApJk");
 
+        try {
+            MediaManager.init(this, config);
+        } catch (IllegalStateException e) {
+            // Đã được khởi tạo trước đó
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            imageUri = data.getData();
+
+            // Hiển thị ảnh đã chọn
+            binding.userAvatar.setImageURI(imageUri);
+
+            // Upload ảnh lên Cloudinary
+            uploadToCloudinary(imageUri);
+        }
+    }
+
+    private void uploadToCloudinary(Uri imageUri) {
+        String requestId = MediaManager.get().upload(imageUri)
+                .option("folder", "user_avatars") // thư mục lưu trữ trên Cloudinary
+                .callback(new UploadCallback() {
+                    @Override
+                    public void onStart(String requestId) {
+                        // Hiển thị loading
+                        showLoading();
+                    }
+
+                    @Override
+                    public void onProgress(String requestId, long bytes, long totalBytes) {
+                        // Cập nhật tiến trình nếu cần
+                    }
+
+                    @Override
+                    public void onSuccess(String requestId, Map resultData) {
+                        hideLoading();
+                        String imageUrl = (String) resultData.get("secure_url");
+                        // Lưu URL vào Firebase
+                        saveAvatarUrlToFirebase(imageUrl);
+                        Toast.makeText(CaNhanActivity.this, "Upload ảnh thành công", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String requestId, ErrorInfo error) {
+                        hideLoading();
+                        Toast.makeText(CaNhanActivity.this, "Lỗi upload ảnh: " + error.getDescription(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onReschedule(String requestId, ErrorInfo error) {
+                        // Xử lý khi cần upload lại
+                    }
+                })
+                .dispatch();
+    }
+
+    private void showLoading() {
+        // Hiển thị ProgressBar hoặc loading indicator
+        binding.progressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void hideLoading() {
+        // Ẩn ProgressBar
+        binding.progressBar.setVisibility(View.GONE);
+    }
+
+    private void saveAvatarUrlToFirebase(String imageUrl) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            usersRef.child(currentUser.getUid()).child("avatarUrl").setValue(imageUrl)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(CaNhanActivity.this, "Cập nhật avatar thành công", Toast.LENGTH_SHORT).show();
+                        // Load lại avatar sau khi cập nhật
+                        loadUserAvatar();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(CaNhanActivity.this, "Lỗi cập nhật avatar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+    private void loadUserAvatar() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            usersRef.child(currentUser.getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        String avatarUrl = dataSnapshot.child("avatarUrl").getValue(String.class);
+                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                            // Sử dụng Glide để load và hiển thị avatar
+                            Glide.with(CaNhanActivity.this)
+                                    .load(avatarUrl)
+                                    .placeholder(R.drawable.profile) // Ảnh mặc định khi đang load
+                                    .error(R.drawable.profile) // Ảnh hiển thị khi lỗi
+                                    .circleCrop() // Cắt ảnh thành hình tròn
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache ảnh
+                                    .into(binding.userAvatar);
+                        } else {
+                            // Nếu không có avatar, hiển thị ảnh mặc định
+                            binding.userAvatar.setImageResource(R.drawable.profile);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("Avatar", "Lỗi load avatar: " + databaseError.getMessage());
+                    // Hiển thị ảnh mặc định khi có lỗi
+                    binding.userAvatar.setImageResource(R.drawable.profile);
+                }
+            });
+        }
+    }
 
     private void laythongtinUser(){
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -329,4 +469,18 @@ public class CaNhanActivity extends AppCompatActivity {
         // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+    private void clearAvatarCache() {
+        Glide.get(this).clearMemory();
+        new Thread(() -> {
+            Glide.get(CaNhanActivity.this).clearDiskCache();
+        }).start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Clear Glide resources
+        Glide.with(this).clear(binding.userAvatar);
+    }
+
 }
