@@ -1,14 +1,21 @@
 package com.example.cddd2_nhom6.adapter;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ItemBinhluanphimBinding;
 import com.example.cddd2_nhom6.model.BinhLuanPhim;
 import com.example.cddd2_nhom6.model.ThoiGianBL;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Date;
 import java.util.List;
@@ -25,7 +32,7 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
     }
 
     public String getCommentUserId(int position) {
-        return binhLuanPhimList.get(position).getUserId();
+        return binhLuanPhimList.get(position).getId_user();
     }
 
     public String getCommentText(int position) {
@@ -69,11 +76,44 @@ public class BinhLuanPhimAdapter extends RecyclerView.Adapter<BinhLuanPhimAdapte
                 deleteListener.xoaBinhLuan(position); // Gọi listener khi click nút xóa
             }
         });
+        fetchAvatarAndBind(binhLuanPhim.getId_user(),holder);
     }
 
     @Override
     public int getItemCount() {
         return binhLuanPhimList.size();
+    }
+    public void fetchAvatarAndBind(String id_user, MovieViewHolder holder) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users");
+        userRef.orderByChild("id_user").equalTo(id_user).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        String avatarUrl = userSnapshot.child("avatar").getValue(String.class); // Lấy URL avatar
+                        Log.d("Avatar URL", "URL: " + avatarUrl);
+
+                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                            // Sử dụng Glide để load ảnh vào ivAvatar
+                            Glide.with(context)
+                                    .load(avatarUrl)
+                                    .placeholder(R.drawable.profile) // Ảnh placeholder khi chưa tải
+                                    .error(R.drawable.profile) // Ảnh fallback nếu lỗi
+                                    .into(holder.binding.ivAvatar); // Gán ảnh vào ImageView
+                        } else {
+                            holder.binding.ivAvatar.setImageResource(R.drawable.profile); // Nếu avatar null
+                        }
+                    }
+                } else {
+                    holder.binding.ivAvatar.setImageResource(R.drawable.profile); // Nếu không tìm thấy User
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý lỗi Firebase (nếu có)
+            }
+        });
     }
 
     public class MovieViewHolder extends RecyclerView.ViewHolder {

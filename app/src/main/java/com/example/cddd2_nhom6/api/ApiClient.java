@@ -42,14 +42,18 @@ public class ApiClient {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String newUrl = snapshot.child("url").getValue(String.class);
-                String source = snapshot.child("name").getValue(String.class); // Lấy name của API
+                // Duyệt qua tất cả các mục con trong selected_source
+                for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
+                    String newUrl = apiSnapshot.child("url").getValue(String.class);
+                    String source = apiSnapshot.child("name").getValue(String.class);
 
-                if (newUrl != null && !newUrl.isEmpty() && source != null) {
-                    setBaseUrl(newUrl);
-                    listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
-                } else {
-                    listener.onError("URL hoặc name không tồn tại");
+                    // Kiểm tra và sử dụng URL và name
+                    if (newUrl != null && !newUrl.isEmpty() && source != null) {
+                        setBaseUrl(newUrl);
+                        listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
+                    } else {
+                        listener.onError("URL hoặc name không tồn tại");
+                    }
                 }
             }
 
