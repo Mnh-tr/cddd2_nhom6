@@ -454,7 +454,7 @@ public class QLUserActivity extends AppCompatActivity {
 
                     Log.d("kiểm tra gói", "gói ở ql user: " + goi);
                     if (status == null) status = "offline";
-                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email);
+                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email,null);
                     userList.add(user);
                     originalUserList.add(user);
 
