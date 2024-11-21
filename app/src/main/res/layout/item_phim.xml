@@ -6,7 +6,7 @@
     app:cardCornerRadius="8dp"
     android:layout_marginTop="10dp"
     android:layout_marginRight="10dp"
-    android:backgroundTint="#00405D"
+    android:backgroundTint="@color/colorCard"
     android:elevation="4dp">
 
     <RelativeLayout
@@ -31,7 +31,7 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:paddingTop="8dp"
-            android:textColor="#FFF"
+            android:textColor="@color/colorTextLight"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:gravity="center"
@@ -44,7 +44,7 @@
             android:textSize="14sp"
             android:layout_width="match_parent"
             android:layout_height="30dp"
-            android:textColor="#FFF"
+            android:textColor="@color/colorTextLight"
             android:textAlignment="center"
 
 
@@ -56,7 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="VIP"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/colorTextLight"
             android:textStyle="bold"
             android:background="@drawable/vip_badge_background"
             android:padding="4dp"

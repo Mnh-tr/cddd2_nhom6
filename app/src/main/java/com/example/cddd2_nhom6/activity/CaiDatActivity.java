@@ -42,6 +42,7 @@ public class CaiDatActivity extends AppCompatActivity {
         kiemTraDangNhap();
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
+
     }
     public void setEvent(){
         laythongtinUser();
