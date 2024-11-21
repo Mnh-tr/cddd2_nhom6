@@ -13,5 +13,6 @@
         android:id="@+id/nav_thongbao"
         android:title="Thông Báo"
         android:icon="@drawable/baseline_notifications_none_24"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        app:actionLayout="@layout/notification_badge"/>
 </menu>

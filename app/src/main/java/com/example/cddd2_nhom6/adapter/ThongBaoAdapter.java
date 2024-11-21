@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.adapter;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,9 +20,10 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
     private List<ThongBao> thongBaoList; // Danh sách thông báo
     private OnRecyclerViewItemClickListener recyclerViewItemClickListener;
 
-    public ThongBaoAdapter(Activity context, List<ThongBao> thongBaoList) {
+    public ThongBaoAdapter(Activity context, List<ThongBao> thongBaoList, OnRecyclerViewItemClickListener listener) {
         this.context = context;
         this.thongBaoList = thongBaoList;
+        this.recyclerViewItemClickListener = listener;
     }
 
     @NonNull
@@ -44,6 +46,16 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
         holder.binding.tvContent.setText(thongBao.getContent());
         holder.binding.imgIcon.setImageResource(R.drawable.baseline_message_24); // Cài đặt icon tạm thời
 
+        Log.d("ThongBaoAdapter", "Position: " + position + ", id_TrangThai: " + thongBao.getId_TrangThai());
+// Đặt lại màu nền mặc định trước khi thay đổi (Tránh bị ảnh hưởng do tái sử dụng view)
+        holder.binding.getRoot().setBackgroundColor(context.getResources().getColor(R.color.colorUnread));
+
+        // Kiểm tra trạng thái id_TrangThai để thay đổi màu
+        if (thongBao.getId_TrangThai() == 0) {
+            // Thông báo chưa đọc
+            holder.binding.getRoot().setBackgroundColor(context.getResources().getColor(R.color.colorRead));
+        }
+
         /// Luu Position mới cho Holder
         final int pos = position;
         holder.position = pos;
@@ -63,13 +75,13 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
         public ThongBaoViewHolder(@NonNull ItemThongbaoBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-//            itemView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    ThongBao thongBao = thongBaoList.get(position);
-//                    recyclerViewItemClickListener.onItemClick(view, thongBao);
-//                }
-//            });
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ThongBao thongBao = thongBaoList.get(position);
+                    recyclerViewItemClickListener.onItemClick(view, thongBao);
+                }
+            });
         }
     }
     public interface OnRecyclerViewItemClickListener {

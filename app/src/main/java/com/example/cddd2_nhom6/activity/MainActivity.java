@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -272,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
         }
+
         // Khởi tạo và chạy banner
         loaDuLieuApiKhiThayDoi();
     }
@@ -401,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                             binding.xemThemBoLoc.setOnClickListener(v -> {
                                 Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
                                 intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
-                                startActivity(intent);
+                                   startActivity(intent);
                             });
                         }
                     }
@@ -859,7 +861,21 @@ public class MainActivity extends AppCompatActivity {
         // Tìm kiếm item trong menu
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) searchItem.getActionView();
+        // Lấy menu item thông báo
+        MenuItem menuItem = menu.findItem(R.id.nav_thongbao);
 
+        View actionView = MenuItemCompat.getActionView(menuItem);
+        TextView badgeTextView = actionView.findViewById(R.id.notification_badge);
+
+        // hàm thông báo
+        getUnreadNotificationCount(badgeTextView,idUser);
+        if (actionView != null) {
+            actionView.setOnClickListener(v -> {
+                // Mở màn hình thông báo
+                Intent intent = new Intent(MainActivity.this, ThongBaoActivity.class);
+                startActivity(intent);
+            });
+        }
         // Thiết lập listener cho sự kiện tìm kiếm
         ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
             @Override
@@ -1005,7 +1021,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.action_search) {
             // Xử lý sự kiện khi nhấn vào tìm kiếm
             Toast.makeText(this, "Bạn muốn tìm kiếm gì", Toast.LENGTH_SHORT).show();
@@ -1018,7 +1033,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
     private void setupRecyclerViews() {
         binding.recyclerViewMovies.setLayoutManager(new GridLayoutManager(this, 3));
         binding.recyclerTimKiem.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -1478,7 +1492,41 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+    public void getUnreadNotificationCount(TextView badgeTextView,String userId) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("ThongBao");
 
+        databaseReference.orderByChild("id_user").equalTo(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                int unreadCount = 0;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Long idTrangThai = snapshot.child("id_TrangThai").getValue(Long.class);
+                    if (idTrangThai != null && idTrangThai == 0) { // 1 là trạng thái chưa đọc
+                        unreadCount++;
+                    }
+                }
+
+                // Cập nhật số lượng lên giao diện
+                updateNotificationBadge(badgeTextView,unreadCount);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Xử lý lỗi nếu có
+                Log.e("FirebaseError", databaseError.getMessage());
+            }
+        });
+    }
+
+    private void updateNotificationBadge(TextView badgeTextView,int count) {
+
+        if (count > 0) {
+            badgeTextView.setText(String.valueOf(count));
+            badgeTextView.setVisibility(View.VISIBLE);
+        } else {
+            badgeTextView.setVisibility(View.GONE);
+        }
+    }
     @Override
     protected void onResume() {
         super.onResume();

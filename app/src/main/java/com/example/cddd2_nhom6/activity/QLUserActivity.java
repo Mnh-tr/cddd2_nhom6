@@ -229,7 +229,7 @@ public class QLUserActivity extends AppCompatActivity {
             }else{
                 Log.d("kiểm tra id loại người dùng 2: ",String.valueOf(idLoaiND));
                 if(clickedUser.getId_loaiND() == 2 && clickedUser.getId_loaiND() == 3){
-                    if(newUserTypeId == 2){
+                    if(newUserTypeId == 2 && newUserTypeId == 3){
                         Toast.makeText(this, "Bạn không thể cập nhập loại người dùng này", Toast.LENGTH_SHORT).show();
                     }
                     else{
