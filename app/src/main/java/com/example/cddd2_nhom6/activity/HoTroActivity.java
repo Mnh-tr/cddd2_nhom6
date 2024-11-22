@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityHoTroBinding;
+import com.example.cddd2_nhom6.model.CloudDinary;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -87,112 +88,33 @@ public class HoTroActivity extends AppCompatActivity {
 
     // Gửi form hỗ trợ
     private void submitForm() {
-        String name = binding.inputTicketCode.getText().toString().trim();
-        String description = binding.inputDescription.getText().toString().trim();
+        String ten = binding.inputTicketCode.getText().toString().trim();
+        String moTa = binding.inputDescription.getText().toString().trim();
 
         // Kiểm tra nếu thông tin không đầy đủ
-        if (name.isEmpty() || description.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // Lấy ID của người dùng đã đăng nhập
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(this, "Bạn cần đăng nhập để gửi yêu cầu hỗ trợ.", Toast.LENGTH_SHORT).show();
+        if (ten.isEmpty() || moTa.isEmpty() || imageUri == null) {
+            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin và chọn ảnh.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Tải ảnh lên Firebase Storage trước, rồi sau đó lưu thông tin vào Firebase Realtime Database
-        uploadImageAndSubmitRequest(name, description,idUser);
+        // Lấy thời gian hiện tại
+        String thoiGian = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+
+        // Gửi yêu cầu hỗ trợ qua Cloudinary và lưu vào Firebase
+        CloudDinary cloudDinary = new CloudDinary(this);
+        cloudDinary.uploadHoTroImage(imageUri, idUser, moTa, ten, thoiGian, binding.progressBar, new CloudDinary.AvatarUploadCallback() {
+            @Override
+            public void onSuccess(String imageUrl) {
+                Toast.makeText(HoTroActivity.this, "Yêu cầu hỗ trợ đã được gửi thành công.", Toast.LENGTH_SHORT).show();
+                resetForm();
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                Toast.makeText(HoTroActivity.this, "Lỗi: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
-
-    // Tải ảnh lên Firebase Storage và lưu thông tin vào Realtime Database
-    private void uploadImageAndSubmitRequest(String name, String description, String userId) {
-        if (imageUri == null) {
-            Toast.makeText(this, "Không tìm thấy ảnh. Vui lòng chọn lại ảnh.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Kiểm tra file extension
-        String fileExtension = getFileExtension(imageUri);
-        if (fileExtension == null || fileExtension.isEmpty()) {
-            Toast.makeText(this, "Phần mở rộng tệp không hợp lệ.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Tham chiếu tới Firebase Storage
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference("hinhAnhHoTro")
-                .child(System.currentTimeMillis() + "." + fileExtension);
-
-        // Thực hiện tải lên tệp
-        storageRef.putFile(imageUri)
-                .addOnProgressListener(taskSnapshot -> {
-                    double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                    Log.d("Upload Progress", "Tải lên được " + progress + "%");
-                })
-                .addOnSuccessListener(taskSnapshot -> {
-                    // Lấy URL của ảnh đã tải lên
-                    storageRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
-                        String imageUrl = downloadUri.toString();
-                        String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-                        // Lưu thông tin vào Firebase Realtime Database
-                        saveToFirebaseRealtimeDatabase(name, description, imageUrl,userId,time);
-                        Toast.makeText(this, "Tải ảnh lên thành công.", Toast.LENGTH_SHORT).show();
-                        resetForm();
-                    }).addOnFailureListener(e -> {
-                        Log.e("Get URL Error", "Không thể lấy URL của hình ảnh: " + e.getMessage());
-                        Toast.makeText(this, "Lỗi khi lấy URL ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Upload Error", "Không thể tải lên hình ảnh: " + e.getMessage());
-                    Toast.makeText(this, "Lỗi tải lên ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    // Phương thức lấy phần mở rộng tệp từ Uri
-    private String getFileExtension(Uri uri) {
-        ContentResolver contentResolver = getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return mime.getExtensionFromMimeType(contentResolver.getType(uri));
-    }
-
-    // Phương thức lưu thông tin vào Firebase Realtime Database
-    private void saveToFirebaseRealtimeDatabase(String name, String description, String imageUrl, String userId, String time) {
-        // Tạo đối tượng để lưu
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("name", name);
-        data.put("description", description);
-        data.put("imageUrl", imageUrl);
-        data.put("time", time);
-        data.put("userId", userId);  // Lưu ID của người dùng đã đăng nhập
-
-        // Tham chiếu đến Firebase Realtime Database
-        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("HoTro");
-
-        // Lưu dữ liệu vào Firebase
-        databaseRef.push().setValue(data)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Lưu yêu cầu thành công.", Toast.LENGTH_SHORT).show();
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Thông báo");
-                    builder.setMessage("Chúng tôi đã ghi nhận yêu cầu hỗ trợ của bạn. Chúng tôi sẽ hỗ trợ bạn sớm nhất có thể.");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss(); // Đóng dialog
-                        }
-                    });
-
-                    AlertDialog dialog = builder.create();
-                    dialog.show(); // Hiển thị dialog
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Database Error", "Không thể lưu yêu cầu: " + e.getMessage());
-                    Toast.makeText(this, "Lỗi khi lưu yêu cầu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
 
 
     // Xóa form sau khi gửi thành công

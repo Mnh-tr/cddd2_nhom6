@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -24,7 +23,7 @@ import com.example.cddd2_nhom6.adapter.LichSuAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityCanhanBinding;
-import com.example.cddd2_nhom6.model.AvatarManager;
+import com.example.cddd2_nhom6.model.CloudDinary;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,9 +34,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -57,7 +55,7 @@ public class CaNhanActivity extends AppCompatActivity {
     private LichSuAdapter lichSuAdapter;
     private boolean doubleBackToExitPressedOnce = false;
     private static final int PICK_IMAGE_REQUEST = 100;
-    private AvatarManager avatarManager;
+    private CloudDinary cloudDinary;
     private boolean isActivityActive = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +69,7 @@ public class CaNhanActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
         setControl();
         setEven();
-        avatarManager = new AvatarManager(getApplicationContext());
+        cloudDinary = new CloudDinary(getApplicationContext());
         setupUI();
         clearAvatarCache();
 
@@ -132,7 +130,7 @@ public class CaNhanActivity extends AppCompatActivity {
     }
     private void setupUI() {
         // Load avatar khi khởi tạo Activity
-        avatarManager.loadAvatar(binding.userAvatar);
+        cloudDinary.loadAvatar(binding.userAvatar);
 
         // Thiết lập sự kiện click cho avatar
         binding.userAvatar.setOnClickListener(view -> openGalleryForAvatar());
@@ -150,7 +148,7 @@ public class CaNhanActivity extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
             binding.userAvatar.setImageURI(imageUri);
-            avatarManager.uploadAvatar(imageUri, binding.progressBar, new AvatarManager.AvatarUploadCallback() {
+            cloudDinary.uploadAvatar(imageUri, binding.progressBar, new CloudDinary.AvatarUploadCallback() {
                 @Override
                 public void onSuccess(String imageUrl) {
                     Toast.makeText(CaNhanActivity.this, "Cập nhật avatar thành công", Toast.LENGTH_SHORT).show();
