@@ -43,7 +43,7 @@
                         android:padding="3dp"
                         android:background="@color/white"
                         app:shapeAppearanceOverlay="@style/CircleImageView"
-                        android:src="@drawable/canhan"
+                        android:src="@drawable/profile"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
