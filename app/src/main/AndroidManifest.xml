@@ -55,13 +55,13 @@
         </activity>
         <activity
             android:name=".activity.DoanhThuActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activity.QLYeuCauActivity"
             android:exported="false" />
         <activity
             android:name=".activity.QLUserActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activity.XemThemPhim"
             android:exported="false" />

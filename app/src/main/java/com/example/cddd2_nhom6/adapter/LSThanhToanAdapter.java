@@ -46,29 +46,45 @@ public class LSThanhToanAdapter extends RecyclerView.Adapter<LSThanhToanAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LichSuThanhToan thanhToan = thanhToanList.get(position);
-
+        DatabaseReference lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
         // Truy vấn người dùng từ Firebase dựa trên id_user tự tạo
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-        usersRef.orderByChild("id_user").equalTo(thanhToan.getIdUser()).addListenerForSingleValueEvent(new ValueEventListener() {
+
+        lichSuThanhToanRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    // Lấy tên của người dùng đầu tiên tìm thấy
-                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                        String userName = userSnapshot.child("name").getValue(String.class);
-                        holder.binding.tvUserName.setText(userName != null ? userName : "Tên không xác định");
-                        break; // Thoát khỏi vòng lặp sau khi tìm thấy người dùng đầu tiên
-                    }
-                } else {
-                    holder.binding.tvUserName.setText("Tên không xác định");
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    String userId = userSnapshot.getKey(); // Lấy key cha, ví dụ: FNM51T7
+                    Log.d("User ID", "User ID: " + userId);
+                    usersRef.orderByChild("id_user").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                // Lấy tên của người dùng đầu tiên tìm thấy
+                                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                    String userName = userSnapshot.child("name").getValue(String.class);
+                                    holder.binding.tvUserName.setText(userName != null ? userName : "Tên không xác định");
+                                    break; // Thoát khỏi vòng lặp sau khi tìm thấy người dùng đầu tiên
+                                }
+                            } else {
+                                holder.binding.tvUserName.setText("Tên không xác định");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            holder.binding.tvUserName.setText("Lỗi kết nối");
+                        }
+                    });
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                holder.binding.tvUserName.setText("Lỗi kết nối");
+                Log.e("Firebase Error", error.getMessage());
             }
         });
+
 
 
         holder.binding.tvMaUser.setText(thanhToan.getIdUser());

@@ -99,19 +99,22 @@ public class MainActivity extends AppCompatActivity {
     private PhimAdapter phimAdapter;
     private DatabaseReference movieRef;
     private List<QLPhim> movieList;
+    DatabaseReference usersRef,lichSuThanhToanRef;
     private boolean isUserLoggedIn = false; // Biến để theo dõi trạng thái đăng nhập
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
 
         theoDoiThayDoiTrenFirebase();
-
+        // kiểm tra người dùng hết hạn gói vip chưa
+        checkAndUpdateLoaiND();
         loc();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         updateUser();
@@ -1517,7 +1520,48 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public void checkAndUpdateLoaiND() {
 
+
+        // Lấy ngày hôm nay theo định dạng
+        String today = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
+
+        // Lắng nghe dữ liệu từ bảng LichSuThanhToan
+        lichSuThanhToanRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot thanhToanSnapshot : dataSnapshot.getChildren()) {
+                    String ngayHetHan = thanhToanSnapshot.child("ngayHetHan").getValue(String.class);
+                    String idUser = thanhToanSnapshot.child("idUser").getValue(String.class);
+
+                    // Nếu ngayHetHan trùng với ngày hôm nay
+                    if (ngayHetHan != null && ngayHetHan.equals(today)) {
+                        // Tìm user tương ứng và cập nhật id_loaiND = 0
+                        usersRef.orderByChild("id_user").equalTo(idUser).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot userSnapshot) {
+                                for (DataSnapshot user : userSnapshot.getChildren()) {
+                                    user.getRef().child("id_loaiND").setValue(0);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                // Xử lý lỗi
+                                System.out.println("Lỗi cập nhật người dùng: " + databaseError.getMessage());
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Xử lý lỗi
+                System.out.println("Lỗi đọc dữ liệu: " + databaseError.getMessage());
+            }
+        });
+    }
     private void updateNotificationBadge(TextView badgeTextView,int count) {
 
         if (count > 0) {
