@@ -60,11 +60,7 @@ public class XemPhimFirebaseActivity extends AppCompatActivity {
         String episodeCurrent = intent.getStringExtra("episodeCurrent");
         binding.tvMovieTitle.setText( episodeCurrent+ " - Full");
 
-
-
-
         xuLyXemPhim();
-
 
 
     }

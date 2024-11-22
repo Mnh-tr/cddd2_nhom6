@@ -14,7 +14,7 @@
             android:layout_height="250dp"
             app:resize_mode="fill"
             android:background="#000">
-            <include layout="@layout/custom_player_controls" />
+            <include layout="@layout/custom_layout" />
         </androidx.media3.ui.PlayerView>
         <ScrollView
             android:layout_width="match_parent"
@@ -85,17 +85,7 @@
                     android:background="@drawable/text_title"
                     android:paddingBottom="5dp" />
 
-                <!-- Episode List -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rcvTapPhim"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/text_title"
-                    android:clipToPadding="false"
-                    android:paddingTop="5dp"
-                    android:scrollbars="horizontal" />
+
 
                 <!-- Comment Section -->
                 <LinearLayout
@@ -141,17 +131,96 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <EditText
-                    android:id="@+id/commentInput"
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/commentInputContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="10dp"
-                    android:hint="Viết bình luận của bạn..."
-                    android:background="@drawable/text_title"
-                    android:textColor="#FFF"
-                    android:layout_marginBottom="8dp"
-                    android:drawableEnd="@drawable/baseline_send_24"
-                    android:drawablePadding="8dp" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="1dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="13dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintBottom_toBottomOf="parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <EditText
+                                android:id="@+id/commentInput"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:hint="Viết bình luận ở đây..."
+                                android:inputType="textMultiLine"
+                                android:maxLines="4"
+                                android:maxLength="200"
+                                android:minHeight="36dp"
+                                android:textColor="@color/text_primary"
+                                android:textColorHint="@color/text_secondary"
+                                android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:orientation="horizontal">
+
+                                <ImageButton
+                                    android:id="@+id/btnEmoji"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:src="@drawable/ic_emoji"
+                                    app:tint="#FF9900"
+                                    android:contentDescription="Insert emoji" />
+
+                                <ImageButton
+                                    android:id="@+id/btnGif"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:src="@drawable/ic_gif"
+                                    app:tint="#FF9900"
+                                    android:contentDescription="Insert GIF" />
+
+                                <ImageButton
+                                    android:id="@+id/btnAttachment"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:src="@drawable/ic_attachment"
+                                    app:tint="#FF9900"
+                                    android:contentDescription="Add attachment" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSend"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_gravity="bottom"
+                            android:layout_marginStart="12dp"
+                            android:backgroundTint="@color/primary"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:minWidth="0dp"
+                            android:paddingHorizontal="16dp"
+                            android:text="Gửi"
+                            android:textColor="@color/white"
+                            app:cornerRadius="20dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
                 <!-- Comment List -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvComments"
