@@ -114,6 +114,12 @@ public class DSPhim implements DSPhimAPI {
     public String getPosterUrl() {
         return APP_DOMAIN_CDN_IMAGE + poster_url; // Kết hợp để tạo URL đầy đủ
     }
+    public void setPoster_url(String poster_url) {
+        this.poster_url = poster_url;
+    }
+    public String getThumb_url() {
+        return thumb_url;
+    }
 
     public int getYear() {
         return year;

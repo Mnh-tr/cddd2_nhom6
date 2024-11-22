@@ -4,6 +4,7 @@ public class ApiModel {
     private String id;
     private String name;
     private String url;
+    private boolean isChecked; // Thêm thuộc tính isChecked
 
     public ApiModel() {
         // Constructor mặc định
@@ -33,6 +34,12 @@ public class ApiModel {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+    public boolean isChecked() {
+        return isChecked;
+    }
+    public void setChecked(boolean isChecked) {
+        this.isChecked = isChecked;
     }
 }
 

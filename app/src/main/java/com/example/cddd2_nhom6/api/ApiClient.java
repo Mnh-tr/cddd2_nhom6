@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.api;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -42,14 +43,20 @@ public class ApiClient {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String newUrl = snapshot.child("url").getValue(String.class);
-                String source = snapshot.child("name").getValue(String.class); // Lấy name của API
-
-                if (newUrl != null && !newUrl.isEmpty() && source != null) {
-                    setBaseUrl(newUrl);
-                    listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
-                } else {
-                    listener.onError("URL hoặc name không tồn tại");
+                // Duyệt qua tất cả các mục con trong selected_source
+                for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
+                    String name = apiSnapshot.child("name").getValue(String.class);
+                    String newUrl = apiSnapshot.child("url").getValue(String.class);
+                    if (newUrl != null && !newUrl.isEmpty()) {
+                        if (name != null) {
+                            setBaseUrl(newUrl);
+                            listener.onBaseUrlFetched(name, newUrl); // Gọi callback với name và URL
+                        } else {
+                            listener.onError("Trường name không tồn tại");
+                        }
+                    } else {
+                        listener.onError("URL không tồn tại");
+                    }
                 }
             }
 

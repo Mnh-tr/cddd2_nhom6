@@ -77,4 +77,9 @@
 
     <color name="unreadColor">#FFDDDD</color> <!-- Color for chưa đọc -->
     <color name="readColor">#DDFFDD</color>   <!-- Color for đã đọc -->
+
+    <!-- Màu chính cho chế độ sáng -->
+    <color name="trang">#FAFAFA</color> <!-- Màu cam -->
+    <color name="colorPrimaryDark">#342D2C</color> <!-- Màu cam tối -->
+    <color name="vang">#FFC107</color> <!-- Màu vàng -->
 </resources>

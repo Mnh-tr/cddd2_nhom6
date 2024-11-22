@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,31 +15,42 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ItemApiBinding;
+import com.example.cddd2_nhom6.databinding.ItemUserThongbaoBinding;
 import com.example.cddd2_nhom6.model.ApiModel;
+import com.example.cddd2_nhom6.model.User;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
 
     private List<ApiModel> apiList;
     private OnApiActionListener listener;
     private Context context;
+    private List<ApiModel> selectedApi = new ArrayList<>();
+    private DatabaseReference apiRef = FirebaseDatabase.getInstance().getReference("api_sources").child("selected_source");
+
 
     // Khai báo interface để lắng nghe sự kiện
     public interface OnApiActionListener {
         void onEditClick(ApiModel api);
         void onDeleteClick(ApiModel api);
-        void onSelectClick(ApiModel api);
+        void onSelectClick(ApiModel api, boolean isChecked);
     }
 
-    public ApiAdapter(List<ApiModel> apiList, OnApiActionListener listener) {
+    public ApiAdapter(List<ApiModel> apiList,Context context, OnApiActionListener listener) {
         this.apiList = apiList;
         this.listener = listener;
+        this.context = context;
     }
 
     @NonNull
@@ -52,9 +64,12 @@ public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ApiViewHolder holder, int position) {
         ApiModel api = apiList.get(position);
-
+        holder.binding.tvApiName.setText(api.getName());
+        // trang thai check
+        holder.binding.checkboxExample.setChecked(api.isChecked());
         // Sử dụng View Binding để gán dữ liệu và thiết lập sự kiện
         holder.bind(api);
+
     }
 
     @Override
@@ -72,16 +87,39 @@ public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
         }
 
         public void bind(ApiModel api) {
-            // Thiết lập logo API dựa trên tên
-            if (api.getName().equalsIgnoreCase("Kkphim")) {
-                binding.imgApiLogo.setImageResource(R.drawable.logo_kkphim);
-            } else if (api.getName().equalsIgnoreCase("ophim")) {
-                binding.imgApiLogo.setImageResource(R.drawable.ic_logo_ophim);
-            } else {
-                binding.imgApiLogo.setImageResource(R.drawable.logo);
-            }
-            // Sự kiện chọn API khi click vào logo
-            binding.imgApiLogo.setOnClickListener(v -> listener.onSelectClick(api));
+            // Truy vấn Firebase để lấy dữ liệu thực tế và cập nhật lại checkbox
+            apiRef.child(api.getId()).child("isChecked").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Boolean isChecked = dataSnapshot.getValue(Boolean.class);
+                    if (isChecked != null) {
+                        binding.checkboxExample.setOnCheckedChangeListener(null); // Tắt listener
+                        binding.checkboxExample.setChecked(isChecked); // Cập nhật trạng thái từ Firebase
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.e("ApiAdapter", "Lỗi khi truy vấn Firebase: " + databaseError.getMessage());
+                }
+            });
+            binding.checkboxExample.setOnCheckedChangeListener((CompoundButton buttonView, boolean newChecked) -> {
+                // Khi checkbox được đánh dấu (newChecked = true)
+                if (newChecked) {
+                    //cap nhat trang thai
+                    api.setChecked(newChecked);
+                    if (!selectedApi.contains(api)) {
+                        selectedApi.add(api);
+                      }
+                }
+                apiRef.child(api.getId()).child("isChecked").setValue(newChecked)
+                        .addOnSuccessListener(aVoid -> Log.d("ApiAdapter", "Cập nhật trạng thái thành công"))
+                        .addOnFailureListener(e -> Log.e("ApiAdapter", "Lỗi khi lưu trạng thái: " + e.getMessage()));
+                // Gửi callback khi trạng thái thay đổi
+                listener.onSelectClick(api, newChecked);
+            });
+
             // Sự kiện xóa
             binding.btnDelete.setOnClickListener(v -> listener.onDeleteClick(api));
 
@@ -171,6 +209,8 @@ public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
 
         }
     }
+
+
 }
 
 

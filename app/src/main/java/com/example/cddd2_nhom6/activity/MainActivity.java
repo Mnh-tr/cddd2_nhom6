@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
             loadPhimLe();
             loadPhimHoatHinh();
             fetchMoviesFromFirebase();
+            hienThiBanner();
             binding.dsPhim.setVisibility(View.GONE);
             binding.recyclerViewMovies.setVisibility(View.GONE);
             binding.recyclerTimKiem.setVisibility(View.GONE);
@@ -257,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
         loadPhimHoatHinh();
         navigationBottom();
         ghiLaiTrangThai();
+        hienThiBanner();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
