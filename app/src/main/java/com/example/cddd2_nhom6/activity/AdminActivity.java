@@ -3,6 +3,7 @@ package com.example.cddd2_nhom6.activity;
 import static java.lang.Long.parseLong;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -63,7 +64,10 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     private Calendar calendar = Calendar.getInstance();
     private Chip a = null;
     private boolean doubleBackToExitPressedOnce = false;
-
+    private String idUser;
+    private  String nameUser;
+    private String emailUser;
+    private int id_LoaiND;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +82,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         // Đặt cho tất cả
         updateSelectedButton(binding.btnAll);
         hienThiTatCaThongTin();
-
+        laythongtinUser();
         xulyXemThongTin();
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
@@ -234,8 +238,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         a.setChipBackgroundColorResource(R.color.colorSelected); // Màu nền đã chọn
         a.setTextColor(getResources().getColor(R.color.selectedTextColor)); // Màu chữ đã chọn
     }
-
-
     private void layThongTinDangKy() {
         binding.progressBar.setVisibility(View.VISIBLE);
         LayThoigianNgayHomNay();
@@ -589,41 +591,88 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Log.d("Check id loại người dùng",String.valueOf(id_LoaiND));
         int id = item.getItemId();
         if (id == R.id.itemQLPhim){
-            Intent  myIntent = new Intent(AdminActivity.this, QLPhimActivity.class);
-            startActivity(myIntent);
+            if(id_LoaiND == 2){
+                Intent  myIntent = new Intent(AdminActivity.this, QLPhimActivity.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
         }else if(id == R.id.itemQLApi) {
-            Intent myIntent = new Intent(AdminActivity.this, QuanLyAPI.class);
-            startActivity(myIntent);
+            if(id_LoaiND ==2){
+                Intent myIntent = new Intent(AdminActivity.this, QuanLyAPI.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
 
         }else if(id == R.id.itemQLTheLoai) {
-            Intent myIntent = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
-            startActivity(myIntent);
+            if(id_LoaiND ==2){
+                Intent myIntent = new Intent(AdminActivity.this, QLTheLoaiActivity.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
 
         }else if(id == R.id.itemQLDoanhThu) {
-            Intent myIntent = new Intent(AdminActivity.this, DoanhThuActivity.class);
-            startActivity(myIntent);
+            if(id_LoaiND == 2 || id_LoaiND == 3){
+                Intent myIntent = new Intent(AdminActivity.this, DoanhThuActivity.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
         }else if(id == R.id.itemQLUser) {
-            Intent myIntent = new Intent(AdminActivity.this, QLUserActivity.class);
-            startActivity(myIntent);
+            if(id_LoaiND == 2 || id_LoaiND == 3){
+                Intent myIntent = new Intent(AdminActivity.this, QLUserActivity.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
         }else if(id == R.id.itemQLThongBao){
-            Intent myIntent = new Intent(AdminActivity.this, DSThongBaoActivity.class);
-            startActivity(myIntent);
+            if(id_LoaiND == 2){
+                Intent myIntent = new Intent(AdminActivity.this, DSThongBaoActivity.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
         }else if(id == R.id.itemthat){
-            Intent myIntent = new Intent(AdminActivity.this, MainActivity.class);
-            startActivity(myIntent);
+            if(id_LoaiND == 2 || id_LoaiND == 3){
+                Intent myIntent = new Intent(AdminActivity.this, MainActivity.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
         }else if(id == R.id.itemQLQuocGia){
-            Intent myIntent = new Intent(AdminActivity.this, QLQuocGiaActivity.class);
-            startActivity(myIntent);
-        }else if(id == R.id.itemHoTro){
-            Intent myIntent = new Intent(AdminActivity.this, DSHoTroActivity.class);
-            startActivity(myIntent);
+            if(id_LoaiND == 2){
+                Intent myIntent = new Intent(AdminActivity.this, QLQuocGiaActivity.class);
+                startActivity(myIntent);
+            }else{
+                Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
+            }
+
+        }else{
+            Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
         }
         binding.drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
-
+    private void laythongtinUser(){
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        idUser = sharedPreferences.getString("id_user", null);
+        nameUser = sharedPreferences.getString("name", null);
+        emailUser  = sharedPreferences.getString("email", null);
+        id_LoaiND = sharedPreferences.getInt("id_loaiND", -1);
+        Log.d("id_loaiND Ban đầu", String.valueOf(id_LoaiND));
+    }
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override

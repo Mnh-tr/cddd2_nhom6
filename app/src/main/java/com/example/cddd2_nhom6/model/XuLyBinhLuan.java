@@ -114,7 +114,7 @@ public class XuLyBinhLuan {
                                 // Duyệt qua tất cả bình luận dưới movieSlug
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                     String commentId = snapshot.getKey(); // Lấy ID của bình luận
-                                    String commentUserId = snapshot.child("userId").getValue(String.class);
+                                    String commentUserId = snapshot.child("id_user").getValue(String.class);
 
                                     // Kiểm tra người dùng có quyền xóa bình luận này không
                                     if (commentUserId != null && commentUserId.equals(userId)) {
@@ -158,7 +158,7 @@ public class XuLyBinhLuan {
         commentsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                String userId = snapshot.child("userId").getValue(String.class);
+                String userId = snapshot.child("id_user").getValue(String.class);
                 String commentText = snapshot.child("commentText").getValue(String.class);
                 String userName = snapshot.child("userName").getValue(String.class);
                 Long timestamp = snapshot.child("timestamp").getValue(Long.class);

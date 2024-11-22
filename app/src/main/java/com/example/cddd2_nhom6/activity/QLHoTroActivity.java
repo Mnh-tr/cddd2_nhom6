@@ -102,7 +102,7 @@ public class QLHoTroActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // Lưu thông báo hỗ trợ vào màn hình thông báo của người dùng
-                        ThongBao thongBao = new ThongBao(userNotifId,id_user,title,time,description); // Thêm thời gian để sắp xếp
+                        ThongBao thongBao = new ThongBao(userNotifId,id_user,title,time,description,0); // Thêm thời gian để sắp xếp
                         userNotifRef.child(userNotifId).setValue(thongBao)
                                 .addOnCompleteListener(notifTask -> {
                                     if (notifTask.isSuccessful()) {

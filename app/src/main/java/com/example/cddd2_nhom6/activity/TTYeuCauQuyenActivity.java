@@ -8,23 +8,14 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.TTYeuCauQuyenAdapter;
-import com.example.cddd2_nhom6.databinding.ActivityQlyeuCauBinding;
 import com.example.cddd2_nhom6.databinding.ActivityTtyeuCauQuyenBinding;
-import com.example.cddd2_nhom6.databinding.DialogTtYeucauBinding;
 import com.example.cddd2_nhom6.databinding.DialogTtYeucauDetailBinding;
-import com.example.cddd2_nhom6.databinding.DialogYeuCauDetailBinding;
-import com.example.cddd2_nhom6.model.TTYeuCauUpdateQuyen;
-import com.example.cddd2_nhom6.model.YeuCau;
+import com.example.cddd2_nhom6.model.LichSuCapQuyen;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,9 +28,10 @@ import java.util.List;
 public class TTYeuCauQuyenActivity extends AppCompatActivity {
     private ActivityTtyeuCauQuyenBinding binding;
     private TTYeuCauQuyenAdapter adapter;
-    private List<TTYeuCauUpdateQuyen> yeuCauList;
+    private List<LichSuCapQuyen> yeuCauList;
     private DatabaseReference databaseReference;
     private DatabaseReference usersRef, loaiNDRef;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +40,12 @@ public class TTYeuCauQuyenActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         loaiNDRef = FirebaseDatabase.getInstance().getReference("LoaiND");
+
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
         // Kiểm tra xem ActionBar đã được khởi tạo chưa
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Yêu Cầu Thay Đổi Quyền");
+            getSupportActionBar().setTitle("Lịch sử thay đổi quyền");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
 
         }
@@ -67,7 +60,7 @@ public class TTYeuCauQuyenActivity extends AppCompatActivity {
         binding.ttYeuCauRecyclerView.setAdapter(adapter);
 
         // Khởi tạo FirebaseDatabase và tham chiếu đến nhánh chứa yêu cầu
-        databaseReference = FirebaseDatabase.getInstance().getReference("TTYeuCauUpdateQuyen");
+        databaseReference = FirebaseDatabase.getInstance().getReference("LichSuCapQuyen");
 
         // Đọc dữ liệu từ Firebase và cập nhật vào danh sách
         fetchYeuCauData();
@@ -79,7 +72,7 @@ public class TTYeuCauQuyenActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 yeuCauList.clear(); // Xóa danh sách cũ để cập nhật dữ liệu mới
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    TTYeuCauUpdateQuyen yeuCau = dataSnapshot.getValue(TTYeuCauUpdateQuyen.class);
+                    LichSuCapQuyen yeuCau = dataSnapshot.getValue(LichSuCapQuyen.class);
                     if (yeuCau != null) {
                         yeuCauList.add(yeuCau);
                     }
@@ -94,7 +87,7 @@ public class TTYeuCauQuyenActivity extends AppCompatActivity {
         });
     }
 
-    private void chiTietYeuCau(TTYeuCauUpdateQuyen yeuCau) {
+    private void chiTietYeuCau(LichSuCapQuyen yeuCau) {
         DialogTtYeucauDetailBinding dialogBinding = DialogTtYeucauDetailBinding.inflate(LayoutInflater.from(this));
         // Biến lưu tên của người yêu cầu và người bị thay đổi
         final String[] tenNguoiYeuCau = {null};
@@ -191,34 +184,20 @@ public class TTYeuCauQuyenActivity extends AppCompatActivity {
 
         if(yeuCau.idTrangThai == 0){
             dialogBinding.btnConfirm.setText("Xác nhận"); // Đặt text mặc định
-            dialogBinding.btnTuChoi.setText("Từ chối");
-            dialogBinding.btnConfirm.setOnClickListener(v -> {
-                new AlertDialog.Builder(this)
-                        .setTitle("Xác nhận")
-                        .setMessage("Bạn có chắc chắn muốn xác nhận thay đổi loại người dùng này không")
-                        .setPositiveButton("Có", (dialogInterface, which) -> {
-                            // Cập nhật idTrangThai của yêu cầu lên 1
-                            DatabaseReference TTYeuCauRef = FirebaseDatabase.getInstance().getReference("TTYeuCauUpdateQuyen")
-                                    .child(yeuCau.getId_TTYeuCauQuyen());
+            DatabaseReference TTYeuCauRef = FirebaseDatabase.getInstance().getReference("LichSuCapQuyen")
+                    .child(yeuCau.getId_LSThayDoiQuyen());
 
-                            TTYeuCauRef.child("idTrangThai").setValue(1).addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-                                    // Xử lý xác nhận
-                                    xacNhanThayDoiLoaiNguoiDung(yeuCau.getId_userCanUpdate(), yeuCau.getId_loaiNDUpdate(), dialogBinding);
-                                    dialog.dismiss();
-                                }
-                            });
+            TTYeuCauRef.child("idTrangThai").setValue(1).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
 
-                        })
-                        .setNegativeButton("Không", (dialogInterface, which) -> dialogInterface.dismiss())
-                        .show();
+                }
             });
 
-            dialogBinding.btnTuChoi.setOnClickListener(v -> {
+            dialogBinding.btnConfirm.setOnClickListener(v -> {
                 dialog.dismiss();
             });
         }else{
-            dialogBinding.btnTuChoi.setText("Đã xử lý");
+
             dialogBinding.btnConfirm.setText("Quay lại"); // Đặt text thành "Quay lại"
             dialogBinding.btnConfirm.setOnClickListener(v -> dialog.dismiss()); // Đóng dialog khi nhấn
         }
@@ -227,7 +206,7 @@ public class TTYeuCauQuyenActivity extends AppCompatActivity {
     // Hàm cập nhật tvRequest
     private void updateRequestText(DialogTtYeucauDetailBinding dialogBinding, String[] tenNguoiYeuCau, String[] tenNguoiBiThayDoi, String[] loaiNguoiDungCu, String[] loaiNguoiDungMoi) {
         if (tenNguoiYeuCau[0] != null && tenNguoiBiThayDoi[0] != null) {
-            String requestText = tenNguoiYeuCau[0] + " muốn thay đổi loại người dùng của "
+            String requestText = tenNguoiYeuCau[0] + " đã thay đổi loại người dùng của "
                     + tenNguoiBiThayDoi[0] + " từ "
                     + loaiNguoiDungCu[0] + " sang " + loaiNguoiDungMoi[0];
             dialogBinding.tvNoiDungYeuCau.setText(requestText);

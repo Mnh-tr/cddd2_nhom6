@@ -9,18 +9,14 @@ import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,10 +27,8 @@ import com.example.cddd2_nhom6.adapter.UserAdapter;
 import com.example.cddd2_nhom6.databinding.ActivityQluserBinding;
 import com.example.cddd2_nhom6.databinding.DialogTtYeucauBinding;
 import com.example.cddd2_nhom6.databinding.DialogUserInfoBinding;
-import com.example.cddd2_nhom6.model.LichSuThanhToan;
-import com.example.cddd2_nhom6.model.TTYeuCauUpdateQuyen;
+import com.example.cddd2_nhom6.model.LichSuCapQuyen;
 import com.example.cddd2_nhom6.model.User;
-import com.example.cddd2_nhom6.model.YeuCau;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -44,7 +38,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +66,7 @@ public class QLUserActivity extends AppCompatActivity {
         binding = ActivityQluserBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         laythongtinUser();
+        demSLLichSuChuaDoc();
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         // Khởi tạo các list ngay từ đầu
@@ -86,8 +80,8 @@ public class QLUserActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
 
         }
-        Log.d("Kiểm tra loại người dùng có phải là Owner không",String.valueOf(idLoaiND));
-        if(idLoaiND ==4){
+        Log.d("Kiểm tra loại người dùng có phải là Admin không",String.valueOf(idLoaiND));
+        if(idLoaiND ==2){
             binding.iconThongBao.setVisibility(View.VISIBLE);
         }else{
             binding.iconThongBao.setVisibility(View.GONE);
@@ -163,8 +157,8 @@ public class QLUserActivity extends AppCompatActivity {
             public void onItemClick(View view, int position) {
                 User UserChitiet = userList.get(position);
                 Log.d("kiểm tra id loại người dùng",String.valueOf(idLoaiND));
-                if (idLoaiND != 4 && UserChitiet.getId_loaiND() == 4 ){
-                    // không thể xem thông tin của Owner
+                if (idLoaiND != 2 && UserChitiet.getId_loaiND() == 2 ){
+                    // không thể xem thông tin của admin
                     Toast.makeText(QLUserActivity.this, "Bạn không thể xem thông tin của tài khoản này", Toast.LENGTH_SHORT).show();
                 }else{
                     digLogChiTietUser(UserChitiet);
@@ -210,22 +204,22 @@ public class QLUserActivity extends AppCompatActivity {
 
             // Sử dụng firebaseKey để trỏ tới bản ghi người dùng chính xác
             DatabaseReference userRef = usersRef.child(clickedUser.getFirebaseKey()); // clickedUser là User đã chọn
-            if(idLoaiND == 4){
+            if(idLoaiND == 2){
                 Log.d("kiểm tra id loại người dùng 1: ",String.valueOf(idLoaiND));
-                if(clickedUser.getId_loaiND() == 4){
+                if(clickedUser.getId_loaiND() == 2){
                     Toast.makeText(this, "Bạn không được cập nhập loại người dùng này", Toast.LENGTH_SHORT).show();
                 }else{
-                    if(newUserTypeId == 4){
+                    if(newUserTypeId == 2){
                         Toast.makeText(this, "Bạn không được cập nhập loại người dùng này", Toast.LENGTH_SHORT).show();
                     }else{
                         userRef.child("id_loaiND").setValue(newUserTypeId).addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                Toast.makeText(this, "Thông tin đã được cập nhật", Toast.LENGTH_SHORT).show();
                                 loadDuLieu();
+                                hienThiThongBaoXacNhan(userRef,newUserTypeId,clickedUser.getId_user(), idUser,newUserTypeId,dialog);
                             } else {
                                 Toast.makeText(this, "Lỗi khi cập nhật thông tin", Toast.LENGTH_SHORT).show();
                             }
-                            dialog.dismiss();
+
                         });
                     }
 
@@ -234,27 +228,31 @@ public class QLUserActivity extends AppCompatActivity {
 
             }else{
                 Log.d("kiểm tra id loại người dùng 2: ",String.valueOf(idLoaiND));
-                if(clickedUser.getId_loaiND() == 2 || clickedUser.getId_loaiND() == 3){
-                    if(newUserTypeId == 4){
+                if(clickedUser.getId_loaiND() == 2 && clickedUser.getId_loaiND() == 3){
+                    if(newUserTypeId == 2 && newUserTypeId == 3){
                         Toast.makeText(this, "Bạn không thể cập nhập loại người dùng này", Toast.LENGTH_SHORT).show();
-                    }else{
-                        hienThiThongBaoXacNhan(clickedUser.getId_user(), idUser,newUserTypeId);
+                    }
+                    else{
+                        // lưu lại vào lịch sử thay đổi
+                        hienThiThongBaoXacNhan(userRef,newUserTypeId,clickedUser.getId_user(), idUser,newUserTypeId,dialog);
                     }
                 }else{
-                    if(newUserTypeId == 4){
+                    if(newUserTypeId == 2){
                         Toast.makeText(this, "Bạn không thể cập nhập loại người dùng này", Toast.LENGTH_SHORT).show();
                     }else{
                         if(newUserTypeId == 2 || newUserTypeId == 3){
-                            hienThiThongBaoXacNhan(clickedUser.getId_user(), idUser,newUserTypeId);
+                            hienThiThongBaoXacNhan(userRef,newUserTypeId,clickedUser.getId_user(), idUser,newUserTypeId,dialog);
                         }else{
                             userRef.child("id_loaiND").setValue(newUserTypeId).addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(this, "Thông tin đã được cập nhật", Toast.LENGTH_SHORT).show();
+                                    hienThiThongBaoXacNhan(userRef,newUserTypeId,clickedUser.getId_user(), idUser,newUserTypeId,dialog);
+
                                     loadDuLieu();
+
                                 } else {
                                     Toast.makeText(this, "Lỗi khi cập nhật thông tin", Toast.LENGTH_SHORT).show();
                                 }
-                                dialog.dismiss();
+
                             });
                         }
                     }
@@ -265,7 +263,7 @@ public class QLUserActivity extends AppCompatActivity {
         });
         dialogBinding.btnCancel.setOnClickListener(v -> dialog.dismiss());
     }
-    private void hienThiThongBaoXacNhan(String id_userCanUpdate, String id_userYeuCau,Long id_loaiNDUpdate) {
+    private void hienThiThongBaoXacNhan(DatabaseReference userRef,Long newUserTypeId,String id_userCanUpdate, String id_userYeuCau,Long id_loaiNDUpdate,AlertDialog dialogLuuTT) {
         DialogTtYeucauBinding dialogBinding = DialogTtYeucauBinding.inflate(LayoutInflater.from(this));
 
         // Tạo AlertDialog
@@ -282,44 +280,45 @@ public class QLUserActivity extends AppCompatActivity {
         dialogBinding.btnCancel.setOnClickListener(v -> dialog.dismiss());
         // Xử lý sự kiện nút Xác nhận
         dialogBinding.btnConfirm.setOnClickListener(v -> {
-            String noiDungYeuCau = dialogBinding.edtNoiDung.getText().toString().trim();
-
-            if (noiDungYeuCau.isEmpty()) {
-                dialogBinding.tilNoiDung.setError("Vui lòng nhập nội dung yêu cầu");
-                return;
-            }
-
             // Lưu thông tin yêu cầu
-            luuThongTinYeuCau(id_userCanUpdate, id_userYeuCau, id_loaiNDUpdate,id_LoaiNDCu, noiDungYeuCau);
-
+            luuThongTinYeuCau(id_userCanUpdate, id_userYeuCau, id_loaiNDUpdate,id_LoaiNDCu);
+            userRef.child("id_loaiND").setValue(newUserTypeId).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Thông tin đã được cập nhật", Toast.LENGTH_SHORT).show();
+                    loadDuLieu();
+                } else {
+                    Toast.makeText(this, "Lỗi khi cập nhật thông tin", Toast.LENGTH_SHORT).show();
+                }
+                dialog.dismiss();
+                dialogLuuTT.dismiss();
+            });
             // Hiển thị thông báo thành công
-            Toast.makeText(this, "Đã gửi yêu cầu thay đổi loại người dùng này lên Owner", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Đã gửi yêu cầu thay đổi loại người dùng này lên Owner", Toast.LENGTH_SHORT).show();
 
             dialog.dismiss();
         });
 
         dialog.show();
     }
-    private void luuThongTinYeuCau(String id_userCanUpdate, String id_userYeuCau,Long id_loaiNDUpdate,Long id_LoaiNDCu, String noiDungYeuCau) {
-        DatabaseReference TTYeuCauUpdateQuyenRef = FirebaseDatabase.getInstance().getReference("TTYeuCauUpdateQuyen");
+    private void luuThongTinYeuCau(String id_userCanUpdate, String id_userYeuCau,Long id_loaiNDUpdate,Long id_LoaiNDCu) {
+        DatabaseReference LichSuCapQuyenRef = FirebaseDatabase.getInstance().getReference("LichSuCapQuyen");
         // Tạo id thanh toán duy nhất
-        String id_TTYeuCauQuyen = TTYeuCauUpdateQuyenRef.push().getKey();
+        String id_LSCapQuyen = LichSuCapQuyenRef.push().getKey();
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
         String ngayUpdater = sdf.format(new Date());
 
-        TTYeuCauUpdateQuyen listTTYeuCau = new TTYeuCauUpdateQuyen(
-                id_TTYeuCauQuyen,
+        LichSuCapQuyen listTTYeuCau = new LichSuCapQuyen(
+                id_LSCapQuyen,
                 id_userCanUpdate,
                 id_userYeuCau,
                 ngayUpdater,
-                noiDungYeuCau,
                 id_loaiNDUpdate,
                 id_LoaiNDCu,
                 0
         );
         // Thêm giao dịch vào Firebase
-        TTYeuCauUpdateQuyenRef.child(id_TTYeuCauQuyen).setValue(listTTYeuCau);
+        LichSuCapQuyenRef.child(id_LSCapQuyen).setValue(listTTYeuCau);
     }
     private void hienThiRecyclerView() {
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -455,7 +454,7 @@ public class QLUserActivity extends AppCompatActivity {
 
                     Log.d("kiểm tra gói", "gói ở ql user: " + goi);
                     if (status == null) status = "offline";
-                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email);
+                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email,null);
                     userList.add(user);
                     originalUserList.add(user);
 
@@ -582,6 +581,27 @@ public class QLUserActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+    public void demSLLichSuChuaDoc() {
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("LichSuCapQuyen");
+        databaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                int soLuongTTYeuCau = 0;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Integer idTrangThai = snapshot.child("idTrangThai").getValue(Integer.class);
+                    if (idTrangThai != null && idTrangThai == 0) {
+                        soLuongTTYeuCau++;
+                    }
+                }
+                binding.notificationBadgeCount.setText(String.valueOf(soLuongTTYeuCau));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getApplicationContext(), "Lỗi khi đọc dữ liệu", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

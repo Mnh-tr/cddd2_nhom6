@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -13,8 +14,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityCaiDatBinding;
+import com.example.cddd2_nhom6.model.AvatarManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -32,7 +36,10 @@ public class CaiDatActivity extends AppCompatActivity {
     private  String nameUser;
     private String emailUser;
     private int idLoaiND;
+    private DatabaseReference usersRef;
     private boolean doubleBackToExitPressedOnce = false;
+    private AvatarManager avatarManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +50,12 @@ public class CaiDatActivity extends AppCompatActivity {
         kiemTraDangNhap();
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
+        avatarManager = new AvatarManager(getApplicationContext());
+        avatarManager.loadAvatar(binding.avatarUser);
     }
     public void setEvent(){
         laythongtinUser();
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
         binding.tvTendangnhap.setText(nameUser);
         binding.btnThoat.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,6 +174,7 @@ public class CaiDatActivity extends AppCompatActivity {
             });
         }
     }
+
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override

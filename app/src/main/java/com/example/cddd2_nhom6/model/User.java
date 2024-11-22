@@ -11,11 +11,11 @@ public class User {
     private String goi;
     private boolean isChecked; // Thêm thuộc tính isChecked
     private long created_at;
-
+    private String avatar;
     public User() {
     }
 
-    public User(String firebaseKey,String id_user, String name, String status, String goi,Long id_loaiND, long created_at,String email) {
+    public User(String firebaseKey,String id_user, String name, String status, String goi,Long id_loaiND, long created_at,String email,String avatar) {
         this.firebaseKey = firebaseKey;
         this.id_user = id_user;
         this.name = name;
@@ -24,6 +24,7 @@ public class User {
         this.id_loaiND = id_loaiND;
         this.created_at = created_at;
         this.email = email;
+        this.avatar = avatar;
     }
     public User(String id_user, String name, String status, String goi) {
         this.id_user = id_user;
@@ -100,6 +101,14 @@ public class User {
     }
     public void setCreated_at(long created_at) {
         this.created_at = created_at;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }
 

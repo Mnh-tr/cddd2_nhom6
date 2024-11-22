@@ -2,27 +2,29 @@ package com.example.cddd2_nhom6.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
+import com.bumptech.glide.Glide;
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.LichSuAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityCanhanBinding;
-
+import com.example.cddd2_nhom6.model.AvatarManager;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,10 +34,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -44,7 +46,7 @@ public class CaNhanActivity extends AppCompatActivity {
     private ActivityCanhanBinding binding;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String idUser;
-    private  String nameUser;
+    private String nameUser;
     private String emailUser;
     private int idLoaiND;
     private boolean isUserLoggedIn = false; // Biến để theo dõi trạng thái đăng nhập
@@ -54,8 +56,9 @@ public class CaNhanActivity extends AppCompatActivity {
     private List<ChiTietPhim.MovieItem> watchedMoviesList;
     private LichSuAdapter lichSuAdapter;
     private boolean doubleBackToExitPressedOnce = false;
-
-
+    private static final int PICK_IMAGE_REQUEST = 100;
+    private AvatarManager avatarManager;
+    private boolean isActivityActive = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,15 +71,20 @@ public class CaNhanActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
         setControl();
         setEven();
+        avatarManager = new AvatarManager(getApplicationContext());
+        setupUI();
+        clearAvatarCache();
 
     }
-    public void setControl(){
+
+    public void setControl() {
         watchedMoviesList = new ArrayList<>();
         lichSuAdapter = new LichSuAdapter(CaNhanActivity.this, watchedMoviesList);
         binding.rcvLichSu.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.rcvLichSu.setAdapter(lichSuAdapter);
     }
-    public void setEven(){
+
+    public void setEven() {
         laythongtinUser();
         Toast.makeText(CaNhanActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         binding.tvTenNguoiDung.setText(nameUser);
@@ -99,7 +107,11 @@ public class CaNhanActivity extends AppCompatActivity {
                 finish();
             }
         });
-
+        binding.userAvatar.setOnClickListener(view -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(intent, PICK_IMAGE_REQUEST);
+        });
         binding.tvXemtatca.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -118,14 +130,45 @@ public class CaNhanActivity extends AppCompatActivity {
         });
 
     }
+    private void setupUI() {
+        // Load avatar khi khởi tạo Activity
+        avatarManager.loadAvatar(binding.userAvatar);
 
+        // Thiết lập sự kiện click cho avatar
+        binding.userAvatar.setOnClickListener(view -> openGalleryForAvatar());
 
+        // Các sự kiện khác...
+    }
+    private void openGalleryForAvatar() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri imageUri = data.getData();
+            binding.userAvatar.setImageURI(imageUri);
+            avatarManager.uploadAvatar(imageUri, binding.progressBar, new AvatarManager.AvatarUploadCallback() {
+                @Override
+                public void onSuccess(String imageUrl) {
+                    Toast.makeText(CaNhanActivity.this, "Cập nhật avatar thành công", Toast.LENGTH_SHORT).show();
+                }
 
-    private void laythongtinUser(){
+                @Override
+                public void onFailure(String errorMessage) {
+                    Toast.makeText(CaNhanActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void laythongtinUser() {
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
         idUser = sharedPreferences.getString("id_user", null);
         nameUser = sharedPreferences.getString("name", null);
-        emailUser  = sharedPreferences.getString("email", null);
+        emailUser = sharedPreferences.getString("email", null);
         idLoaiND = sharedPreferences.getInt("id_loaiND", 0);
     }
 
@@ -145,9 +188,9 @@ public class CaNhanActivity extends AppCompatActivity {
                     intent = new Intent(CaNhanActivity.this, MainActivity.class);
                 } else if (item.getItemId() == R.id.nav_vip) {
                     intent = new Intent(CaNhanActivity.this, VipActivity.class);
-                } else if(item.getItemId() == R.id.nav_profile) {
-                    return  true;
-                }else if (item.getItemId() == R.id.nav_download) {
+                } else if (item.getItemId() == R.id.nav_profile) {
+                    return true;
+                } else if (item.getItemId() == R.id.nav_download) {
                     intent = new Intent(CaNhanActivity.this, TaiPhimActivity.class);
                 }
                 // Pass the selected item to the new Activity
@@ -162,6 +205,7 @@ public class CaNhanActivity extends AppCompatActivity {
             }
         });
     }
+
     private void hienThiLichSuXem() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -196,7 +240,7 @@ public class CaNhanActivity extends AppCompatActivity {
                                     ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
                                     movieItem.setSlug(movieSlug);
                                     movieItem.setEpisodeCurrent(episodeName);
-                                    watchedMoviesList.add(0,movieItem);
+                                    watchedMoviesList.add(0, movieItem);
                                     lichSuAdapter.notifyItemChanged(0);
                                     chiTietPhim(movieSlug, movieItem); // Lấy chi tiết phim
                                 }
@@ -316,6 +360,7 @@ public class CaNhanActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -328,5 +373,18 @@ public class CaNhanActivity extends AppCompatActivity {
         super.onPause();
         // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    private void clearAvatarCache() {
+        Glide.get(this).clearMemory();
+        new Thread(() -> {
+            Glide.get(CaNhanActivity.this).clearDiskCache();
+        }).start();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Clear Glide requests
+        Glide.with(getApplicationContext()).clear(binding.userAvatar);
     }
 }

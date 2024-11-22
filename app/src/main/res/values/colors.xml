@@ -67,7 +67,6 @@
     <color name="status_pending_end">#FF4C29</color>
     <color name="status_completed_start">#2ECC71</color>
     <color name="status_completed_end">#27AE60</color>
-    <color name="indicator_color">#2196F3</color>
 
     <color name="colorPrimary1">#FF4081</color>
     <color name="colorBackground">#1E1E1E</color>
@@ -75,11 +74,18 @@
     <color name="colorTextSecondary">#BDBDBD</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="unreadColor">#FFDDDD</color> <!-- Color for chưa đọc -->
-    <color name="readColor">#DDFFDD</color>   <!-- Color for đã đọc -->
+    <color name="colorUnread">#FFE0B2</color> <!-- Ví dụ màu cho tin chưa đọc -->
+    <color name="colorRead">#E0E0E0</color> <!-- Ví dụ màu cho tin đã đọc -->
 
-    <!-- Màu chính cho chế độ sáng -->
-    <color name="trang">#FAFAFA</color> <!-- Màu cam -->
-    <color name="colorPrimaryDark">#342D2C</color> <!-- Màu cam tối -->
-    <color name="vang">#FFC107</color> <!-- Màu vàng -->
+
+    <!-- giao diện sáng -->
+    <color name="background">#F5F5F5</color><!-- giao diện tối:  #272726-->
+    <color name="colorTextLight">#333333</color><!-- giao diện tối:  #FFFFFF-->
+    <color name="colorMenu">#666666</color><!-- giao diện tối:  #666666-->
+    <color name="colorNoiBat">#3498DB</color><!-- giao diện tối:  #D91656-->
+    <color name="colorCard">#FFFFFF</color><!-- giao diện tối:  #00405D-->
+    <color name="colorVien">#E0E0E0</color><!-- giao diện tối:  #cd201f-->
+
+
+
 </resources>
