@@ -178,25 +178,34 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 double doanhthu = 0;
-                int goi = 0;
-                for (DataSnapshot data : snapshot.getChildren()){
-                    Long soTien = data.child("soTien").getValue(Long.class);
-                    doanhthu += soTien;
-                    goi++;
+                int goiVIP = 0;
+
+                // Duyệt qua tất cả các bản ghi trong LichSuThanhToan
+                for (DataSnapshot data : snapshot.getChildren()) {
+
+                    for (DataSnapshot childs : data.getChildren()) {
+                        Long soTien = childs.child("soTien").getValue(Long.class);
+                        doanhthu += soTien;
+                    }
+                        goiVIP++;
                 }
-                // Định dạng và hiển thị số lượng gói VIP
+
+                // Định dạng lại doanh thu để hiển thị (thêm dấu phẩy phân cách hàng nghìn)
                 DecimalFormat decimalFormat = new DecimalFormat("#,###");
                 String formattedDoanhThu = decimalFormat.format(doanhthu);
                 binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
-                binding.tvGoiVIPAmount.setText("" + goi);
 
+                // Hiển thị số lượng gói VIP
+                binding.tvGoiVIPAmount.setText("" + goiVIP);
+
+                // Gọi hàm xử lý biểu đồ (nếu có)
                 xulyBieuDo();
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                // Xử lý khi có lỗi
+                Log.e("PaymentData", "DatabaseError: " + error.getMessage());
             }
         });
 
@@ -312,23 +321,26 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 int goi = 0;
                 for (DataSnapshot data : snapshot.getChildren()){
                     //Long trangThai = data.child("idTrangThai").getValue(Long.class);
-                    String ngayxacnhan = data.child("ngayXacNhan").getValue(String.class);
-                    Long soTien = data.child("soTien").getValue(Long.class);
-                    if (ngayxacnhan != null ) {
-                        try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                            Date date = sdf.parse(ngayxacnhan); // Chuyển đổi chuỗi thành Date
-                            long timeInMillis = date.getTime(); // Lấy thời gian mili giây
+                    for (DataSnapshot childs : data.getChildren()) {
+                        String ngayxacnhan = childs.child("ngayXacNhan").getValue(String.class);
+                        Long soTien = childs.child("soTien").getValue(Long.class);
+                        if (ngayxacnhan != null ) {
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                Date date = sdf.parse(ngayxacnhan); // Chuyển đổi chuỗi thành Date
+                                long timeInMillis = date.getTime(); // Lấy thời gian mili giây
 
-                            // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
-                            if (timeInMillis >= startOfDay && timeInMillis <= endOfDay) {
-                                doanhthu += soTien;
-                                goi++;
+                                // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
+                                if (timeInMillis >= startOfDay && timeInMillis <= endOfDay) {
+                                    doanhthu += soTien;
+                                    goi++;
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
                             }
-                        } catch (ParseException e) {
-                            e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
                         }
                     }
+
 
                 }
                 // Định dạng và hiển thị số lượng gói VIP
@@ -359,23 +371,26 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 int goi = 0;
                 for (DataSnapshot data : snapshot.getChildren()){
                     //Long trangThai = data.child("idTrangThai").getValue(Long.class);
-                    String ngayxacnhan = data.child("ngayXacNhan").getValue(String.class);
-                    Long soTien = data.child("soTien").getValue(Long.class);
-                    if (ngayxacnhan != null) {
-                        try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                            Date date = sdf.parse(ngayxacnhan); // Chuyển đổi chuỗi thành Date
-                            long timeInMillis = date.getTime(); // Lấy thời gian mili giây
+                    for (DataSnapshot childs : data.getChildren()) {
+                        String ngayxacnhan = childs.child("ngayXacNhan").getValue(String.class);
+                        Long soTien = childs.child("soTien").getValue(Long.class);
+                        if (ngayxacnhan != null) {
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                Date date = sdf.parse(ngayxacnhan); // Chuyển đổi chuỗi thành Date
+                                long timeInMillis = date.getTime(); // Lấy thời gian mili giây
 
-                            // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
-                            if (timeInMillis >= startTime && timeInMillis <= endTime) {
-                                doanhthu += soTien;
-                                goi++;
+                                // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
+                                if (timeInMillis >= startTime && timeInMillis <= endTime) {
+                                    doanhthu += soTien;
+                                    goi++;
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
                             }
-                        } catch (ParseException e) {
-                            e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
                         }
                     }
+
 
                 }
                 // Định dạng và hiển thị số lượng gói VIP

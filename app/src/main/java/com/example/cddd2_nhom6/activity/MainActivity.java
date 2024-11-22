@@ -12,6 +12,7 @@ import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 
 import android.widget.ExpandableListView;
@@ -55,6 +56,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.Normalizer;
@@ -173,6 +176,26 @@ public class MainActivity extends AppCompatActivity {
             return false; // Cho phép mở rộng nhóm nếu không phải là "Đăng Nhập" hoặc "Thông tin cá nhân"
         });
 
+        // Lấy instance của Firebase Realtime Database
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference truyCapsRef = db.getReference("TruyCaps");
+
+        // Tạo dữ liệu ban đầu
+        Map<String, Object> truyCapsData = new HashMap<>();
+        truyCapsData.put("Tong", 0); // Giá trị ban đầu của tổng số lượt truy cập
+        truyCapsData.put("LichSu", new ArrayList<>()); // Lịch sử ban đầu là một mảng rỗng
+
+        // Đặt dữ liệu vào node "TruyCaps"
+        truyCapsRef.setValue(truyCapsData)
+                .addOnSuccessListener(aVoid -> {
+                    // Thành công
+                    System.out.println("TruyCaps node created successfully in Realtime Database.");
+                })
+                .addOnFailureListener(e -> {
+                    // Thất bại
+                    System.err.println("Error creating TruyCaps node: " + e.getMessage());
+                });
+
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         movieRef = database.getReference("movies"); // Đây là nơi lưu trữ thông tin phim trên Firebase
 
@@ -276,6 +299,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Khởi tạo và chạy banner
         loaDuLieuApiKhiThayDoi();
+
+        // neu truycap == false thì sẽ thêm vào TruyCap trên firebase
+//        if (truycap == false){
+//            themTruyCaps(idUser);
+//            truycap = true;
+//        }
     }
     private void laythongtinUser(){
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -333,14 +362,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     public static void kiemTraTruyCap(String idUser) {
         // Kiểm tra xem id_user có null hay không và xem ngày truy cập đã tồn tại hay chưa
         DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
-        long currentTime = System.currentTimeMillis();
-
-        // Lấy ngày hiện tại (không bao gồm giờ, phút, giây)
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String currentDate = sdf.format(new Date(currentTime));
 
         // Tìm kiếm bản ghi theo id_user và ngày truy cập
         truyCapRef.orderByChild("id_user").equalTo(idUser).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -778,6 +803,57 @@ public class MainActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged(); // Cập nhật adapter
         }
     }
+
+    public static void themTruyCaps(String idUser) {
+        String idUsers = idUser != null && !idUser.isEmpty() ? idUser : "Khach"; // Nếu idUser null thì dùng "Khach"
+
+        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCaps");
+        DatabaseReference tongRef = truyCapRef.child("Tong");
+        DatabaseReference lichSuRef = truyCapRef.child("LichSu");
+
+        // Định dạng ngày giờ
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+        String formattedDate = dateFormat.format(new Date());
+
+        // Thêm thời gian vào danh sách LichSu sử dụng .push() để không ghi đè
+        lichSuRef.child(idUsers).setValue(formattedDate)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("TruyCap", "Thêm thời gian truy cập thành công cho người dùng: " + idUsers);
+
+                    // Tăng giá trị Tong
+                    tongRef.runTransaction(new Transaction.Handler() {
+                        @NonNull
+                        @Override
+                        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                            Integer currentValue = mutableData.getValue(Integer.class);
+                            if (currentValue == null) {
+                                mutableData.setValue(1); // Nếu Tong chưa có giá trị thì đặt là 1
+                            } else {
+                                mutableData.setValue(currentValue + 1); // Tăng Tong lên 1
+                            }
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                            if (error != null) {
+                                Log.e("TruyCap", "Lỗi khi cập nhật Tong: " + error.getMessage());
+                            } else {
+                                Log.d("TruyCap", "Cập nhật Tong thành công.");
+                            }
+                        }
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("TruyCap", "Lỗi khi thêm thời gian truy cập: " + e.getMessage());
+                });
+    }
+
+
+
+
+
+
 
     public static void themTruyCap(String idUser) {
         DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
