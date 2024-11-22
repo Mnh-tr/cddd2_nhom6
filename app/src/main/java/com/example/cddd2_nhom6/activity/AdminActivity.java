@@ -156,7 +156,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     private void hienThiTatCaThongTin() {
 
         binding.progressBar.setVisibility(View.VISIBLE);
-        dataUser.addListenerForSingleValueEvent(new ValueEventListener() {
+        dataUser.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 int slDangKy = 0;
@@ -174,7 +174,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             }
         });
 
-        dataThanhToan.addListenerForSingleValueEvent(new ValueEventListener() {
+        dataThanhToan.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 double doanhthu = 0;
@@ -209,7 +209,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             }
         });
 
-        dataTruyCap.addListenerForSingleValueEvent(new ValueEventListener() {
+        dataTruyCap.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 int soluongTruycap = 0;
@@ -314,7 +314,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     private void layThongTInDoanhThu() {
         LayThoigianNgayHomNay(); // 23:59:59 hôm nay
 
-        dataThanhToan.addListenerForSingleValueEvent(new ValueEventListener() {
+        dataThanhToan.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 double doanhthu = 0;
@@ -364,7 +364,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         long startTime = LayThoigianCachDay(soNgay);
         long endTime = System.currentTimeMillis();
 
-        dataThanhToan.addListenerForSingleValueEvent(new ValueEventListener() {
+        dataThanhToan.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 double doanhthu = 0;
@@ -417,7 +417,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         binding.progressBar.setVisibility(View.VISIBLE);
         LayThoigianNgayHomNay(); // 23:59:59 hôm nay
 
-        dataTruyCap.addListenerForSingleValueEvent(new ValueEventListener() {
+        dataTruyCap.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 int count = 0;
@@ -459,7 +459,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         long endTime = System.currentTimeMillis();
 
 
-        dataTruyCap.addListenerForSingleValueEvent(new ValueEventListener() {
+        dataTruyCap.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 int count = 0;
