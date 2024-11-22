@@ -1,8 +1,11 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -22,7 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ThongBaoActivity extends AppCompatActivity {
+public class ThongBaoActivity extends AppCompatActivity implements ThongBaoAdapter.OnRecyclerViewItemClickListener{
     private ThongBaoAdapter thongBaoAdapter;
     private ActivityThongBaoBinding binding;
     private List<ThongBao> thongBaoList = new ArrayList<>();
@@ -44,7 +47,7 @@ public class ThongBaoActivity extends AppCompatActivity {
         binding.thongbaorecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Khởi tạo Adapter và gán cho RecyclerView
-        thongBaoAdapter = new ThongBaoAdapter(ThongBaoActivity.this,thongBaoList);
+        thongBaoAdapter = new ThongBaoAdapter(ThongBaoActivity.this,thongBaoList,this);
         binding.thongbaorecyclerView.setAdapter(thongBaoAdapter);
 
     }
@@ -77,7 +80,32 @@ public class ThongBaoActivity extends AppCompatActivity {
         idUser = sharedPreferences.getString("id_user", null);
 
     }
+    // Hiển thị dialog thông báo
+    public void hienDialogThongBao(ThongBao thongBao) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(thongBao.getTitle());
+        builder.setMessage(thongBao.getContent());
+        Toast.makeText(ThongBaoActivity.this, "Xem thông báo: " + thongBao.getTitle(), Toast.LENGTH_SHORT).show();
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            // Đánh dấu thông báo là đã đọc
+            capNhatTrangThaiThongBao(thongBao.getIdThongBao());
+            dialog.dismiss();
+        });
 
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void capNhatTrangThaiThongBao(String idThongBao) {
+        DatabaseReference ThongBaoRef = FirebaseDatabase.getInstance().getReference("ThongBao")
+                .child(idThongBao);
+
+        ThongBaoRef.child("id_TrangThai").setValue(1).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Log.d("Thông báo", "Người dùng đã đọc thông tin này");
+            }
+        });
+    }
     @Override
     public void onBackPressed() {
         // Tạo Intent để chuyển về MainActivity (trang chủ)
@@ -99,5 +127,10 @@ public class ThongBaoActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);  // Tắt giữ màn hình sáng khi dừng hoạt động
+    }
+
+    @Override
+    public void onItemClick(View view, ThongBao thongBao) {
+        hienDialogThongBao(thongBao);
     }
 }

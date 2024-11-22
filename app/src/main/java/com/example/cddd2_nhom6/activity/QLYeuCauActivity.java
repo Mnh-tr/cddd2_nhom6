@@ -38,6 +38,7 @@ import com.example.cddd2_nhom6.adapter.YeuCauAdapter;
 import com.example.cddd2_nhom6.databinding.ActivityQlyeuCauBinding;
 import com.example.cddd2_nhom6.databinding.DialogYeuCauDetailBinding;
 import com.example.cddd2_nhom6.model.LichSuThanhToan;
+import com.example.cddd2_nhom6.model.ThongBao;
 import com.example.cddd2_nhom6.model.YeuCau;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -262,6 +263,7 @@ public class QLYeuCauActivity extends AppCompatActivity {
                                     String idUser = yeuCau.getIdUser();
                                     CapNhapUserLenVip(idUser);  // Gọi hàm cập nhật người dùng lên VIP
                                     themLichSuDaThanhToan(yeuCau); // Gọi hàm thêm vào LichSuThanhToan
+                                    saveThongBaoToDatabase(idUser);
                                     dialog.dismiss();
                                 }
                             });
@@ -321,6 +323,27 @@ public class QLYeuCauActivity extends AppCompatActivity {
 
         // Thêm giao dịch vào Firebase
         lichSuThanhToanRef.child(idThanhToan).setValue(lsThanhToan);
+    }
+
+    private void saveThongBaoToDatabase(String idUser) {
+        // Lấy dữ liệu từ các trường nhập liệu
+        //String idThongBao = mDatabase.child("ThongBao").push().getKey();
+        String title = "Bạn đã lên gói Vip thành công";
+        String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        String content = "Cảm ơn bạn đã tin tưởng vào dịch vụ của chúng tôi, tài khoản của bạn hiện đang là Vip, bạn sẽ có 30 ngày để xem. Chúc bạn xem phim vui vẻ";
+
+        // Tạo tham chiếu đến bảng "ThongBao" với push() để lấy ID do Firebase tạo ra
+        DatabaseReference thongBaoRef = FirebaseDatabase.getInstance().getReference().child("ThongBao").push();
+        String idThongBao = thongBaoRef.getKey(); // Lấy ID do Firebase tự động tạo
+        // Tạo đối tượng ThongBao với userId là ID người dùng bạn muốn gửi thông báo
+        ThongBao thongBao = new ThongBao(idThongBao, title, time, content,idUser,0);
+        thongBaoRef.setValue(thongBao)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(QLYeuCauActivity.this, "Lên Vip thành công", Toast.LENGTH_LONG).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(QLYeuCauActivity.this, "lên Vip thất bại", Toast.LENGTH_LONG).show();
+                });
     }
 
     // Hàm kiểm tra xem có phải ngày hôm nay hay không

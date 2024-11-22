@@ -76,8 +76,5 @@ dependencies {
     implementation ("com.google.android.gms:play-services-ads:22.0.0")
 
     implementation("com.google.android.gms:play-services-auth:20.7.0")
-    implementation ("com.sun.mail:android-mail:1.6.5")
-    implementation ("com.sun.mail:android-activation:1.6.5")
-    implementation ("com.sendgrid:sendgrid-java:4.7.1")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.1")
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 }

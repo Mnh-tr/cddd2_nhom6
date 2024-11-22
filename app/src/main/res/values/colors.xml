@@ -76,4 +76,16 @@
 
     <color name="colorUnread">#FFE0B2</color> <!-- Ví dụ màu cho tin chưa đọc -->
     <color name="colorRead">#E0E0E0</color> <!-- Ví dụ màu cho tin đã đọc -->
+
+
+    <!-- giao diện sáng -->
+    <color name="background">#F5F5F5</color><!-- giao diện tối:  #272726-->
+    <color name="colorTextLight">#333333</color><!-- giao diện tối:  #FFFFFF-->
+    <color name="colorMenu">#666666</color><!-- giao diện tối:  #666666-->
+    <color name="colorNoiBat">#3498DB</color><!-- giao diện tối:  #D91656-->
+    <color name="colorCard">#FFFFFF</color><!-- giao diện tối:  #00405D-->
+    <color name="colorVien">#E0E0E0</color><!-- giao diện tối:  #cd201f-->
+
+
+
 </resources>

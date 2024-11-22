@@ -6,18 +6,29 @@ public class ThongBao {
     private String time;
     private String content;
     private String id_user;
+    private int id_TrangThai;
     private long createdAt;
 
     public ThongBao() {
     }
 
     // Constructor
-    public ThongBao(String idThongBao, String id_user, String title, String time, String content) {
+
+    public ThongBao(String idThongBao, String title, String time, String content, String id_user, int id_TrangThai) {
         this.idThongBao = idThongBao;
         this.title = title;
         this.time = time;
         this.content = content;
         this.id_user = id_user;
+        this.id_TrangThai = id_TrangThai;
+    }
+
+    public int getId_TrangThai() {
+        return id_TrangThai;
+    }
+
+    public void setId_TrangThai(int id_TrangThai) {
+        this.id_TrangThai = id_TrangThai;
     }
 
     // Getter và setter

@@ -229,7 +229,7 @@ public class QLUserActivity extends AppCompatActivity {
             }else{
                 Log.d("kiểm tra id loại người dùng 2: ",String.valueOf(idLoaiND));
                 if(clickedUser.getId_loaiND() == 2 && clickedUser.getId_loaiND() == 3){
-                    if(newUserTypeId == 2){
+                    if(newUserTypeId == 2 && newUserTypeId == 3){
                         Toast.makeText(this, "Bạn không thể cập nhập loại người dùng này", Toast.LENGTH_SHORT).show();
                     }
                     else{
@@ -454,7 +454,7 @@ public class QLUserActivity extends AppCompatActivity {
 
                     Log.d("kiểm tra gói", "gói ở ql user: " + goi);
                     if (status == null) status = "offline";
-                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email);
+                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email,null);
                     userList.add(user);
                     originalUserList.add(user);
 

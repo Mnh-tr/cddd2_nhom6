@@ -38,7 +38,6 @@ public class QLThongBaoActivity extends AppCompatActivity {
     private NguoiDungAdapter adapter;
     private String idUser;
     private DatabaseReference thongBaoRef;
-    boolean trangthai = false;
     private boolean doubleBackToExitPressedOnce = false;
 
     @Override
@@ -73,7 +72,7 @@ public class QLThongBaoActivity extends AppCompatActivity {
 
     private void saveThongBaoToDatabase() {
         // Lấy dữ liệu từ các trường nhập liệu
-        String idThongBao = mDatabase.child("ThongBao").push().getKey();
+        //String idThongBao = mDatabase.child("ThongBao").push().getKey();
         String title = binding.edtTitle.getText().toString().trim();
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
         String content = binding.edtNoiDung.getText().toString().trim();
@@ -92,11 +91,11 @@ public class QLThongBaoActivity extends AppCompatActivity {
 
         // Gửi thông báo và lưu vào Firebase cho từng người dùng được chọn
         for (User user : selectedUsers) {
+            // Tạo tham chiếu đến bảng "ThongBao" với push() để lấy ID do Firebase tạo ra
+            DatabaseReference thongBaoRef = FirebaseDatabase.getInstance().getReference().child("ThongBao").push();
+            String idThongBao = thongBaoRef.getKey(); // Lấy ID do Firebase tự động tạo
             // Tạo đối tượng ThongBao với userId là ID người dùng bạn muốn gửi thông báo
-            ThongBao thongBao = new ThongBao(idThongBao,user.getId_user(), title, time, content);
-
-            // Lưu thông báo vào bảng ThongBao
-            DatabaseReference thongBaoRef = FirebaseDatabase.getInstance().getReference().child("ThongBao").push(); // Tạo ID tự động cho thông báo
+            ThongBao thongBao = new ThongBao(idThongBao, title, time, content,user.getId_user(),0);
             thongBaoRef.setValue(thongBao)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(QLThongBaoActivity.this, "Đã gửi thông báo cho " + user.getName(), Toast.LENGTH_SHORT).show();

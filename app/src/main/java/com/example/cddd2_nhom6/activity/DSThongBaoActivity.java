@@ -46,7 +46,7 @@ public class DSThongBaoActivity extends AppCompatActivity implements ThongBaoAda
         // Khởi tạo Firebase Realtime Database
         mDatabase = FirebaseDatabase.getInstance().getReference();
         binding.recyclerViewApis.setLayoutManager(new LinearLayoutManager(this));
-        thongBaoAdapter = new ThongBaoAdapter(DSThongBaoActivity.this,thongBaoList);
+        thongBaoAdapter = new ThongBaoAdapter(DSThongBaoActivity.this,thongBaoList,this);
         binding.recyclerViewApis.setAdapter(thongBaoAdapter);
         getThongBaoFromDatabase();
         setSupportActionBar(binding.toolbar);

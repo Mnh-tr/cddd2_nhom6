@@ -19,6 +19,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cddd2_nhom6.databinding.ActivityThanhToanBinding;
+import com.example.cddd2_nhom6.model.ThongBao;
+import com.example.cddd2_nhom6.model.User;
 import com.example.cddd2_nhom6.model.YeuCau;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -153,7 +156,7 @@ public class ThanhToanActivity extends AppCompatActivity {
         yeuCauRef.child(idYeuCau).setValue(yeuCauInfo)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(ThanhToanActivity.this, "Yêu cầu lên Vip thành công, chúng tôi sẽ phản hồi bạn trong 24h tới", Toast.LENGTH_LONG).show();
+                        saveThongBaoToDatabase();
                         finish();
                     } else {
                         Toast.makeText(ThanhToanActivity.this, "Yêu cầu lên Vip thất bại, vui lòng liên hệ admin để được hỗ trợ", Toast.LENGTH_LONG).show();
@@ -174,7 +177,26 @@ public class ThanhToanActivity extends AppCompatActivity {
                 })
                 .show();
     }
+    private void saveThongBaoToDatabase() {
+        // Lấy dữ liệu từ các trường nhập liệu
+        //String idThongBao = mDatabase.child("ThongBao").push().getKey();
+        String title = "Xác nhận mua gói vip";
+        String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        String content = "Cảm ơn bạn đã tin tưởng vào dịch vụ của chúng tôi, hãy đảm bảo bạn đã thanh toán qua tài khoản mà tôi đã cung cấp. Chúng tôi sẽ lên Vip cho bạn trong vòng 24h tới, nếu bạn vẫn chưa lên vip xin hãy liên hệ với chúng tôi";
 
+            // Tạo tham chiếu đến bảng "ThongBao" với push() để lấy ID do Firebase tạo ra
+            DatabaseReference thongBaoRef = FirebaseDatabase.getInstance().getReference().child("ThongBao").push();
+            String idThongBao = thongBaoRef.getKey(); // Lấy ID do Firebase tự động tạo
+            // Tạo đối tượng ThongBao với userId là ID người dùng bạn muốn gửi thông báo
+            ThongBao thongBao = new ThongBao(idThongBao, title, time, content,idUser,0);
+            thongBaoRef.setValue(thongBao)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(ThanhToanActivity.this, "Yêu cầu lên Vip thành công, chúng tôi sẽ phản hồi bạn trong 24h tới", Toast.LENGTH_LONG).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(ThanhToanActivity.this, "Yêu cầu lên Vip thất bại, nếu có gì thắc mắc liên hệ với chúng tôi ngay", Toast.LENGTH_LONG).show();
+                    });
+    }
     @Override
     protected void onResume() {
         super.onResume();
