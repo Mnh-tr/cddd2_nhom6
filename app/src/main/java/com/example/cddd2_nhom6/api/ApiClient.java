@@ -18,10 +18,47 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
-    private static String baseUrl = "https://phimapi.com/";
+    private static String baseUrl = "";
 
     private static Retrofit retrofit;
 
+    // Phương thức lấy URL từ Firebase
+    public static void fetchBaseUrlFromFirebase(final OnBaseUrlFetchListener listener, Context context) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("api_sources").child("selected_source");
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                //Duyệt qua tất cả các mục con trong selected_source
+//                for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
+//                    String newUrl = apiSnapshot.child("url").getValue(String.class);
+//                    String source = apiSnapshot.child("name").getValue(String.class);
+//
+//                    // Kiểm tra và sử dụng URL và name
+//                    if (newUrl != null && !newUrl.isEmpty() && source != null) {
+//                        setBaseUrl(newUrl);
+//                        listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
+//                    } else {
+//                        listener.onError("URL hoặc name không tồn tại");
+//                    }
+//                }
+                String newUrl = snapshot.child("url").getValue(String.class);
+                String source = snapshot.child("name").getValue(String.class); // Lấy name của API
+
+                if (newUrl != null && !newUrl.isEmpty() && source != null) {
+                    setBaseUrl(newUrl);
+                    listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
+                } else {
+                    listener.onError("URL hoặc name không tồn tại");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                listener.onError(error.getMessage());
+            }
+        });
+    }
     public static Retrofit getClient() {
         // Kiểm tra xem baseUrl có giá trị hợp lệ không
         if (baseUrl == null || (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://"))) {
@@ -34,34 +71,6 @@ public class ApiClient {
                     .build();
         }
         return retrofit;
-    }
-    // Phương thức lấy URL từ Firebase
-    public static void fetchBaseUrlFromFirebase(final OnBaseUrlFetchListener listener, Context context) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("api_sources").child("selected_source");
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Duyệt qua tất cả các mục con trong selected_source
-                for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
-                    String newUrl = apiSnapshot.child("url").getValue(String.class);
-                    String source = apiSnapshot.child("name").getValue(String.class);
-
-                    // Kiểm tra và sử dụng URL và name
-                    if (newUrl != null && !newUrl.isEmpty() && source != null) {
-                        setBaseUrl(newUrl);
-                        listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
-                    } else {
-                        listener.onError("URL hoặc name không tồn tại");
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                listener.onError(error.getMessage());
-            }
-        });
     }
     public static <S> S createService(Class<S> serviceClass) {
         if (retrofit == null || !retrofit.baseUrl().toString().equals(baseUrl)) {

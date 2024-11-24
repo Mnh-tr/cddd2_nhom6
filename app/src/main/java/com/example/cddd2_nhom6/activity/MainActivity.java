@@ -210,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
         // Load phim từ Firebase
         fetchMoviesFromFirebase();
 
-        apiService = ApiClient.getClient().create(ApiService.class);
         // Khởi tạo danh sách phim
         DSKkphimPhimLe = new ArrayList<>();
         DSKkphimBo = new ArrayList<>();
