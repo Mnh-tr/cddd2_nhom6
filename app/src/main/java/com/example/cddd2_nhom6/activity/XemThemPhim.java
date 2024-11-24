@@ -220,23 +220,23 @@ public class XemThemPhim extends AppCompatActivity {
         Call<DSResponseOphim> call = null;
         // Kiểm tra và gọi API lấy dữ liệu theo thể loại hoặc quốc gia
         if (theLoaiSlug != null && !theLoaiSlug.isEmpty()) {
-            call = apiService.getTheLoaiOPhim(theLoaiSlug, page);  // Thể loại
+            //call = apiService.getTheLoaiOPhim(theLoaiSlug, page);  // Thể loại
         } else if (quocGiaSlug != null && !quocGiaSlug.isEmpty()) {
-            call = apiService.getQuocGiaOPhim(quocGiaSlug, page);  // Quốc gia
+            //call = apiService.getQuocGiaOPhim(quocGiaSlug, page);  // Quốc gia
         } else {
             // Kiểm tra nếu type không phải thể loại hoặc quốc gia
             switch (type) {
                 case "movie":
-                    call = apiService.getPhimLeOphim(page);
+                    //call = apiService.getPhimLeOphim(page);
                     break;
                 case "series":
-                    call = apiService.getSeriesOphim(page);
+                    //call = apiService.getSeriesOphim(page);
                     break;
                 case "hoathinh":
-                    call = apiService.getHoatHinhOphim(page);
+                    //call = apiService.getHoatHinhOphim(page);
                     break;
                 case "tvShow":
-                    call = apiService.getTVShowOphim(page);
+                    //call = apiService.getTVShowOphim(page);
                     break;
 
                 default:

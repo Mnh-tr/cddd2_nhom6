@@ -14,6 +14,7 @@ public class Phim {
     private String content;
     private List<String> actor;
     private List<String> director;
+    private static final String APP_DOMAIN_CDN_IMAGE = "https://img.ophim.live/uploads/movies/";
 
     private Modified modified;
 
@@ -36,6 +37,10 @@ public class Phim {
     public String getThumb_url() {
         return thumb_url;
     }
+    public String getThumb_urlOphim() {
+        return APP_DOMAIN_CDN_IMAGE + thumb_url;
+    }
+
 
     public static class Modified {
         private String time;

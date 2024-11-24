@@ -10,7 +10,12 @@ public class ApiModel {
         // Constructor mặc định
     }
 
-    public ApiModel(String id,String name, String url) {
+    public ApiModel(String name, String url) {
+        this.name = name;
+        this.url = url;
+    }
+
+    public ApiModel(String id, String name, String url) {
         this.id = id;
         this.name = name;
         this.url = url;

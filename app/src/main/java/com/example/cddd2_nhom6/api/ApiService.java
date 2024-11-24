@@ -39,18 +39,18 @@ public interface ApiService {
     Call<DSResponseOphim> searchMoviesOphim(@Query("keyword") String keyword, @Query("limit") int limit);
 
     @GET("v1/api/danh-sach/phim-bo")
-    Call<DSResponseOphim> getSeriesOphim(@Query("page") int page);
+    Call<DSPhimResponse> getSeriesOphim(@Query("page") int page);
 
     @GET("v1/api/danh-sach/tv-shows")
-    Call<DSResponseOphim> getTVShowOphim(@Query("page") int page);
+    Call<DSPhimResponse> getTVShowOphim(@Query("page") int page);
 
     @GET("v1/api/danh-sach/phim-le")
-    Call<DSResponseOphim> getPhimLeOphim(@Query("page") int page);
+    Call<DSPhimResponse> getPhimLeOphim(@Query("page") int page);
 
     @GET("v1/api/danh-sach/hoat-hinh")
-    Call<DSResponseOphim> getHoatHinhOphim(@Query("page") int page);
+    Call<DSPhimResponse> getHoatHinhOphim(@Query("page") int page);
     @GET("danh-sach/phim-moi-cap-nhat")
-    Call<PhimResponseOphim> getMoviesOphim(@Query("page") int page);
+    Call<PhimResponse> getMoviesOphim(@Query("page") int page);
 
     @GET("v1/api/quoc-gia/{slug}")
     Call<DSPhimResponse> getQuocGiaKKPhim(@Path("slug") String slug,@Query("page") int page);
@@ -59,10 +59,10 @@ public interface ApiService {
     Call<DSPhimResponse> getTheLoaiKKPhim(@Path("slug") String slug, @Query("page") int page);
 
     @GET("v1/api/quoc-gia/{slug}")
-    Call<DSResponseOphim> getQuocGiaOPhim(@Path("slug") String slug,@Query("page") int page);
+    Call<DSPhimResponse> getQuocGiaOPhim(@Path("slug") String slug,@Query("page") int page);
 
     @GET("v1/api/the-loai/{slug}")
-    Call<DSResponseOphim> getTheLoaiOPhim(@Path("slug") String slug, @Query("page") int page);
+    Call<DSPhimResponse> getTheLoaiOPhim(@Path("slug") String slug, @Query("page") int page);
 
 
     @GET

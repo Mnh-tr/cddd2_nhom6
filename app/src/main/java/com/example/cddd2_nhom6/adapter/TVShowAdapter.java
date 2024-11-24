@@ -19,12 +19,12 @@ import com.example.cddd2_nhom6.model.DSPhim;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TheLoaiAdapter extends RecyclerView.Adapter<TheLoaiAdapter.DSPhimViewHolder>{
+public class TVShowAdapter extends RecyclerView.Adapter<TVShowAdapter.DSPhimViewHolder>{
     private Context context;  // Thêm biến Activity context
     private List<DSPhim> dsPhims;
     private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
 
-    public TheLoaiAdapter(Context context) {
+    public TVShowAdapter(Context context) {
         this.context = context;
         this.dsPhims = new ArrayList<>(); // Khởi tạo danh sách rỗng
     }
@@ -45,14 +45,14 @@ public class TheLoaiAdapter extends RecyclerView.Adapter<TheLoaiAdapter.DSPhimVi
     }
 
     // Constructor
-    public TheLoaiAdapter(Activity context, List<DSPhim> dsPhims) {
+    public TVShowAdapter(Activity context, List<DSPhim> dsPhims) {
         this.context = context;  // Khởi tạo biến context
         this.dsPhims = dsPhims;
     }
 
     // Setter cho listener
     public void setRecyclerViewItemClickListener(OnRecyclerViewItemClickListener recyclerViewItemClickListener) {
-        TheLoaiAdapter.recyclerViewItemClickListener = recyclerViewItemClickListener;
+        TVShowAdapter.recyclerViewItemClickListener = recyclerViewItemClickListener;
     }
 
     @NonNull
