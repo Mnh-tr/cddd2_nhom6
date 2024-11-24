@@ -16,8 +16,11 @@ import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ItemQuocgiaBinding;
 import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.QuocGia;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -96,27 +99,62 @@ public class QuocGiaAdapter extends RecyclerView.Adapter<QuocGiaAdapter.QuocGiaV
                         .setTitle("Xác nhận")
                         .setMessage("Bạn có chắc chắn muốn xóa quốc gia này không?")
                         .setPositiveButton("Có", (dialog, which) -> {
-                            // Lấy ID của quốc gia cần xóa
-                            long quocGiaId = quocgia.getId();
+                            // Lấy ID và tên quốc gia cần xóa
+                            long quocGiaId = quocGiaList.get(position).getId();
+                            String quocGiaName = quocGiaList.get(position).getName(); // Lấy tên quốc gia
 
-                            // Xóa quốc gia khỏi Firebase bằng ID
-                            quocGiaRef.child(String.valueOf(quocGiaId)).removeValue()
-                                    .addOnSuccessListener(aVoid -> {
-                                        Toast.makeText(context, "Đã xóa quốc gia!", Toast.LENGTH_SHORT).show();
-                                        if (position >= 0 && position < quocGiaList.size()) {
-                                            quocGiaList.remove(position);  // Xóa quốc gia khỏi danh sách
-                                            notifyItemRemoved(position);  // Cập nhật lại RecyclerView
-                                        } else {
-                                            Toast.makeText(context, "Lỗi vị trí, không thể xóa!", Toast.LENGTH_SHORT).show();
+                            // Truy vấn Firebase Movies để kiểm tra có bộ phim nào sử dụng quốc gia này không
+                            FirebaseDatabase.getInstance()
+                                    .getReference("Movies")
+                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            boolean hasMovieWithCountry = false;
+
+                                            // Kiểm tra từng bộ phim trong Firebase
+                                            for (DataSnapshot movieSnapshot : dataSnapshot.getChildren()) {
+                                                String quocGia = movieSnapshot.child("quocGia").getValue(String.class);
+
+                                                if (quocGia != null && quocGia.equals(quocGiaName)) {
+                                                    hasMovieWithCountry = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (hasMovieWithCountry) {
+                                                // Nếu có bộ phim nào sử dụng quốc gia này, không xóa quốc gia
+                                                Toast.makeText(context,
+                                                        "Không thể xóa quốc gia này vì có phim thuộc quốc gia này",
+                                                        Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                // Nếu không có bộ phim nào sử dụng quốc gia này, tiến hành xóa
+                                                quocGiaRef.child(String.valueOf(quocGiaId)).removeValue()
+                                                        .addOnSuccessListener(aVoid -> {
+                                                            Toast.makeText(context, "Đã xóa quốc gia!", Toast.LENGTH_SHORT).show();
+                                                            if (position >= 0 && position < quocGiaList.size()) {
+                                                                quocGiaList.remove(position);  // Xóa quốc gia khỏi danh sách
+                                                                notifyItemRemoved(position);  // Cập nhật lại RecyclerView
+                                                            } else {
+                                                                Toast.makeText(context, "Lỗi vị trí, không thể xóa!", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            Toast.makeText(context, "Lỗi khi xóa quốc gia!", Toast.LENGTH_SHORT).show();
+                                                        });
+                                            }
                                         }
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Toast.makeText(context, "Lỗi khi xóa quốc gia!", Toast.LENGTH_SHORT).show();
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            // Xử lý lỗi nếu có
+                                            Toast.makeText(context, "Lỗi khi kiểm tra quốc gia", Toast.LENGTH_SHORT).show();
+                                        }
                                     });
                         })
                         .setNegativeButton("Không", (dialog, which) -> dialog.dismiss())
                         .show();
             });
+
 
 
             // Xử lý nút Lưu

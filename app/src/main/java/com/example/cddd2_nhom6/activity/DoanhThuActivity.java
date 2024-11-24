@@ -113,9 +113,11 @@ public class DoanhThuActivity extends AppCompatActivity {
 
                 // Duyệt qua các bản ghi trong Firebase
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    LichSuThanhToan thanhToan = snapshot.getValue(LichSuThanhToan.class);
-                    if (thanhToan != null) {
-                        lichSuTTList.add(thanhToan);
+                    for (DataSnapshot data : snapshot.getChildren()) {
+                        LichSuThanhToan thanhToan = data.getValue(LichSuThanhToan.class);
+                        if (thanhToan != null) {
+                            lichSuTTList.add(thanhToan);
+                        }
                     }
                 }
 
@@ -154,15 +156,17 @@ public class DoanhThuActivity extends AppCompatActivity {
 
                 // Xử lý dữ liệu mới từ Firebase
                 for (DataSnapshot childSnapshot : snapshot.getChildren()) {
-                    LichSuThanhToan thanhToan = childSnapshot.getValue(LichSuThanhToan.class);
-                    if (thanhToan != null) {
-                        lichSuTTList.add(thanhToan);
-                        String ngayXacNhan = thanhToan.getNgayXacNhan();
-                        Long soTien = thanhToan.getSoTien();
+                    for (DataSnapshot Snapshot : childSnapshot.getChildren()) {
+                        LichSuThanhToan thanhToan = Snapshot.getValue(LichSuThanhToan.class);
+                        if (thanhToan != null) {
+                            lichSuTTList.add(thanhToan);
+                            String ngayXacNhan = thanhToan.getNgayXacNhan();
+                            Long soTien = thanhToan.getSoTien();
 
-                        if (ngayXacNhan != null && soTien != null) {
-                            tinhDoanhThu(ngayXacNhan, soTien);
-                            capNhatDoanhThuHangThang(ngayXacNhan, soTien);
+                            if (ngayXacNhan != null && soTien != null) {
+                                tinhDoanhThu(ngayXacNhan, soTien);
+                                capNhatDoanhThuHangThang(ngayXacNhan, soTien);
+                            }
                         }
                     }
                 }
@@ -286,10 +290,24 @@ public class DoanhThuActivity extends AppCompatActivity {
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
         dialog.show();
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    String userId = userSnapshot.getKey(); // Lấy key cha, ví dụ: FNM51T7
+                    dialogBinding.tvIdUserDialog.setText(userId);
+                    hienThiNameLenDiaLog(dialogBinding,userId);
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase Error", error.getMessage());
+            }
+        });
         // Hiển thị thông tin chi tiết lịch sử thanh toán
-        hienThiNameLenDiaLog(dialogBinding,thanhToan);
-        dialogBinding.tvIdUserDialog.setText(thanhToan.getIdUser());
+
+
         dialogBinding.tvContentDialog.setText(thanhToan.getNoiDung());
         dialogBinding.tvAmountDialog.setText(String.valueOf(thanhToan.getSoTien()));
         dialogBinding.tvPaymentDateDialog.setText(thanhToan.getNgayThanhToan());
@@ -303,10 +321,10 @@ public class DoanhThuActivity extends AppCompatActivity {
         });
     }
 
-    private void hienThiNameLenDiaLog(DialogLichsuThanhtoanBinding dialogBinding,LichSuThanhToan thanhToan){
+    private void hienThiNameLenDiaLog(DialogLichsuThanhtoanBinding dialogBinding,String userId){
         // Truy vấn người dùng từ Firebase dựa trên id_user tự tạo
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-        usersRef.orderByChild("id_user").equalTo(thanhToan.getIdUser()).addListenerForSingleValueEvent(new ValueEventListener() {
+        usersRef.orderByChild("id_user").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {

@@ -297,6 +297,7 @@ public class QLYeuCauActivity extends AppCompatActivity {
     }
 
     private void themLichSuDaThanhToan(YeuCau yeuCau) {
+        // Tham chiếu đến nút cha "LichSuThanhToan"
         DatabaseReference lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
 
         // Tạo id thanh toán duy nhất
@@ -310,10 +311,10 @@ public class QLYeuCauActivity extends AppCompatActivity {
         calendar.add(Calendar.DAY_OF_MONTH, 30);
         String ngayHetHan = sdf.format(calendar.getTime());
 
-        // Tạo đối tượng lich su thanh toan
+        // Tạo đối tượng lịch sử thanh toán
         LichSuThanhToan lsThanhToan = new LichSuThanhToan(
-                idThanhToan,
-                yeuCau.getIdUser(),
+                null,
+                null, // Không cần lưu idUser trong đối tượng con
                 yeuCau.getContent(),
                 yeuCau.getPaymentDate(),
                 ngayXacNhan,
@@ -321,9 +322,12 @@ public class QLYeuCauActivity extends AppCompatActivity {
                 ngayHetHan
         );
 
-        // Thêm giao dịch vào Firebase
-        lichSuThanhToanRef.child(idThanhToan).setValue(lsThanhToan);
+        // Lưu dữ liệu theo cấu trúc
+        lichSuThanhToanRef.child(yeuCau.getIdUser()) // idUser là nút cha
+                .child(idThanhToan) // idThanhToan là nút con
+                .setValue(lsThanhToan);
     }
+
 
     private void saveThongBaoToDatabase(String idUser) {
         // Lấy dữ liệu từ các trường nhập liệu

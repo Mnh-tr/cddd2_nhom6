@@ -18,7 +18,13 @@
           <timeTargetWasSelectedWithDropDown value="2024-11-07T05:00:04.161756900Z" />
         </State>
       </entry>
+      <entry key="DoanhThuActivity">
+        <State />
+      </entry>
       <entry key="MainActivity">
+        <State />
+      </entry>
+      <entry key="QLUserActivity">
         <State />
       </entry>
     </value>
