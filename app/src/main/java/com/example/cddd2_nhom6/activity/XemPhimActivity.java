@@ -1,5 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
+import static com.example.cddd2_nhom6.activity.MainActivity.logUserTimeout;
+
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.util.TypedValue;
@@ -404,6 +406,10 @@ public class XemPhimActivity extends AppCompatActivity{
             exoPlayer.release();  // Giải phóng ExoPlayer khi Activity bị hủy
             exoPlayer = null;
         }
+        // Kiểm tra nếu ứng dụng không thay đổi cấu hình (xoay màn hình, v.v.)
+        if (!isChangingConfigurations()) {
+            logUserTimeout(idUser);
+        }
     }
 
     @Override
@@ -420,6 +426,14 @@ public class XemPhimActivity extends AppCompatActivity{
         super.onResume();
         // Giữ màn hình sáng khi ứng dụng hoạt động
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Ghi timeout khi ứng dụng thực sự bị xóa khỏi bộ nhớ
+        if (isFinishing()) {
+            logUserTimeout(idUser);
+        }
     }
 
 }
