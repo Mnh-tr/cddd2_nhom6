@@ -244,6 +244,7 @@ public class ChiTietPhimActivity extends AppCompatActivity {
                                             }
                                         }
                                     });
+                                    binding.tvTime.setText(String.valueOf(movie.getTime()));
                                     binding.textViewYear.setText(String.valueOf(movie.getYear()));
                                     binding.textViewActors.setText(TextUtils.join(", ", movie.getActor()));
                                     binding.textViewDirector.setText(TextUtils.join(", ", movie.getDirector()));

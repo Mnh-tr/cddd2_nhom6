@@ -256,6 +256,7 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
                             public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
                                 if (response.isSuccessful() && response.body() != null) {
                                     ChiTietPhim.MovieItem movieItem = response.body().getMovie();
+                                    movieItem.setSource("Kkphim");
                                     PhimYeuThich.add(movieItem); // Thêm phim vào danh sách yêu thích
                                     // Notify the adapter that data has changed
                                     yeuThichAdapter.notifyDataSetChanged();  // Notify adapter for changes
@@ -291,6 +292,7 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
                             public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
                                 if (response.isSuccessful() && response.body() != null) {
                                     ChiTietPhim.MovieItem movieItem = response.body().getMovie();
+                                    movieItem.setSource("Ophim");
                                     PhimYeuThich.add(movieItem); // Thêm phim vào danh sách yêu thích
                                     // Notify the adapter that data has changed
                                     yeuThichAdapter.notifyDataSetChanged();  // Notify adapter for changes
@@ -349,6 +351,7 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
                                     ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
                                     movieItem.setName(movieDetail.getMovie().getName());
                                     movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSource("Kkphim");
                                     movieItem.setSlug(slug); // Set slug for navigation
 
                                     // Kiểm tra xem tên phim có chứa truy vấn không
@@ -381,6 +384,7 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
                                     ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
                                     movieItem.setName(movieDetail.getMovie().getName());
                                     movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSource("Ophim");
                                     movieItem.setSlug(slug); // Set slug for navigation
 
                                     // Kiểm tra xem tên phim có chứa truy vấn không

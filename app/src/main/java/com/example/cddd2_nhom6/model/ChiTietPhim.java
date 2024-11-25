@@ -151,6 +151,15 @@ public class ChiTietPhim {
         @SerializedName("country")
         private List<Country> country;
 
+        private String Source;
+
+        public String getSource() {
+            return Source;
+        }
+
+        public void setSource(String source) {
+            Source = source;
+        }
         // Getters and setters
 
         public Tmdb getTmdb() {

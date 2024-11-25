@@ -287,6 +287,7 @@ public class CaNhanActivity extends AppCompatActivity {
                                     ChiTietPhim movieDetail = response.body();
                                     movieItem.setName(movieDetail.getMovie().getName());
                                     movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSource("Kkphim");
                                     lichSuAdapter.notifyDataSetChanged();
 
                                     // Đặt listener cho mỗi mục phim trong lịch sử
@@ -363,6 +364,7 @@ public class CaNhanActivity extends AppCompatActivity {
                                     ChiTietPhim movieDetail = response.body();
                                     movieItem.setName(movieDetail.getMovie().getName());
                                     movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSource("Ophim");
                                     lichSuAdapter.notifyDataSetChanged();
 
                                     // Đặt listener cho mỗi mục phim trong lịch sử

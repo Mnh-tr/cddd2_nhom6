@@ -413,8 +413,43 @@ public class MainActivity extends AppCompatActivity {
 
             if (theLoaiSlug != null) {
                 hienThiPhim(theLoaiSlug, null); // Hoặc xử lý theo cách bạn muốn
+                ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
+                    @Override
+                    public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                        // Chuyển đến màn hình XemThemPhim khi người dùng nhấn nút
+                        binding.xemThemBoLoc.setOnClickListener(theloai -> {
+                            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                            intent.putExtra("theloai", theLoaiSlug); // Thêm loại phim bộ
+                            intent.putParcelableArrayListExtra("apiSources", new ArrayList<>(apiSources)); // Truyền danh sách API
+                            startActivity(intent);
+                        });
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(MainActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }, MainActivity.this);
             } else if (quocGiaSlug != null) {
                 hienThiPhim(null, quocGiaSlug); // Hoặc xử lý theo cách bạn muốn
+                ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
+                    @Override
+                    public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                        // Chuyển đến màn hình XemThemPhim khi người dùng nhấn nút
+                        binding.xemThemBoLoc.setOnClickListener(quocgia -> {
+                            Intent intent = new Intent(MainActivity.this, XemThemPhim.class);
+                            intent.putExtra("quocgia", quocGiaSlug); // Thêm loại phim bộ
+                            intent.putParcelableArrayListExtra("apiSources", new ArrayList<>(apiSources)); // Truyền danh sách API
+                            startActivity(intent);
+                        });
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(MainActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }, MainActivity.this);
+
             }
             return false;
         });
