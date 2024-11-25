@@ -1,5 +1,6 @@
 package com.example.cddd2_nhom6.activity;
 
+import static com.example.cddd2_nhom6.activity.MainActivity.logUserTimeout;
 import static java.lang.Long.parseLong;
 
 import android.content.Intent;
@@ -52,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class AdminActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -76,7 +78,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         setContentView(binding.getRoot());
 
         dataUser = FirebaseDatabase.getInstance().getReference("Users");
-        dataTruyCap = FirebaseDatabase.getInstance().getReference("TruyCap");
+        dataTruyCap = FirebaseDatabase.getInstance().getReference("TruyCapss");
         dataThanhToan = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
 
         // Đặt cho tất cả
@@ -186,8 +188,9 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                     for (DataSnapshot childs : data.getChildren()) {
                         Long soTien = childs.child("soTien").getValue(Long.class);
                         doanhthu += soTien;
-                    }
                         goiVIP++;
+                    }
+
                 }
 
                 // Định dạng lại doanh thu để hiển thị (thêm dấu phẩy phân cách hàng nghìn)
@@ -213,21 +216,34 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 int soluongTruycap = 0;
-                for (DataSnapshot data : snapshot.getChildren()){
-                        soluongTruycap++;
+
+                // Duyệt qua các nút con của TruyCapss
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    // Kiểm tra nếu khóa là "Tong"
+                    if ("Tong".equals(data.getKey())) {
+                        // Lấy giá trị của Tong (giả sử là kiểu Long)
+                        Long tongValue = data.getValue(Long.class);
+                        if (tongValue != null) {
+                            soluongTruycap = tongValue.intValue(); // Chuyển sang int nếu cần
+                        }
+                        break; // Không cần duyệt tiếp
+                    }
                 }
 
-                binding.tvTruyCapAmount.setText("" + soluongTruycap);
+                // Cập nhật giao diện
+                binding.tvTruyCapAmount.setText(String.valueOf(soluongTruycap));
 
+                // Xử lý biểu đồ
                 xulyBieuDo();
                 binding.progressBar.setVisibility(View.GONE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Log.e("Firebase", "Lỗi khi đọc dữ liệu: " + error.getMessage());
             }
         });
+
 
 
 
@@ -415,37 +431,53 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     // Truy Caap
     private void layThongTinTruyCapHomNay() {
         binding.progressBar.setVisibility(View.VISIBLE);
-        LayThoigianNgayHomNay(); // 23:59:59 hôm nay
+
+        LayThoigianNgayHomNay(); // Khởi tạo giá trị startOfDay và endOfDay
 
         dataTruyCap.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                int count = 0;
-                for (DataSnapshot accessSnapshot : snapshot.getChildren()) {
-                    String timestamp = accessSnapshot.child("thoigiantruycap").getValue(String.class);
-                    if (timestamp != null) {
-                        try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-                            Date date = sdf.parse(timestamp); // Chuyển đổi chuỗi thành Date
-                            long timeInMillis = date.getTime(); // Lấy thời gian mili giây
+                int count = 0; // Đếm số lượt truy cập trong ngày hôm nay
 
-                            // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
-                            if (timeInMillis >= startOfDay && timeInMillis <= endOfDay) {
-                                count++;
+
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    if (userSnapshot.getKey().equals("LichSu")){
+                        for (DataSnapshot sessionSnapshot : userSnapshot.getChildren()) {
+                            for (DataSnapshot iduserSnapshot : sessionSnapshot.getChildren()){
+                                // Lấy giá trị "time" trong mỗi session
+                                String timestamp = iduserSnapshot.child("time").getValue(String.class);
+
+                                if (timestamp != null) {
+                                    try {
+                                        // Chuyển đổi chuỗi thời gian thành mili giây
+                                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+                                        Date date = sdf.parse(timestamp);
+                                        long timeInMillis = date.getTime();
+
+                                        // Kiểm tra thời gian có nằm trong khoảng hôm nay không
+                                        if (timeInMillis >= startOfDay && timeInMillis <= endOfDay) {
+                                            count++;
+                                        }
+                                    } catch (ParseException e) {
+                                        e.printStackTrace(); // Xử lý lỗi nếu không thể phân tích chuỗi thời gian
+                                    }
+                                }
                             }
-                        } catch (ParseException e) {
-                            e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
+
                         }
                     }
+
                 }
 
-                binding.tvTruyCapAmount.setText("" + count);
-                // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
+                // Hiển thị số lượng truy cập trong ngày hôm nay
+                binding.tvTruyCapAmount.setText(String.valueOf(count));
+
+                // Gọi hàm xử lý biểu đồ sau khi đã đếm xong
                 xulyBieuDo();
+
+                // Ẩn ProgressBar sau khi hoàn thành
                 binding.progressBar.setVisibility(View.GONE);
             }
-
-
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -453,38 +485,56 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             }
         });
     }
+
     private void layThongTinTruyCapTrongKhoangThoiGian(int soNgay) {
         binding.progressBar.setVisibility(View.VISIBLE);
-        long startTime = LayThoigianCachDay(soNgay);
-        long endTime = System.currentTimeMillis();
 
+        // Tính toán khoảng thời gian
+        long startTime = LayThoigianCachDay(soNgay); // Hàm này trả về thời gian mili giây của N ngày trước
+        long endTime = System.currentTimeMillis(); // Thời gian hiện tại
 
         dataTruyCap.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                int count = 0;
-                for (DataSnapshot accessSnapshot : snapshot.getChildren()) {
-                    String timestamp = accessSnapshot.child("thoigiantruycap").getValue(String.class);
+                int count = 0; // Biến đếm số lượt truy cập trong khoảng thời gian
 
-                    if (timestamp != null) {
-                        try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-                            Date date = sdf.parse(timestamp); // Chuyển đổi chuỗi thành Date
-                            long timeInMillis = date.getTime(); // Lấy thời gian mili giây
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    if (userSnapshot.getKey().equals("LichSu")){
+                        // Duyệt qua từng session của mỗi người dùng
+                        for (DataSnapshot sessionSnapshot : userSnapshot.getChildren()) {
+                            for (DataSnapshot iduserSnapshot : sessionSnapshot.getChildren()){
+                                // Lấy giá trị "time" trong mỗi session
+                                String timestamp = iduserSnapshot.child("time").getValue(String.class);
 
-                            // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
-                            if (timeInMillis >= startTime && timeInMillis <= endTime) {
-                                count++;
+                                if (timestamp != null) {
+                                    try {
+                                        // Chuyển đổi chuỗi thời gian thành mili giây
+                                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+                                        Date date = sdf.parse(timestamp);
+                                        long timeInMillis = date.getTime();
+
+                                        // Kiểm tra thời gian có nằm trong khoảng [startTime, endTime] không
+                                        if (timeInMillis >= startTime && timeInMillis <= endTime) {
+                                            count++;
+                                        }
+                                    } catch (ParseException e) {
+                                        e.printStackTrace(); // Xử lý lỗi nếu không thể phân tích cú pháp
+                                    }
+                                }
                             }
-                        } catch (ParseException e) {
-                            e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
+
                         }
                     }
+
                 }
 
-                binding.tvTruyCapAmount.setText("" + count);
-                // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
+                // Cập nhật giao diện với số lượng truy cập đếm được
+                binding.tvTruyCapAmount.setText(String.valueOf(count));
+
+                // Gọi hàm xử lý biểu đồ sau khi đếm xong
                 xulyBieuDo();
+
+                // Ẩn ProgressBar
                 binding.progressBar.setVisibility(View.GONE);
             }
 
@@ -494,6 +544,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             }
         });
     }
+
     // Lay thoi gian ngay hom nay
     private void LayThoigianNgayHomNay() {
         calendar = Calendar.getInstance();  // Đặt lại calendar về thời gian hiện tại
@@ -715,6 +766,23 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         super.onPause();
         // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Ghi timeout khi ứng dụng thực sự bị xóa khỏi bộ nhớ
+        if (isFinishing()) {
+            logUserTimeout(idUser);
+        }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Kiểm tra nếu ứng dụng không thay đổi cấu hình (xoay màn hình, v.v.)
+        if (!isChangingConfigurations()) {
+            logUserTimeout(idUser);
+        }
     }
 
 }

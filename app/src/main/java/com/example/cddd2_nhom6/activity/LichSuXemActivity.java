@@ -1,5 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
+import static com.example.cddd2_nhom6.activity.MainActivity.logUserTimeout;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -533,6 +535,23 @@ public class LichSuXemActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Ghi timeout khi ứng dụng thực sự bị xóa khỏi bộ nhớ
+        if (isFinishing()) {
+            logUserTimeout(idUser);
+        }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Kiểm tra nếu ứng dụng không thay đổi cấu hình (xoay màn hình, v.v.)
+        if (!isChangingConfigurations()) {
+            logUserTimeout(idUser);
+        }
     }
 }
 

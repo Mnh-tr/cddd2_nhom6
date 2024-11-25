@@ -1,6 +1,8 @@
 package com.example.cddd2_nhom6.activity;
 
 import android.content.Intent;
+import static com.example.cddd2_nhom6.activity.MainActivity.logUserTimeout;
+
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
@@ -25,8 +27,6 @@ import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.XuLyBinhLuan;
 import com.giphy.sdk.core.models.Media;
 import com.giphy.sdk.ui.GPHContentType;
@@ -112,6 +112,7 @@ public class XemPhimActivity extends AppCompatActivity{
         binhluan = new XuLyBinhLuan(this, movieSlug, binhLuanPhimAdapter, binhLuanPhimList);
         binhluan.taiBinhLuan(movieSlug);
         setContentView(binding.getRoot()); // Đặt layout cho Activity
+        apiService = ApiClient.getClient().create(ApiService.class);
         taiPhim = new TaiPhim(apiService, this);
         setControl();
         setEvent();
@@ -179,6 +180,7 @@ public class XemPhimActivity extends AppCompatActivity{
         });
 
         binding.playerView.findViewById(R.id.btnFullScreen).setOnClickListener(v -> phongToPhim());
+        apiService = ApiClient.getClient().create(ApiService.class);
         hienThiChiTietPhim();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         laythongtinUser();
@@ -211,14 +213,20 @@ public class XemPhimActivity extends AppCompatActivity{
         commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
         // Thêm sự kiện nhấn cho nút bình luận
         btnDowload.setOnClickListener(v -> {
-            String movieName = binding.tvMovieTitle.getText().toString();
-            if (movieLink != null && !movieLink.isEmpty()) {
-                // Hiện thông báo "Đang tải..."
-                Toast.makeText(XemPhimActivity.this, "Đang tải...", Toast.LENGTH_SHORT).show();
-                // Gọi phương thức download từ movieDownloader
-                taiPhim.loadPosterAndDownloadMovie(movieSlug, movieLink, movieName);
-            } else {
-                Toast.makeText(XemPhimActivity.this, "Liên kết phim không hợp lệ!", Toast.LENGTH_SHORT).show();
+
+            if(idLoaiND == 1 || idLoaiND == 2 || idLoaiND == 3){
+
+                String movieName = binding.tvMovieTitle.getText().toString();
+                if (movieLink != null && !movieLink.isEmpty()) {
+                    // Hiện thông báo "Đang tải..."
+                    Toast.makeText(XemPhimActivity.this, "Đang tải...", Toast.LENGTH_SHORT).show();
+                    // Gọi phương thức download từ movieDownloader
+                    taiPhim.loadPosterAndDownloadMovie(movieSlug, movieLink, movieName);
+                } else {
+                    Toast.makeText(XemPhimActivity.this, "Liên kết phim không hợp lệ!", Toast.LENGTH_SHORT).show();
+                }
+            }else{
+                Toast.makeText(XemPhimActivity.this, "Bạn không thể tải phim, bạn cần nâng gói vip để tải...", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -489,6 +497,10 @@ public class XemPhimActivity extends AppCompatActivity{
             exoPlayer.release();  // Giải phóng ExoPlayer khi Activity bị hủy
             exoPlayer = null;
         }
+        // Kiểm tra nếu ứng dụng không thay đổi cấu hình (xoay màn hình, v.v.)
+        if (!isChangingConfigurations()) {
+            logUserTimeout(idUser);
+        }
     }
 
     @Override
@@ -505,6 +517,14 @@ public class XemPhimActivity extends AppCompatActivity{
         super.onResume();
         // Giữ màn hình sáng khi ứng dụng hoạt động
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Ghi timeout khi ứng dụng thực sự bị xóa khỏi bộ nhớ
+        if (isFinishing()) {
+            logUserTimeout(idUser);
+        }
     }
 
 }

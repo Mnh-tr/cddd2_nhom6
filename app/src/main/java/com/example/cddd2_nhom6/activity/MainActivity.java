@@ -48,6 +48,7 @@ import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
 import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.DSPhimAPiOphim;
+import com.example.cddd2_nhom6.model.LichSuThanhToan;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.model.QLPhim;
 import com.example.cddd2_nhom6.model.ThongBaoKhiUngDungTat;
@@ -56,6 +57,15 @@ import com.example.cddd2_nhom6.model.TruyCap;
 import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.DSResponseOphim;
 import com.example.cddd2_nhom6.response.PhimResponse;
+import com.example.cddd2_nhom6.response.PhimResponseOphim;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -69,6 +79,7 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.Normalizer;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -121,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
     private TheLoaiAdapter themLoaiAdapter;
     private QuocGiaLocAdapter quocagiaAdapter;
     private int currentBannerIndex = 0;
+    private static RewardedInterstitialAd quangCao;
+    private static DatabaseReference databaseReference;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,19 +141,40 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        // Khởi tạo Mobile Ads SDK
+        MobileAds.initialize(this, initializationStatus -> {});
+
+
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
 
         theoDoiThayDoiTrenFirebase();
         // kiểm tra người dùng hết hạn gói vip chưa
-        checkAndUpdateLoaiND();
+         // ID Firebase của người dùng hiện tại
+        if(idUser != null){
+            String firebaseUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            checkAndUpdateLoaiNDForCurrentUser(firebaseUserId);
+        }
+
+
         loc();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         updateUser();
         // Kiểm tra và thêm thông tin truy cập
-        kiemTraTruyCap(idUser);
+        // neu truycap == false thì sẽ thêm vào TruyCap trên firebase
+        if (truycap == false){
+            // themTruyCaps(idUser);
+            logUserSession(idUser);
+            if(idLoaiND == 1 || idLoaiND == 2 || idLoaiND == 3){
+                // không làm gì cả, vip và admin sẽ không có quảng cáo
+            }else{
+                // Tải quảng cáo interstitial
+                taiQuangCaoAdmob();
+            }
 
+            truycap = true;
+        }
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
 
@@ -180,6 +214,8 @@ public class MainActivity extends AppCompatActivity {
             if ("Đăng Nhập".equals(headerTitle)) {
                 Intent intent = new Intent(MainActivity.this, DangNhapActivity.class);
                 startActivity(intent);
+                logUserTimeout("Khach");
+                truycap = false;
                 return true; // Ngăn chặn mở rộng nhóm
             } else if ("Thông tin cá nhân".equals(headerTitle)) {
                 Intent intent = new Intent(MainActivity.this, CaNhanActivity.class);
@@ -307,6 +343,10 @@ public class MainActivity extends AppCompatActivity {
 //            themTruyCaps(idUser);
 //            truycap = true;
 //        }
+        // Khởi tạo và chạy banner
+        loaDuLieuApiKhiThayDoi();
+
+
     }
     private void laythongtinUser(){
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -365,28 +405,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static void kiemTraTruyCap(String idUser) {
-        // Kiểm tra xem id_user có null hay không và xem ngày truy cập đã tồn tại hay chưa
-        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
-
-        // Tìm kiếm bản ghi theo id_user và ngày truy cập
-        truyCapRef.orderByChild("id_user").equalTo(idUser).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // neu truycap == false thì sẽ thêm vào TruyCap trên firebase
-                if (truycap == false){
-                    themTruyCap(idUser);
-                    truycap = true;
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e("TruyCap", "Lỗi khi kiểm tra truy cập: " + databaseError.getMessage());
-            }
-        });
-    }
 
     private void loc(){
         listHeaders = new ArrayList<>();
@@ -586,6 +604,8 @@ public class MainActivity extends AppCompatActivity {
                     // Chuyển người dùng về MainActivity
                     Intent intent = new Intent(this, MainActivity.class);
                     startActivity(intent);
+                    logUserTimeout(idUser);
+                    truycap = false;
 
                     Toast.makeText(this, "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
                 } else {
@@ -836,78 +856,91 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static void themTruyCaps(String idUser) {
-        String idUsers = idUser != null && !idUser.isEmpty() ? idUser : "Khach"; // Nếu idUser null thì dùng "Khach"
+    // Hàm log truy cập (thêm session mới với time và timeout)
+    public void logUserSession(String idUser) {
+        // Khởi tạo Firebase Database
+        databaseReference = FirebaseDatabase.getInstance().getReference("TruyCapss");
+        String idUsers = (idUser != null && !idUser.isEmpty()) ? idUser : "Khach"; // Nếu idUser null thì dùng "Khach"
 
-        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCaps");
-        DatabaseReference tongRef = truyCapRef.child("Tong");
-        DatabaseReference lichSuRef = truyCapRef.child("LichSu");
+        // Lấy thời gian hiện tại
+        String currentTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
 
-        // Định dạng ngày giờ
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-        String formattedDate = dateFormat.format(new Date());
+        // Tham chiếu đến nút LichSu cho idUser
+        DatabaseReference userHistoryRef = databaseReference.child("LichSu").child(idUsers);
 
-        // Thêm thời gian vào danh sách LichSu sử dụng .push() để không ghi đè
-        lichSuRef.child(idUsers).setValue(formattedDate)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("TruyCap", "Thêm thời gian truy cập thành công cho người dùng: " + idUsers);
+        // Tạo khóa ngẫu nhiên cho phiên truy cập
+        DatabaseReference sessionRef = userHistoryRef.push();
 
-                    // Tăng giá trị Tong
-                    tongRef.runTransaction(new Transaction.Handler() {
-                        @NonNull
-                        @Override
-                        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-                            Integer currentValue = mutableData.getValue(Integer.class);
-                            if (currentValue == null) {
-                                mutableData.setValue(1); // Nếu Tong chưa có giá trị thì đặt là 1
-                            } else {
-                                mutableData.setValue(currentValue + 1); // Tăng Tong lên 1
-                            }
-                            return Transaction.success(mutableData);
-                        }
+        // Tạo đối tượng session với time
+        Map<String, String> sessionData = new HashMap<>();
+        sessionData.put("time", currentTime);
+        sessionData.put("timeout", ""); // Để trống, sẽ cập nhật sau
 
-                        @Override
-                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                            if (error != null) {
-                                Log.e("TruyCap", "Lỗi khi cập nhật Tong: " + error.getMessage());
-                            } else {
-                                Log.d("TruyCap", "Cập nhật Tong thành công.");
-                            }
-                        }
-                    });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("TruyCap", "Lỗi khi thêm thời gian truy cập: " + e.getMessage());
-                });
+        // Thêm session vào Firebase
+        sessionRef.setValue(sessionData)
+                .addOnSuccessListener(aVoid -> incrementTotalCount(databaseReference))
+                .addOnFailureListener(e -> System.err.println("Lỗi khi ghi thời gian truy cập: " + e.getMessage()));
+    }
+    // Hàm log thoát ứng dụng (cập nhật timeout cho session cuối cùng)
+    public static void logUserTimeout(String idUser) {
+        // Khởi tạo Firebase Database
+        databaseReference = FirebaseDatabase.getInstance().getReference("TruyCapss");
+        String idUsers = (idUser != null && !idUser.isEmpty()) ? idUser : "Khach"; // Nếu idUser null thì dùng "Khach"
+
+        // Lấy thời gian hiện tại
+        String currentTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
+
+        // Tham chiếu đến nút LichSu cho idUser
+        DatabaseReference userHistoryRef = databaseReference.child("LichSu").child(idUsers);
+
+        // Lấy session cuối cùng và cập nhật timeout
+        userHistoryRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot sessionSnapshot : snapshot.getChildren()) {
+                    sessionSnapshot.getRef().child("timeout").setValue(currentTime)
+                            .addOnSuccessListener(aVoid -> System.out.println("Ghi thời gian thoát thành công!"))
+                            .addOnFailureListener(e -> System.err.println("Lỗi khi ghi thời gian thoát: " + e.getMessage()));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                System.err.println("Lỗi khi truy vấn session: " + error.getMessage());
+            }
+        });
     }
 
 
+    // Hàm tăng giá trị của trường "Tong" trong Firebase
+    private void incrementTotalCount(DatabaseReference databaseReference) {
+        DatabaseReference totalRef = databaseReference.child("Tong");
 
+        totalRef.runTransaction(new Transaction.Handler() {
+            @NonNull
+            @Override
+            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                Integer currentValue = currentData.getValue(Integer.class);
+                if (currentValue == null) {
+                    currentData.setValue(1); // Nếu chưa có giá trị, khởi tạo là 1
+                } else {
+                    currentData.setValue(currentValue + 1); // Tăng giá trị thêm 1
+                }
+                return Transaction.success(currentData);
+            }
 
-
-
-
-    public static void themTruyCap(String idUser) {
-        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
-        // Định dạng ngày và giờ thanh toán theo dd-MM-yyyy HH:mm:ss
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-        String formattedDate = dateFormat.format(new Date()); // Lấy ngày và giờ hiện tại và định dạng
-
-        // Tạo một ID mới cho bản ghi truy cập
-        String truyCapId = truyCapRef.push().getKey();
-        TruyCap truyCap = new TruyCap(idUser, formattedDate);
-
-        // Thêm thông tin truy cập vào Firebase
-        truyCapRef.child(truyCapId).setValue(truyCap)
-                .addOnSuccessListener(aVoid -> {
-                    // Xử lý thành công
-                    Log.d("TruyCap", "Thêm truy cập thành công cho người dùng: " + idUser);
-                })
-                .addOnFailureListener(e -> {
-                    // Xử lý lỗi
-                    Log.e("TruyCap", "Lỗi khi thêm truy cập: " + e.getMessage());
-                });
+            @Override
+            public void onComplete(@Nullable DatabaseError databaseError, boolean committed, @Nullable DataSnapshot currentData) {
+                if (databaseError != null) {
+                    System.err.println("Lỗi khi cập nhật Tong: " + databaseError.getMessage());
+                } else {
+                    System.out.println("Cập nhật Tong thành công!");
+                }
+            }
+        });
     }
+
+
 
     private void updateUser(){
         // Tham chiếu đến NavigationView
@@ -1812,48 +1845,76 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    public void checkAndUpdateLoaiND() {
+    public void checkAndUpdateLoaiNDForCurrentUser(String firebaseUserId) {
+        // Lấy ngày hiện tại
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+        Date currentDate = new Date();
 
-
-        // Lấy ngày hôm nay theo định dạng
-        String today = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
-
-        // Lắng nghe dữ liệu từ bảng LichSuThanhToan
-        lichSuThanhToanRef.addValueEventListener(new ValueEventListener() {
+        // Truy vấn bảng Users để lấy id_user
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        usersRef.child(firebaseUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot thanhToanSnapshot : dataSnapshot.getChildren()) {
-                    String ngayHetHan = thanhToanSnapshot.child("ngayHetHan").getValue(String.class);
-                    String idUser = thanhToanSnapshot.child("idUser").getValue(String.class);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Lấy id_user của người dùng
+                String idUser = dataSnapshot.child("id_user").getValue(String.class);
+                if (idUser != null) {
+                    // Tiến hành kiểm tra lịch sử thanh toán của id_user
+                    DatabaseReference lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
+                    lichSuThanhToanRef.child(idUser).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            Date latestExpirationDate = null;
 
-                    // Nếu ngayHetHan trùng với ngày hôm nay
-                    if (ngayHetHan != null && ngayHetHan.equals(today)) {
-                        // Tìm user tương ứng và cập nhật id_loaiND = 0
-                        usersRef.orderByChild("id_user").equalTo(idUser).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot userSnapshot) {
-                                for (DataSnapshot user : userSnapshot.getChildren()) {
-                                    user.getRef().child("id_loaiND").setValue(0);
+                            // Duyệt qua các giao dịch để tìm ngày hết hạn mới nhất
+                            for (DataSnapshot paymentSnapshot : dataSnapshot.getChildren()) {
+                                String ngayHetHan = paymentSnapshot.child("ngayHetHan").getValue(String.class);
+                                try {
+                                    if (ngayHetHan != null) {
+                                        Date expirationDate = dateFormat.parse(ngayHetHan);
+
+                                        if (latestExpirationDate == null || (expirationDate != null && expirationDate.after(latestExpirationDate))) {
+                                            latestExpirationDate = expirationDate;
+                                        }
+                                    }
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
                                 }
                             }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                                // Xử lý lỗi
-                                System.out.println("Lỗi cập nhật người dùng: " + databaseError.getMessage());
+                            // Nếu có ngày hết hạn mới nhất, kiểm tra xem đã hết hạn chưa
+                            if (latestExpirationDate != null) {
+                                if (latestExpirationDate.before(currentDate)) {
+                                    // Ngày hết hạn đã qua, cập nhật id_loaiND của user thành 0
+                                    usersRef.child(firebaseUserId).child("id_loaiND").setValue(0).addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            System.out.println("Cập nhật id_loaiND = 0 cho user: " + firebaseUserId);
+                                        } else {
+                                            System.out.println("Lỗi khi cập nhật id_loaiND: " + task.getException().getMessage());
+                                        }
+                                    });
+                                }
+                            } else {
+                                System.out.println("Không tìm thấy lịch sử thanh toán của user: " + idUser);
                             }
-                        });
-                    }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            System.out.println("Lỗi đọc lịch sử thanh toán: " + databaseError.getMessage());
+                        }
+                    });
+                } else {
+                    System.out.println("Không tìm thấy id_user cho firebaseUserId: " + firebaseUserId);
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Xử lý lỗi
-                System.out.println("Lỗi đọc dữ liệu: " + databaseError.getMessage());
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                System.out.println("Lỗi đọc dữ liệu từ Users: " + databaseError.getMessage());
             }
         });
     }
+
     private void updateNotificationBadge(TextView badgeTextView,int count) {
 
         if (count > 0) {
@@ -1862,6 +1923,45 @@ public class MainActivity extends AppCompatActivity {
         } else {
             badgeTextView.setVisibility(View.GONE);
         }
+    }
+    private void taiQuangCaoAdmob() {
+        // Tải quảng cáo Interstitial
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        RewardedInterstitialAd.load(this, "ca-app-pub-3940256099942544/5354046379", adRequest,
+                new RewardedInterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
+                        quangCao = ad;
+                        Log.d("AdMob", "Quảng cáo đã tải thành công.");
+
+                        // Thiết lập Callback để theo dõi trạng thái
+                        quangCao.setFullScreenContentCallback(new FullScreenContentCallback() {
+                            @Override
+                            public void onAdDismissedFullScreenContent() {
+                                Log.d("AdMob", "Người dùng đã đóng quảng cáo.");
+
+                            }
+
+                            @Override
+                            public void onAdFailedToShowFullScreenContent(@NonNull com.google.android.gms.ads.AdError adError) {
+                                Log.e("AdMob", "Không thể hiển thị quảng cáo: " + adError.getMessage());
+                            }
+                        });
+
+                        // Hiển thị quảng cáo
+                        if (quangCao != null) {
+                            quangCao.show(MainActivity.this, rewardItem -> {
+                                Log.d("AdMob", "Người dùng đã xem quảng cáo và nhận thưởng.");
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull com.google.android.gms.ads.LoadAdError adError) {
+                        Log.e("AdMob", "Không thể tải quảng cáo: " + adError.getMessage());
+                    }
+                });
     }
     @Override
     protected void onResume() {
@@ -1875,5 +1975,23 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Ghi timeout khi ứng dụng thực sự bị xóa khỏi bộ nhớ
+        if (isFinishing()) {
+            logUserTimeout(idUser);
+        }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Kiểm tra nếu ứng dụng không thay đổi cấu hình (xoay màn hình, v.v.)
+        if (!isChangingConfigurations()) {
+            logUserTimeout(idUser);
+        }
     }
 }

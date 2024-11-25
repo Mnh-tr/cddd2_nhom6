@@ -392,12 +392,14 @@ public class DoanhThuActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 for (DataSnapshot childSnapshot : snapshot.getChildren()) {
-                    String ngayXacNhan = childSnapshot.child("ngayXacNhan").getValue(String.class);
-                    Long soTien = childSnapshot.child("soTien").getValue(Long.class);
+                    for (DataSnapshot child : childSnapshot.getChildren()) {
+                        String ngayXacNhan = child.child("ngayXacNhan").getValue(String.class);
+                        Long soTien = child.child("soTien").getValue(Long.class);
 
-                    // Chỉ cập nhật doanh thu nếu ngày giao dịch khớp với năm được chọn
-                    if (ngayXacNhan != null && soTien != null && ngayXacNhan.contains("/" + year)) {
-                        capNhatDoanhThuHangThang(ngayXacNhan, soTien);
+                        // Chỉ cập nhật doanh thu nếu ngày giao dịch khớp với năm được chọn
+                        if (ngayXacNhan != null && soTien != null && ngayXacNhan.contains("/" + year)) {
+                            capNhatDoanhThuHangThang(ngayXacNhan, soTien);
+                        }
                     }
                 }
                 hienThiBieuDo();  // Làm mới biểu đồ sau khi tải dữ liệu

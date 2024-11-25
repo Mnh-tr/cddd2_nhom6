@@ -53,6 +53,7 @@ public class ApiClient {
                         listener.onError("URL hoặc name không tồn tại");
                     }
                 }
+
 //                String newUrl = snapshot.child("url").getValue(String.class);
 //                String source = snapshot.child("name").getValue(String.class);
 //
@@ -84,10 +85,13 @@ public class ApiClient {
         }
         return retrofit;
     }
+
     public interface OnBaseUrlFetchListener {
         void onBaseUrlFetched(String name, String url); // Thêm name vào callback
+
         void onError(String errorMessage);
     }
+
     // Phương thức thay đổi baseUrl
     public static void setBaseUrl(String newBaseUrl) {
         baseUrl = newBaseUrl;
