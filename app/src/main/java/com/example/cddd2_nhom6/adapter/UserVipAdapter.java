@@ -141,6 +141,12 @@ public class UserVipAdapter extends RecyclerView.Adapter<UserVipAdapter.UserVipV
             });
         }
     }
+    public void capNhatDanhSach(List<User> danhSachMoi) {
+        this.userList.clear(); // Xóa danh sách cũ
+        this.userList.addAll(danhSachMoi); // Thêm danh sách mới
+        notifyDataSetChanged(); // Thông báo RecyclerView làm mới giao diện
+    }
+
     // Interface để xử lý sự kiện click
     public interface OnRecyclerViewItemClickListener {
         void onItemClick(View view, int position);

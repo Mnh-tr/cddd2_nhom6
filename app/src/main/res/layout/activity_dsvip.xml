@@ -44,19 +44,26 @@
                 android:id="@+id/chipAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tất cả"/>
+                android:text="Tất cả"
+                app:chipStrokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipExpireSoon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sắp hết hạn"/>
+                android:text="Sắp hết hạn"
+                app:chipStrokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipNewUsers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mới đăng ký"/>
+                android:text="Mới đăng ký"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                app:chipStrokeWidth="1dp" />
+
 
         </com.google.android.material.chip.ChipGroup>
 
