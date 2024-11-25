@@ -874,33 +874,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-//    public void logUserAccess(String idUser) {
-//        // Khởi tạo tham chiếu Firebase tới bảng TruyCapss
-//        databaseReference = FirebaseDatabase.getInstance().getReference("TruyCapss");
-//        String idUsers = (idUser != null && !idUser.isEmpty()) ? idUser : "Khach"; // Nếu idUser null thì dùng "Khach"
-//
-////        if (idUser == null || idUser.isEmpty()) {
-////            throw new IllegalArgumentException("idUser không được để trống!");
-////
-////        }
-//
-//        // Lấy thời gian hiện tại
-//        String currentTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
-//
-//        // Tham chiếu đến nút LichSu cho idUser
-//        DatabaseReference userHistoryRef = databaseReference.child("LichSu").child(idUsers);
-//
-//        // Thêm một bản ghi mới với key là thời gian truy cập
-//        userHistoryRef.push().setValue(currentTime)
-//                .addOnSuccessListener(aVoid -> {
-//                    System.out.println("Ghi lịch sử thành công!");
-//                    // Sau khi ghi lịch sử thành công, cập nhật tổng số lượng truy cập
-//                    incrementTotalCount(databaseReference);
-//                })
-//                .addOnFailureListener(e -> {
-//                    System.err.println("Lỗi khi ghi lịch sử: " + e.getMessage());
-//                });
-//    }
     // Hàm tăng giá trị của trường "Tong" trong Firebase
     private void incrementTotalCount(DatabaseReference databaseReference) {
         DatabaseReference totalRef = databaseReference.child("Tong");
@@ -928,78 +901,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-//    public static void themTruyCaps(String idUser) {
-//        String idUsers = idUser != null && !idUser.isEmpty() ? idUser : "Khach"; // Nếu idUser null thì dùng "Khach"
-//
-//        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCaps");
-//        DatabaseReference tongRef = truyCapRef.child("Tong");
-//        DatabaseReference lichSuRef = truyCapRef.child("LichSu");
-//
-//        // Định dạng ngày giờ
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-//        String formattedDate = dateFormat.format(new Date());
-//
-//        // Thêm thời gian vào danh sách LichSu sử dụng .push() để không ghi đè
-//        lichSuRef.child(idUsers).setValue(formattedDate)
-//                .addOnSuccessListener(aVoid -> {
-//                    Log.d("TruyCap", "Thêm thời gian truy cập thành công cho người dùng: " + idUsers);
-//
-//                    // Tăng giá trị Tong
-//                    tongRef.runTransaction(new Transaction.Handler() {
-//                        @NonNull
-//                        @Override
-//                        public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
-//                            Integer currentValue = mutableData.getValue(Integer.class);
-//                            if (currentValue == null) {
-//                                mutableData.setValue(1); // Nếu Tong chưa có giá trị thì đặt là 1
-//                            } else {
-//                                mutableData.setValue(currentValue + 1); // Tăng Tong lên 1
-//                            }
-//                            return Transaction.success(mutableData);
-//                        }
-//
-//                        @Override
-//                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-//                            if (error != null) {
-//                                Log.e("TruyCap", "Lỗi khi cập nhật Tong: " + error.getMessage());
-//                            } else {
-//                                Log.d("TruyCap", "Cập nhật Tong thành công.");
-//                            }
-//                        }
-//                    });
-//                })
-//                .addOnFailureListener(e -> {
-//                    Log.e("TruyCap", "Lỗi khi thêm thời gian truy cập: " + e.getMessage());
-//                });
-//    }
 
 
-
-
-
-
-
-    public static void themTruyCap(String idUser) {
-        DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
-        // Định dạng ngày và giờ thanh toán theo dd-MM-yyyy HH:mm:ss
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-        String formattedDate = dateFormat.format(new Date()); // Lấy ngày và giờ hiện tại và định dạng
-
-        // Tạo một ID mới cho bản ghi truy cập
-        String truyCapId = truyCapRef.push().getKey();
-        TruyCap truyCap = new TruyCap(idUser, formattedDate);
-
-        // Thêm thông tin truy cập vào Firebase
-        truyCapRef.child(truyCapId).setValue(truyCap)
-                .addOnSuccessListener(aVoid -> {
-                    // Xử lý thành công
-                    Log.d("TruyCap", "Thêm truy cập thành công cho người dùng: " + idUser);
-                })
-                .addOnFailureListener(e -> {
-                    // Xử lý lỗi
-                    Log.e("TruyCap", "Lỗi khi thêm truy cập: " + e.getMessage());
-                });
-    }
 
     private void updateUser(){
         // Tham chiếu đến NavigationView
