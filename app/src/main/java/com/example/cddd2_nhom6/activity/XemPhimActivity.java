@@ -27,6 +27,7 @@ import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.XuLyBinhLuan;
 import com.giphy.sdk.core.models.Media;
 import com.giphy.sdk.ui.GPHContentType;
@@ -112,7 +113,6 @@ public class XemPhimActivity extends AppCompatActivity{
         binhluan = new XuLyBinhLuan(this, movieSlug, binhLuanPhimAdapter, binhLuanPhimList);
         binhluan.taiBinhLuan(movieSlug);
         setContentView(binding.getRoot()); // Đặt layout cho Activity
-        apiService = ApiClient.getClient().create(ApiService.class);
         taiPhim = new TaiPhim(apiService, this);
         setControl();
         setEvent();
@@ -180,7 +180,6 @@ public class XemPhimActivity extends AppCompatActivity{
         });
 
         binding.playerView.findViewById(R.id.btnFullScreen).setOnClickListener(v -> phongToPhim());
-        apiService = ApiClient.getClient().create(ApiService.class);
         hienThiChiTietPhim();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         laythongtinUser();

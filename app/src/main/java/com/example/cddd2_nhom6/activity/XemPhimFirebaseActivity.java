@@ -65,6 +65,8 @@ public class XemPhimFirebaseActivity extends AppCompatActivity {
         xuLyXemPhim();
 
 
+
+
     }
 
     private void xuLyXemPhim() {

@@ -15,6 +15,9 @@
             app:resize_mode="fill"
             android:background="#000">
             <include layout="@layout/custom_layout" />
+            <include
+                android:id="@+id/custom_player_controls"
+                layout="@layout/custom_player_controls" />
         </androidx.media3.ui.PlayerView>
         <ScrollView
             android:layout_width="match_parent"
@@ -27,50 +30,6 @@
                 android:layout_below="@id/playerView"
                 android:padding="5dp">
 
-                <!-- Favorite and Download Buttons -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="#708090"
-                    android:layout_gravity="center">
-
-                    <ImageButton
-                        android:id="@+id/btnAddToFavorites"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@android:color/transparent"
-                        android:src="@drawable/baseline_favorite_24"
-                        android:contentDescription="@null" />
-
-                    <ImageButton
-                        android:id="@+id/btnDowload"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@android:color/transparent"
-                        app:srcCompat="@drawable/baseline_file_download_24"
-                        android:contentDescription="@null"
-                        app:tint="#3b5998" />
-
-                    <ImageButton
-                        android:id="@+id/btnReport"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@android:color/transparent"
-                        app:srcCompat="@drawable/baseline_report_24"
-                        android:contentDescription="@null"
-                        app:tint="#3b5998" />
-
-                    <ImageButton
-                        android:id="@+id/btnShare"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@android:color/transparent"
-                        app:srcCompat="@drawable/ic_share_24"
-                        android:contentDescription="@null"
-                        app:tint="#3b5998" />
-                </LinearLayout>
 
                 <!-- Movie Title -->
                 <TextView

@@ -343,8 +343,6 @@ public class MainActivity extends AppCompatActivity {
 //            themTruyCaps(idUser);
 //            truycap = true;
 //        }
-        // Khởi tạo và chạy banner
-        loaDuLieuApiKhiThayDoi();
 
 
     }
@@ -1294,11 +1292,13 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 }
+                binding.loadingLayout.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
             }
 
             @Override
             public void onError(String errorMessage) {
+                binding.loadingLayout.setVisibility(View.VISIBLE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
                 Toast.makeText(MainActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
@@ -1393,11 +1393,13 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 }
+                binding.loadingLayout.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
             }
 
             @Override
             public void onError(String errorMessage) {
+                binding.loadingLayout.setVisibility(View.VISIBLE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
                 Toast.makeText(MainActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
@@ -1492,11 +1494,13 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 }
+                binding.loadingLayout.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
             }
 
             @Override
             public void onError(String errorMessage) {
+                binding.loadingLayout.setVisibility(View.VISIBLE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
                 Toast.makeText(MainActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
@@ -1594,11 +1598,13 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 }
+                binding.loadingLayout.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
             }
 
             @Override
             public void onError(String errorMessage) {
+                binding.loadingLayout.setVisibility(View.VISIBLE);
                 swipeRefreshLayout.setRefreshing(false); // Ngừng loading
                 Toast.makeText(MainActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }

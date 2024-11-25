@@ -6,7 +6,7 @@
     app:cardCornerRadius="8dp"
     android:layout_marginTop="10dp"
     android:layout_marginRight="10dp"
-    android:backgroundTint="@color/colorCard"
+    android:backgroundTint="#00405D"
     android:elevation="4dp">
 
     <RelativeLayout
@@ -31,7 +31,7 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:paddingTop="8dp"
-            android:textColor="@color/colorTextLight"
+            android:textColor="#FFF"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:gravity="center"
@@ -44,10 +44,8 @@
             android:textSize="14sp"
             android:layout_width="match_parent"
             android:layout_height="30dp"
-            android:textColor="@color/colorTextLight"
             android:textAlignment="center"
-
-
+            android:textColor="#FFF"
             />
     </LinearLayout>
         <!-- Badge VIP -->

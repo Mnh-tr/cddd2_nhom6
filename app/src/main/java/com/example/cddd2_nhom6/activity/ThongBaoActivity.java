@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -42,7 +43,13 @@ public class ThongBaoActivity extends AppCompatActivity implements ThongBaoAdapt
        xulyrecyclerView();
        getThongBaoFromDatabase();
        laythongtinUser();
-       binding.btnBack.setOnClickListener(v -> onBackPressed());
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Thông Báo"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+
+        }
     }
 
     private void xulyrecyclerView() {
@@ -107,6 +114,15 @@ public class ThongBaoActivity extends AppCompatActivity implements ThongBaoAdapt
                 Log.d("Thông báo", "Người dùng đã đọc thông tin này");
             }
         });
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
     @Override
     public void onBackPressed() {
