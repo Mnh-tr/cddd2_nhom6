@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     DatabaseReference usersRef,lichSuThanhToanRef;
     private boolean isUserLoggedIn = false; // Biến để theo dõi trạng thái đăng nhập
     private static RewardedInterstitialAd quangCao;
-    private DatabaseReference databaseReference;
+    private static DatabaseReference databaseReference;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -844,7 +844,7 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> System.err.println("Lỗi khi ghi thời gian truy cập: " + e.getMessage()));
     }
     // Hàm log thoát ứng dụng (cập nhật timeout cho session cuối cùng)
-    public void logUserTimeout(String idUser) {
+    public static void logUserTimeout(String idUser) {
         // Khởi tạo Firebase Database
         databaseReference = FirebaseDatabase.getInstance().getReference("TruyCapss");
         String idUsers = (idUser != null && !idUser.isEmpty()) ? idUser : "Khach"; // Nếu idUser null thì dùng "Khach"
