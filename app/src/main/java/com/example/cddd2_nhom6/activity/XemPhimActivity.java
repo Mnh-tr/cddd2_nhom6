@@ -209,14 +209,20 @@ public class XemPhimActivity extends AppCompatActivity{
         commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
         // Thêm sự kiện nhấn cho nút bình luận
         btnDowload.setOnClickListener(v -> {
-            String movieName = binding.tvMovieTitle.getText().toString();
-            if (movieLink != null && !movieLink.isEmpty()) {
-                // Hiện thông báo "Đang tải..."
-                Toast.makeText(XemPhimActivity.this, "Đang tải...", Toast.LENGTH_SHORT).show();
-                // Gọi phương thức download từ movieDownloader
-                taiPhim.loadPosterAndDownloadMovie(movieSlug, movieLink, movieName);
-            } else {
-                Toast.makeText(XemPhimActivity.this, "Liên kết phim không hợp lệ!", Toast.LENGTH_SHORT).show();
+
+            if(idLoaiND == 1 || idLoaiND == 2 || idLoaiND == 3){
+
+                String movieName = binding.tvMovieTitle.getText().toString();
+                if (movieLink != null && !movieLink.isEmpty()) {
+                    // Hiện thông báo "Đang tải..."
+                    Toast.makeText(XemPhimActivity.this, "Đang tải...", Toast.LENGTH_SHORT).show();
+                    // Gọi phương thức download từ movieDownloader
+                    taiPhim.loadPosterAndDownloadMovie(movieSlug, movieLink, movieName);
+                } else {
+                    Toast.makeText(XemPhimActivity.this, "Liên kết phim không hợp lệ!", Toast.LENGTH_SHORT).show();
+                }
+            }else{
+                Toast.makeText(XemPhimActivity.this, "Bạn không thể tải phim, bạn cần nâng gói vip để tải...", Toast.LENGTH_SHORT).show();
             }
         });
     }

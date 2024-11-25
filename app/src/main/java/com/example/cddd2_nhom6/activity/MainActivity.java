@@ -38,6 +38,7 @@ import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityMainBinding;
 import com.example.cddd2_nhom6.model.DSPhim;
 import com.example.cddd2_nhom6.model.DSPhimAPiOphim;
+import com.example.cddd2_nhom6.model.LichSuThanhToan;
 import com.example.cddd2_nhom6.model.Phim;
 import com.example.cddd2_nhom6.model.PhimAPiOphim;
 import com.example.cddd2_nhom6.model.QLPhim;
@@ -48,6 +49,14 @@ import com.example.cddd2_nhom6.response.DSPhimResponse;
 import com.example.cddd2_nhom6.response.DSResponseOphim;
 import com.example.cddd2_nhom6.response.PhimResponse;
 import com.example.cddd2_nhom6.response.PhimResponseOphim;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -61,6 +70,7 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.Normalizer;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -104,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
     private List<QLPhim> movieList;
     DatabaseReference usersRef,lichSuThanhToanRef;
     private boolean isUserLoggedIn = false; // Biến để theo dõi trạng thái đăng nhập
+    private static RewardedInterstitialAd quangCao;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,13 +122,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        // Khởi tạo Mobile Ads SDK
+        MobileAds.initialize(this, initializationStatus -> {});
+
+
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
         laythongtinUser();
 
         theoDoiThayDoiTrenFirebase();
         // kiểm tra người dùng hết hạn gói vip chưa
-        checkAndUpdateLoaiND();
+         // ID Firebase của người dùng hiện tại
+        if(idUser != null){
+            String firebaseUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            checkAndUpdateLoaiNDForCurrentUser(firebaseUserId);
+        }
+
+
         loc();
         Toast.makeText(MainActivity.this, "Xin chào " + nameUser, Toast.LENGTH_SHORT).show();
         updateUser();
@@ -304,10 +325,17 @@ public class MainActivity extends AppCompatActivity {
         loaDuLieuApiKhiThayDoi();
 
         // neu truycap == false thì sẽ thêm vào TruyCap trên firebase
-//        if (truycap == false){
-//            themTruyCaps(idUser);
-//            truycap = true;
-//        }
+        if (truycap == false){
+           // themTruyCaps(idUser);
+            if(idLoaiND == 1 || idLoaiND == 2 || idLoaiND == 3){
+                // không làm gì cả, vip và admin sẽ không có quảng cáo
+            }else{
+                // Tải quảng cáo interstitial
+                taiQuangCaoAdmob();
+            }
+
+            truycap = true;
+        }
     }
     private void laythongtinUser(){
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -366,7 +394,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static void kiemTraTruyCap(String idUser) {
+    public void kiemTraTruyCap(String idUser) {
+
         // Kiểm tra xem id_user có null hay không và xem ngày truy cập đã tồn tại hay chưa
         DatabaseReference truyCapRef = FirebaseDatabase.getInstance().getReference("TruyCap");
 
@@ -1596,48 +1625,76 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    public void checkAndUpdateLoaiND() {
+    public void checkAndUpdateLoaiNDForCurrentUser(String firebaseUserId) {
+        // Lấy ngày hiện tại
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+        Date currentDate = new Date();
 
-
-        // Lấy ngày hôm nay theo định dạng
-        String today = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
-
-        // Lắng nghe dữ liệu từ bảng LichSuThanhToan
-        lichSuThanhToanRef.addValueEventListener(new ValueEventListener() {
+        // Truy vấn bảng Users để lấy id_user
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        usersRef.child(firebaseUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot thanhToanSnapshot : dataSnapshot.getChildren()) {
-                    String ngayHetHan = thanhToanSnapshot.child("ngayHetHan").getValue(String.class);
-                    String idUser = thanhToanSnapshot.child("idUser").getValue(String.class);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Lấy id_user của người dùng
+                String idUser = dataSnapshot.child("id_user").getValue(String.class);
+                if (idUser != null) {
+                    // Tiến hành kiểm tra lịch sử thanh toán của id_user
+                    DatabaseReference lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
+                    lichSuThanhToanRef.child(idUser).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            Date latestExpirationDate = null;
 
-                    // Nếu ngayHetHan trùng với ngày hôm nay
-                    if (ngayHetHan != null && ngayHetHan.equals(today)) {
-                        // Tìm user tương ứng và cập nhật id_loaiND = 0
-                        usersRef.orderByChild("id_user").equalTo(idUser).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot userSnapshot) {
-                                for (DataSnapshot user : userSnapshot.getChildren()) {
-                                    user.getRef().child("id_loaiND").setValue(0);
+                            // Duyệt qua các giao dịch để tìm ngày hết hạn mới nhất
+                            for (DataSnapshot paymentSnapshot : dataSnapshot.getChildren()) {
+                                String ngayHetHan = paymentSnapshot.child("ngayHetHan").getValue(String.class);
+                                try {
+                                    if (ngayHetHan != null) {
+                                        Date expirationDate = dateFormat.parse(ngayHetHan);
+
+                                        if (latestExpirationDate == null || (expirationDate != null && expirationDate.after(latestExpirationDate))) {
+                                            latestExpirationDate = expirationDate;
+                                        }
+                                    }
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
                                 }
                             }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                                // Xử lý lỗi
-                                System.out.println("Lỗi cập nhật người dùng: " + databaseError.getMessage());
+                            // Nếu có ngày hết hạn mới nhất, kiểm tra xem đã hết hạn chưa
+                            if (latestExpirationDate != null) {
+                                if (latestExpirationDate.before(currentDate)) {
+                                    // Ngày hết hạn đã qua, cập nhật id_loaiND của user thành 0
+                                    usersRef.child(firebaseUserId).child("id_loaiND").setValue(0).addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            System.out.println("Cập nhật id_loaiND = 0 cho user: " + firebaseUserId);
+                                        } else {
+                                            System.out.println("Lỗi khi cập nhật id_loaiND: " + task.getException().getMessage());
+                                        }
+                                    });
+                                }
+                            } else {
+                                System.out.println("Không tìm thấy lịch sử thanh toán của user: " + idUser);
                             }
-                        });
-                    }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            System.out.println("Lỗi đọc lịch sử thanh toán: " + databaseError.getMessage());
+                        }
+                    });
+                } else {
+                    System.out.println("Không tìm thấy id_user cho firebaseUserId: " + firebaseUserId);
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Xử lý lỗi
-                System.out.println("Lỗi đọc dữ liệu: " + databaseError.getMessage());
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                System.out.println("Lỗi đọc dữ liệu từ Users: " + databaseError.getMessage());
             }
         });
     }
+
     private void updateNotificationBadge(TextView badgeTextView,int count) {
 
         if (count > 0) {
@@ -1646,6 +1703,45 @@ public class MainActivity extends AppCompatActivity {
         } else {
             badgeTextView.setVisibility(View.GONE);
         }
+    }
+    private void taiQuangCaoAdmob() {
+        // Tải quảng cáo Interstitial
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        RewardedInterstitialAd.load(this, "ca-app-pub-3940256099942544/5354046379", adRequest,
+                new RewardedInterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
+                        quangCao = ad;
+                        Log.d("AdMob", "Quảng cáo đã tải thành công.");
+
+                        // Thiết lập Callback để theo dõi trạng thái
+                        quangCao.setFullScreenContentCallback(new FullScreenContentCallback() {
+                            @Override
+                            public void onAdDismissedFullScreenContent() {
+                                Log.d("AdMob", "Người dùng đã đóng quảng cáo.");
+
+                            }
+
+                            @Override
+                            public void onAdFailedToShowFullScreenContent(@NonNull com.google.android.gms.ads.AdError adError) {
+                                Log.e("AdMob", "Không thể hiển thị quảng cáo: " + adError.getMessage());
+                            }
+                        });
+
+                        // Hiển thị quảng cáo
+                        if (quangCao != null) {
+                            quangCao.show(MainActivity.this, rewardItem -> {
+                                Log.d("AdMob", "Người dùng đã xem quảng cáo và nhận thưởng.");
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull com.google.android.gms.ads.LoadAdError adError) {
+                        Log.e("AdMob", "Không thể tải quảng cáo: " + adError.getMessage());
+                    }
+                });
     }
     @Override
     protected void onResume() {

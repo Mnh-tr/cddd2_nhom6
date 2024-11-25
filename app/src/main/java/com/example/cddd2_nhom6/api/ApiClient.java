@@ -35,6 +35,7 @@ public class ApiClient {
         }
         return retrofit;
     }
+
     // Phương thức lấy URL từ Firebase
     public static void fetchBaseUrlFromFirebase(final OnBaseUrlFetchListener listener, Context context) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("api_sources").child("selected_source");
@@ -43,18 +44,18 @@ public class ApiClient {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 // Duyệt qua tất cả các mục con trong selected_source
-                for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
-                    String newUrl = apiSnapshot.child("url").getValue(String.class);
-                    String source = apiSnapshot.child("name").getValue(String.class);
 
-                    // Kiểm tra và sử dụng URL và name
-                    if (newUrl != null && !newUrl.isEmpty() && source != null) {
-                        setBaseUrl(newUrl);
-                        listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
-                    } else {
-                        listener.onError("URL hoặc name không tồn tại");
-                    }
+                String newUrl = snapshot.child("url").getValue(String.class);
+                String source = snapshot.child("name").getValue(String.class);
+
+                // Kiểm tra và sử dụng URL và name
+                if (newUrl != null && !newUrl.isEmpty() && source != null) {
+                    setBaseUrl(newUrl);
+                    listener.onBaseUrlFetched(source, newUrl); // Gọi callback với name và URL
+                } else {
+                    listener.onError("URL hoặc name không tồn tại");
                 }
+
             }
 
             @Override
@@ -63,6 +64,7 @@ public class ApiClient {
             }
         });
     }
+
     public static <S> S createService(Class<S> serviceClass) {
         if (retrofit == null || !retrofit.baseUrl().toString().equals(baseUrl)) {
             retrofit = new Retrofit.Builder()
@@ -72,10 +74,13 @@ public class ApiClient {
         }
         return retrofit.create(serviceClass);
     }
+
     public interface OnBaseUrlFetchListener {
         void onBaseUrlFetched(String name, String url); // Thêm name vào callback
+
         void onError(String errorMessage);
     }
+
     // Phương thức thay đổi baseUrl
     public static void setBaseUrl(String newBaseUrl) {
         baseUrl = newBaseUrl;

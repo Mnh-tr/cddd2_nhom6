@@ -142,6 +142,15 @@ public class QLUserActivity extends AppCompatActivity {
             }
         });
 
+        binding.tvChiTiet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(QLUserActivity.this, DSVipActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
     }
     private void laythongtinUser(){
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -448,13 +457,14 @@ public class QLUserActivity extends AppCompatActivity {
                     Long idLoaiND = userSnapshot.child("id_loaiND").getValue(Long.class);
                     Long createdAt = userSnapshot.child("created_at").getValue(Long.class);
                     String email = userSnapshot.child("email").getValue(String.class);
+                    String avatar = userSnapshot.child("avatar").getValue(String.class);
                     String firebaseKey = userSnapshot.getKey();
                     // Lấy `type` từ `loaiMap` dựa trên `idLoaiND`, nếu không có thì gán là "Loading..."
                     String goi = loaiMap.getOrDefault(idLoaiND, "Loading...");
 
                     Log.d("kiểm tra gói", "gói ở ql user: " + goi);
                     if (status == null) status = "offline";
-                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email,null);
+                    User user = new User(firebaseKey, id_user, name, status, goi, idLoaiND, createdAt, email,avatar);
                     userList.add(user);
                     originalUserList.add(user);
 

@@ -31,4 +31,16 @@
         <item name="android:windowExitAnimation">@anim/slide_down</item>
     </style>
     <style name="Theme.Cddd2_nhom6" parent="Base.Theme.Cddd2_nhom6" />
+    <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:editTextColor">#FFFFFF</item>
+        <item name="android:hint">Tìm kiếm...</item>
+        <item name="queryHint">Tìm kiếm...</item>
+    </style>
+
+    <style name="CustomChipStyle" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="chipBackgroundColor">@color/chip_background_color</item>
+    </style>
+
 </resources>
