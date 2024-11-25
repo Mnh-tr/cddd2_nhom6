@@ -24,6 +24,16 @@ public class DSPhim {
     private List<Category> category;
     private List<Country> country;
     private String Source;
+    private String type;
+
+    // Các getter và setter
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getSource() {
         return Source;
@@ -31,6 +41,9 @@ public class DSPhim {
 
     public void setSource(String source) {
         Source = source;
+    }
+
+    public DSPhim() {
     }
 
     protected DSPhim(Parcel in) {

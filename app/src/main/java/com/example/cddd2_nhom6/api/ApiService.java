@@ -36,7 +36,7 @@ public interface ApiService {
 
     // Thêm các phương thức API khác
     @GET("v1/api/tim-kiem")
-    Call<DSResponseOphim> searchMoviesOphim(@Query("keyword") String keyword, @Query("limit") int limit);
+    Call<DSPhimResponse> searchMoviesOphim(@Query("keyword") String keyword, @Query("limit") int limit);
 
     @GET("v1/api/danh-sach/phim-bo")
     Call<DSPhimResponse> getSeriesOphim(@Query("page") int page);

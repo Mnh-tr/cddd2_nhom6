@@ -1,6 +1,8 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ViewGroup;
@@ -23,6 +25,8 @@ import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.XuLyBinhLuan;
 import com.giphy.sdk.core.models.Media;
 import com.giphy.sdk.ui.GPHContentType;
@@ -108,7 +112,6 @@ public class XemPhimActivity extends AppCompatActivity{
         binhluan = new XuLyBinhLuan(this, movieSlug, binhLuanPhimAdapter, binhLuanPhimList);
         binhluan.taiBinhLuan(movieSlug);
         setContentView(binding.getRoot()); // Đặt layout cho Activity
-        apiService = ApiClient.getClient().create(ApiService.class);
         taiPhim = new TaiPhim(apiService, this);
         setControl();
         setEvent();
@@ -176,7 +179,6 @@ public class XemPhimActivity extends AppCompatActivity{
         });
 
         binding.playerView.findViewById(R.id.btnFullScreen).setOnClickListener(v -> phongToPhim());
-        apiService = ApiClient.getClient().create(ApiService.class);
         hienThiChiTietPhim();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         laythongtinUser();
@@ -313,73 +315,162 @@ public class XemPhimActivity extends AppCompatActivity{
     }
 
     private void hienThiChiTietPhim() {
-        Call<ChiTietPhim> call = apiService.getChiTietPhim(movieSlug);
-        call.enqueue(new Callback<ChiTietPhim>() {
+        // Lấy danh sách API từ Firebase
+        ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
+
             @Override
-            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
-                // Xử lý kết quả trả về từ API
-                if (response.isSuccessful() && response.body() != null) {
-                    // Lấy thông tin từ phản hồi
-                    ChiTietPhim chiTietPhim = response.body();
-                    List<ChiTietPhim.TapPhim> tapPhim = chiTietPhim.getEpisodes();
-                    String tenPhim = chiTietPhim.getMovie().getName();
-                    String tenTapPhim;
+            public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                for (ApiModel api : apiSources) {
+                    // Tạo ApiService mới với URL tương ứng
+                    ApiService currentApiService = ApiClient.createApiService(api.getUrl());
 
-                    // Lấy tên tập phim từ Intent
-                    if (getIntent().getBooleanExtra("lichsu", false)) {
-                        tenTapPhim = getIntent().getStringExtra("episode");
-                    } else {
-                        tenTapPhim = getIntent().getStringExtra("episodeCurrent");
-                    }
-
-                    // Đặt tiêu đề phim và tên tập phim
-                    binding.tvMovieTitle.setText(tenPhim + " - " + tenTapPhim);
-
-                    // Thiết lập RecyclerView cho các tập phim
-                    if (tapPhim != null && !tapPhim.isEmpty()) {
-                        serverDataList.clear();
-
-                        // Lấy danh sách các tập phim
-                        for (ChiTietPhim.TapPhim episode : tapPhim) {
-                            // Lấy danh sách các server
-                            List<ChiTietPhim.TapPhim.DuLieuServer> data = episode.getServerData();
-                            if (data != null) {
-                                serverDataList.addAll(data);
-                            }
-                        }
-
-                        tapPhimAdapter = new TapPhimAdapter(XemPhimActivity.this, serverDataList);
-
-                        // Thiết lập click listener cho các tập phim
-                        tapPhimAdapter.setRecyclerViewItemClickListener(new TapPhimAdapter.OnRecyclerViewItemClickListener() {
+                    if ("Kkphim".equals(api.getName())) {
+                        // Gọi API của Kkphim
+                        currentApiService.getChiTietPhim(movieSlug).enqueue(new Callback<ChiTietPhim>() {
                             @Override
-                            public void onItemClick(View view, int position) {
-                                ChiTietPhim.TapPhim.DuLieuServer tapPhimDaChon = serverDataList.get(position);
-                                String linkPhimMoi = tapPhimDaChon.getLinkM3u8();
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                // Xử lý kết quả trả về từ API
+                                if (response.isSuccessful() && response.body() != null) {
+                                    // Lấy thông tin từ phản hồi
+                                    ChiTietPhim chiTietPhim = response.body();
+                                    List<ChiTietPhim.TapPhim> tapPhim = chiTietPhim.getEpisodes();
+                                    String tenPhim = chiTietPhim.getMovie().getName();
+                                    String tenTapPhim;
 
-                                // Hiển thị tên tập phim đang xem
-                                binding.tvMovieTitle.setText(tenPhim + " - " + tapPhimDaChon.getName());
-                                lichSuPhim.luuLichSuXem(movieSlug, tapPhimDaChon.getName(), serverDataList);
-                                phatPhim(linkPhimMoi);
+                                    // Lấy tên tập phim từ Intent
+                                    if (getIntent().getBooleanExtra("lichsu", false)) {
+                                        tenTapPhim = getIntent().getStringExtra("episode");
+                                    } else {
+                                        tenTapPhim = getIntent().getStringExtra("episodeCurrent");
+                                    }
+
+                                    // Đặt tiêu đề phim và tên tập phim
+                                    binding.tvMovieTitle.setText(tenPhim + " - " + tenTapPhim);
+
+                                    // Thiết lập RecyclerView cho các tập phim
+                                    if (tapPhim != null && !tapPhim.isEmpty()) {
+                                        serverDataList.clear();
+
+                                        // Lấy danh sách các tập phim
+                                        for (ChiTietPhim.TapPhim episode : tapPhim) {
+                                            // Lấy danh sách các server
+                                            List<ChiTietPhim.TapPhim.DuLieuServer> data = episode.getServerData();
+                                            if (data != null) {
+                                                serverDataList.addAll(data);
+                                            }
+                                        }
+
+                                        tapPhimAdapter = new TapPhimAdapter(XemPhimActivity.this, serverDataList);
+
+                                        // Thiết lập click listener cho các tập phim
+                                        tapPhimAdapter.setRecyclerViewItemClickListener(new TapPhimAdapter.OnRecyclerViewItemClickListener() {
+                                            @Override
+                                            public void onItemClick(View view, int position) {
+                                                ChiTietPhim.TapPhim.DuLieuServer tapPhimDaChon = serverDataList.get(position);
+                                                String linkPhimMoi = tapPhimDaChon.getLinkM3u8();
+
+                                                // Hiển thị tên tập phim đang xem
+                                                binding.tvMovieTitle.setText(tenPhim + " - " + tapPhimDaChon.getName());
+                                                lichSuPhim.luuLichSuXem(movieSlug, tapPhimDaChon.getName(), serverDataList);
+                                                phatPhim(linkPhimMoi);
+                                            }
+                                        });
+
+                                        binding.rcvTapPhim.setAdapter(tapPhimAdapter);
+
+                                        // Tự động phát tập phim đầu tiên
+                                        movieLink = serverDataList.get(0).getLinkM3u8();
+                                        KhoiTaoPhim(); // Khởi tạo trình phát với tập đầu tiên
+                                    } else {
+                                        Toast.makeText(XemPhimActivity.this, "Không có tập phim nào", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(XemPhimActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
+                    } else if ("Ophim".equals(api.getName())) {
+                        // Gọi API của Ophim
+                        currentApiService.getChiTietPhim(movieSlug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                // Xử lý kết quả trả về từ API
+                                if (response.isSuccessful() && response.body() != null) {
+                                    // Lấy thông tin từ phản hồi
+                                    ChiTietPhim chiTietPhim = response.body();
+                                    List<ChiTietPhim.TapPhim> tapPhim = chiTietPhim.getEpisodes();
+                                    String tenPhim = chiTietPhim.getMovie().getName();
+                                    String tenTapPhim;
 
-                        binding.rcvTapPhim.setAdapter(tapPhimAdapter);
+                                    // Lấy tên tập phim từ Intent
+                                    if (getIntent().getBooleanExtra("lichsu", false)) {
+                                        tenTapPhim = getIntent().getStringExtra("episode");
+                                    } else {
+                                        tenTapPhim = getIntent().getStringExtra("episodeCurrent");
+                                    }
 
-                        // Tự động phát tập phim đầu tiên
-                        movieLink = serverDataList.get(0).getLinkM3u8();
-                        KhoiTaoPhim(); // Khởi tạo trình phát với tập đầu tiên
-                    } else {
-                        Toast.makeText(XemPhimActivity.this, "Không có tập phim nào", Toast.LENGTH_SHORT).show();
+                                    // Đặt tiêu đề phim và tên tập phim
+                                    binding.tvMovieTitle.setText(tenPhim + " - " + tenTapPhim);
+
+                                    // Thiết lập RecyclerView cho các tập phim
+                                    if (tapPhim != null && !tapPhim.isEmpty()) {
+                                        serverDataList.clear();
+
+                                        // Lấy danh sách các tập phim
+                                        for (ChiTietPhim.TapPhim episode : tapPhim) {
+                                            // Lấy danh sách các server
+                                            List<ChiTietPhim.TapPhim.DuLieuServer> data = episode.getServerData();
+                                            if (data != null) {
+                                                serverDataList.addAll(data);
+                                            }
+                                        }
+
+                                        tapPhimAdapter = new TapPhimAdapter(XemPhimActivity.this, serverDataList);
+
+                                        // Thiết lập click listener cho các tập phim
+                                        tapPhimAdapter.setRecyclerViewItemClickListener(new TapPhimAdapter.OnRecyclerViewItemClickListener() {
+                                            @Override
+                                            public void onItemClick(View view, int position) {
+                                                ChiTietPhim.TapPhim.DuLieuServer tapPhimDaChon = serverDataList.get(position);
+                                                String linkPhimMoi = tapPhimDaChon.getLinkM3u8();
+
+                                                // Hiển thị tên tập phim đang xem
+                                                binding.tvMovieTitle.setText(tenPhim + " - " + tapPhimDaChon.getName());
+                                                lichSuPhim.luuLichSuXem(movieSlug, tapPhimDaChon.getName(), serverDataList);
+                                                phatPhim(linkPhimMoi);
+                                            }
+                                        });
+
+                                        binding.rcvTapPhim.setAdapter(tapPhimAdapter);
+
+                                        // Tự động phát tập phim đầu tiên
+                                        movieLink = serverDataList.get(0).getLinkM3u8();
+                                        KhoiTaoPhim(); // Khởi tạo trình phát với tập đầu tiên
+                                    } else {
+                                        Toast.makeText(XemPhimActivity.this, "Không có tập phim nào", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                               // Toast.makeText(XemPhimActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 }
             }
 
             @Override
-            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
-                Toast.makeText(XemPhimActivity.this, "Không thể tải chi tiết phim", Toast.LENGTH_SHORT).show();
+            public void onError(String errorMessage) {
+                Toast.makeText(XemPhimActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, XemPhimActivity.this);
     }
 
     private void laythongtinUser() {

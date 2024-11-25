@@ -23,6 +23,7 @@ import com.example.cddd2_nhom6.adapter.LichSuAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityLichSuXemBinding;
+import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.example.cddd2_nhom6.model.DSPhim;
 import com.google.firebase.auth.FirebaseAuth;
@@ -69,7 +70,6 @@ public class LichSuXemActivity extends AppCompatActivity {
 
         lichSuXemRef = FirebaseDatabase.getInstance().getReference("LichSuXem");
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
-        apiService = ApiClient.getClient().create(ApiService.class);
         setControl();
 
         hienThiLichSuPhim();
@@ -157,86 +157,181 @@ public class LichSuXemActivity extends AppCompatActivity {
             }
         });
     }
-
-
-    // Load thong tin phim
     private void chiTietPhim(String slug, ChiTietPhim.MovieItem movieItem) {
-        Call<ChiTietPhim> call = apiService.getChiTietPhim(slug);
-        call.enqueue(new Callback<ChiTietPhim>() {
+        // Lấy danh sách API từ Firebase
+        ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
+
             @Override
-            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ChiTietPhim movieDetail = response.body();
-                    movieItem.setName(movieDetail.getMovie().getName());
-                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
-                    lichSuAdapter.notifyDataSetChanged();
+            public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                for (ApiModel api : apiSources) {
+                    // Tạo ApiService mới với URL tương ứng
+                    ApiService currentApiService = ApiClient.createApiService(api.getUrl());
 
-                    // Đặt listener cho mỗi mục phim trong lịch sử
-                    lichSuAdapter.setRecyclerViewItemClickListener(new LichSuAdapter.OnRecyclerViewItemClickListener() {
-                        @Override
-                        public void onItemClick(View view, int position) {
-                            // Lấy mục phim đã nhấn
-                            ChiTietPhim.MovieItem clickedMovie = watchedMoviesList.get(position);
-                            String movieSlug = clickedMovie.getSlug();
+                    if ("Kkphim".equals(api.getName())) {
+                        // Gọi API của Kkphim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim movieDetail = response.body();
+                                    movieItem.setName(movieDetail.getMovie().getName());
+                                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    lichSuAdapter.notifyDataSetChanged();
 
-                            if (movieSlug == null) {
-                                Log.e("LichSuXemActivity", "Slug phim là null. Không thể lấy liên kết phim.");
-                                return; // Kết thúc hàm nếu slug là null
+                                    // Đặt listener cho mỗi mục phim trong lịch sử
+                                    lichSuAdapter.setRecyclerViewItemClickListener(new LichSuAdapter.OnRecyclerViewItemClickListener() {
+                                        @Override
+                                        public void onItemClick(View view, int position) {
+                                            // Lấy mục phim đã nhấn
+                                            ChiTietPhim.MovieItem clickedMovie = watchedMoviesList.get(position);
+                                            String movieSlug = clickedMovie.getSlug();
+
+                                            if (movieSlug == null) {
+                                                Log.e("LichSuXemActivity", "Slug phim là null. Không thể lấy liên kết phim.");
+                                                return; // Kết thúc hàm nếu slug là null
+                                            }
+
+                                            // Tham chiếu đến Firebase để lấy liên kết phim
+                                            DatabaseReference moviesRef = FirebaseDatabase.getInstance().getReference("LichSuXem");
+                                            moviesRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    if (dataSnapshot.exists()) {
+                                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                            // Lấy liên kết phim
+                                                            String movieLink = snapshot.child("movie_link").getValue(String.class);
+                                                            String episodeName = snapshot.child("episode").getValue(String.class);
+                                                            String slug = snapshot.child("slug").getValue(String.class);
+
+                                                            if (movieLink != null) {
+                                                                Log.d("LichSuXemActivity", "Liên kết phim: " + movieLink);
+
+                                                                // Tạo intent để mở màn hình phát phim
+                                                                Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
+                                                                intent.putExtra("movie_link", movieLink);
+                                                                intent.putExtra("episode", episodeName);
+                                                                intent.putExtra("slug", slug);
+                                                                intent.putExtra("lichsu", true);
+
+                                                                // Bắt đầu màn hình phát phim
+                                                                view.getContext().startActivity(intent);
+                                                            } else {
+                                                                Log.e("LichSuXemActivity", "Liên kết phim là null cho slug: " + movieSlug);
+                                                            }
+                                                        }
+                                                    } else {
+                                                        Log.e("LichSuXemActivity", "Không tìm thấy phim cho slug: " + movieSlug);
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                    Log.e("LichSuXemActivity", "Lỗi khi lấy liên kết phim", databaseError.toException());
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                    binding.progressBar.setVisibility(View.GONE);
+                                    binding.layout.setVisibility(View.VISIBLE);
+                                } else {
+                                    Log.e("LichSuXemActivity", "Không thể lấy chi tiết phim cho slug: " + slug);
+                                }
                             }
 
-                            // Tham chiếu đến Firebase để lấy liên kết phim
-                            DatabaseReference moviesRef = FirebaseDatabase.getInstance().getReference("LichSuXem");
-                            moviesRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists()) {
-                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                            // Lấy liên kết phim
-                                            String movieLink = snapshot.child("movie_link").getValue(String.class);
-                                            String episodeName = snapshot.child("episode").getValue(String.class);
-                                            String slug = snapshot.child("slug").getValue(String.class);
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(LichSuXemActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else if ("Ophim".equals(api.getName())) {
+                        // Gọi API của Ophim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim movieDetail = response.body();
+                                    movieItem.setName(movieDetail.getMovie().getName());
+                                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    lichSuAdapter.notifyDataSetChanged();
 
-                                            if (movieLink != null) {
-                                                Log.d("LichSuXemActivity", "Liên kết phim: " + movieLink);
+                                    // Đặt listener cho mỗi mục phim trong lịch sử
+                                    lichSuAdapter.setRecyclerViewItemClickListener(new LichSuAdapter.OnRecyclerViewItemClickListener() {
+                                        @Override
+                                        public void onItemClick(View view, int position) {
+                                            // Lấy mục phim đã nhấn
+                                            ChiTietPhim.MovieItem clickedMovie = watchedMoviesList.get(position);
+                                            String movieSlug = clickedMovie.getSlug();
 
-                                                // Tạo intent để mở màn hình phát phim
-                                                Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
-                                                intent.putExtra("movie_link", movieLink);
-                                                intent.putExtra("episode", episodeName);
-                                                intent.putExtra("slug", slug);
-                                                intent.putExtra("lichsu", true);
-
-                                                // Bắt đầu màn hình phát phim
-                                                view.getContext().startActivity(intent);
-                                            } else {
-                                                Log.e("LichSuXemActivity", "Liên kết phim là null cho slug: " + movieSlug);
+                                            if (movieSlug == null) {
+                                                Log.e("LichSuXemActivity", "Slug phim là null. Không thể lấy liên kết phim.");
+                                                return; // Kết thúc hàm nếu slug là null
                                             }
+
+                                            // Tham chiếu đến Firebase để lấy liên kết phim
+                                            DatabaseReference moviesRef = FirebaseDatabase.getInstance().getReference("LichSuXem");
+                                            moviesRef.orderByChild("slug").equalTo(movieSlug).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    if (dataSnapshot.exists()) {
+                                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                            // Lấy liên kết phim
+                                                            String movieLink = snapshot.child("movie_link").getValue(String.class);
+                                                            String episodeName = snapshot.child("episode").getValue(String.class);
+                                                            String slug = snapshot.child("slug").getValue(String.class);
+
+                                                            if (movieLink != null) {
+                                                                Log.d("LichSuXemActivity", "Liên kết phim: " + movieLink);
+
+                                                                // Tạo intent để mở màn hình phát phim
+                                                                Intent intent = new Intent(view.getContext(), XemPhimActivity.class);
+                                                                intent.putExtra("movie_link", movieLink);
+                                                                intent.putExtra("episode", episodeName);
+                                                                intent.putExtra("slug", slug);
+                                                                intent.putExtra("lichsu", true);
+
+                                                                // Bắt đầu màn hình phát phim
+                                                                view.getContext().startActivity(intent);
+                                                            } else {
+                                                                Log.e("LichSuXemActivity", "Liên kết phim là null cho slug: " + movieSlug);
+                                                            }
+                                                        }
+                                                    } else {
+                                                        Log.e("LichSuXemActivity", "Không tìm thấy phim cho slug: " + movieSlug);
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                    Log.e("LichSuXemActivity", "Lỗi khi lấy liên kết phim", databaseError.toException());
+                                                }
+                                            });
                                         }
-                                    } else {
-                                        Log.e("LichSuXemActivity", "Không tìm thấy phim cho slug: " + movieSlug);
-                                    }
-                                }
+                                    });
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-                                    Log.e("LichSuXemActivity", "Lỗi khi lấy liên kết phim", databaseError.toException());
+                                    binding.progressBar.setVisibility(View.GONE);
+                                    binding.layout.setVisibility(View.VISIBLE);
+                                } else {
+                                    Log.e("LichSuXemActivity", "Không thể lấy chi tiết phim cho slug: " + slug);
                                 }
-                            });
-                        }
-                    });
+                            }
 
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.layout.setVisibility(View.VISIBLE);
-                } else {
-                    Log.e("LichSuXemActivity", "Không thể lấy chi tiết phim cho slug: " + slug);
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(LichSuXemActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
-                Log.e("LichSuXemActivity", "Lỗi khi lấy thông tin chi tiết phim", t);
+            public void onError(String errorMessage) {
+                Toast.makeText(LichSuXemActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, LichSuXemActivity.this);
     }
 
 
@@ -318,39 +413,92 @@ public class LichSuXemActivity extends AppCompatActivity {
 
         return true;
     }
-
     private void chiTietPhimTimKiem(String slug, String query, List<ChiTietPhim.MovieItem> searchResults) {
-        Call<ChiTietPhim> call = apiService.getChiTietPhim(slug);
-        call.enqueue(new Callback<ChiTietPhim>() {
+        // Lấy danh sách API từ Firebase
+        ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
+
             @Override
-            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ChiTietPhim movieDetail = response.body();
-                    ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
-                    movieItem.setName(movieDetail.getMovie().getName());
-                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
-                    movieItem.setSlug(slug); // Set slug for navigation
+            public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                for (ApiModel api : apiSources) {
+                    // Tạo ApiService mới với URL tương ứng
+                    ApiService currentApiService = ApiClient.createApiService(api.getUrl());
 
-                    // Kiểm tra xem tên phim có chứa truy vấn không
-                    if (movieItem.getName().toLowerCase().contains(query.toLowerCase())) {
-                        // Thêm phim tìm thấy vào đầu danh sách tìm kiếm
-                        searchResults.add(0, movieItem);
+                    if ("Kkphim".equals(api.getName())) {
+                        // Gọi API của Kkphim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim movieDetail = response.body();
+                                    ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
+                                    movieItem.setName(movieDetail.getMovie().getName());
+                                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSlug(slug); // Set slug for navigation
 
-                        // Cập nhật danh sách chính
-                        watchedMoviesList.add(0, movieItem); // Thêm vào đầu danh sách chính
-                        lichSuAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+                                    // Kiểm tra xem tên phim có chứa truy vấn không
+                                    if (movieItem.getName().toLowerCase().contains(query.toLowerCase())) {
+                                        // Thêm phim tìm thấy vào đầu danh sách tìm kiếm
+                                        searchResults.add(0, movieItem);
+
+                                        // Cập nhật danh sách chính
+                                        watchedMoviesList.add(0, movieItem); // Thêm vào đầu danh sách chính
+                                        lichSuAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+                                    }
+                                } else {
+                                    Log.e("LichSuXemActivity", "Failed to fetch movie details for slug: " + slug);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(LichSuXemActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else if ("Ophim".equals(api.getName())) {
+                        // Gọi API của Ophim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim movieDetail = response.body();
+                                    ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
+                                    movieItem.setName(movieDetail.getMovie().getName());
+                                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSlug(slug); // Set slug for navigation
+
+                                    // Kiểm tra xem tên phim có chứa truy vấn không
+                                    if (movieItem.getName().toLowerCase().contains(query.toLowerCase())) {
+                                        // Thêm phim tìm thấy vào đầu danh sách tìm kiếm
+                                        searchResults.add(0, movieItem);
+
+                                        // Cập nhật danh sách chính
+                                        watchedMoviesList.add(0, movieItem); // Thêm vào đầu danh sách chính
+                                        lichSuAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+                                    }
+                                } else {
+                                    Log.e("LichSuXemActivity", "Failed to fetch movie details for slug: " + slug);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(LichSuXemActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                } else {
-                    Log.e("LichSuXemActivity", "Failed to fetch movie details for slug: " + slug);
                 }
             }
 
             @Override
-            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
-                Log.e("LichSuXemActivity", "Error fetching movie details", t);
+            public void onError(String errorMessage) {
+                Toast.makeText(LichSuXemActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, LichSuXemActivity.this);
     }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

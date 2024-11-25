@@ -15,6 +15,15 @@ public class Phim {
     private List<String> actor;
     private List<String> director;
     private static final String APP_DOMAIN_CDN_IMAGE = "https://img.ophim.live/uploads/movies/";
+    private String Source;
+
+    public String getSource() {
+        return Source;
+    }
+
+    public void setSource(String source) {
+        Source = source;
+    }
 
     private Modified modified;
 
@@ -74,6 +83,9 @@ public class Phim {
 
     public String getPoster_url() {
         return poster_url;
+    }
+    public String getPoster_urlOphim() {
+        return APP_DOMAIN_CDN_IMAGE + poster_url;
     }
 
     public void setPoster_url(String poster_url) {

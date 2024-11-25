@@ -1,6 +1,11 @@
 package com.example.cddd2_nhom6.model;
 
-public class ApiModel {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
+public class ApiModel implements Parcelable {
     private String id;
     private String name;
     private String url;
@@ -20,6 +25,25 @@ public class ApiModel {
         this.name = name;
         this.url = url;
     }
+
+    protected ApiModel(Parcel in) {
+        id = in.readString();
+        name = in.readString();
+        url = in.readString();
+        isChecked = in.readByte() != 0;
+    }
+
+    public static final Creator<ApiModel> CREATOR = new Creator<ApiModel>() {
+        @Override
+        public ApiModel createFromParcel(Parcel in) {
+            return new ApiModel(in);
+        }
+
+        @Override
+        public ApiModel[] newArray(int size) {
+            return new ApiModel[size];
+        }
+    };
 
     public String getId() {
         return id;
@@ -45,6 +69,19 @@ public class ApiModel {
     }
     public void setChecked(boolean isChecked) {
         this.isChecked = isChecked;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int i) {
+        parcel.writeString(id);
+        parcel.writeString(name);
+        parcel.writeString(url);
+        parcel.writeByte((byte) (isChecked ? 1 : 0));
     }
 }
 

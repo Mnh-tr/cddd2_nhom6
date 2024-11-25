@@ -84,15 +84,6 @@ public class ApiClient {
         }
         return retrofit;
     }
-    public static <S> S createService(Class<S> serviceClass) {
-        if (retrofit == null || !retrofit.baseUrl().toString().equals(baseUrl)) {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(baseUrl)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-        }
-        return retrofit.create(serviceClass);
-    }
     public interface OnBaseUrlFetchListener {
         void onBaseUrlFetched(String name, String url); // Thêm name vào callback
         void onError(String errorMessage);
@@ -103,7 +94,7 @@ public class ApiClient {
         retrofit = null; // Đặt lại retrofit để sử dụng baseUrl mới
     }
 
-    public static void fetchAllApiSourcesFromFirebase(final OnAllApiSourcesFetchListener listener, MainActivity mainActivity) {
+    public static void fetchAllApiSourcesFromFirebase(final OnAllApiSourcesFetchListener listener, Context context) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("api_sources").child("selected_source");
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {

@@ -18,10 +18,12 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.adapter.LichSuAdapter;
 import com.example.cddd2_nhom6.adapter.YeuThichAdapter;
 import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityFavoriteMoviesBinding;
+import com.example.cddd2_nhom6.model.ApiModel;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -57,7 +59,6 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
 
         //Goi chuc nang nhan 2 lan de thoat
         getOnBackPressedDispatcher().addCallback(this, callback);
-        apiService = ApiClient.getClient().create(ApiService.class);
 
         yeuThichRef = FirebaseDatabase.getInstance().getReference("Favorite");
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
@@ -238,74 +239,182 @@ public class DanhSachYeuThichActivity extends AppCompatActivity {
 
         return true;
     }
-    private void chiTietPhimTimKiem(String slug, String query, List<ChiTietPhim.MovieItem> searchResults) {
-        Call<ChiTietPhim> call = apiService.getChiTietPhim(slug);
-        call.enqueue(new Callback<ChiTietPhim>() {
-            @Override
-            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ChiTietPhim movieDetail = response.body();
-                    ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
-                    movieItem.setName(movieDetail.getMovie().getName());
-                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
-                    movieItem.setSlug(slug); // Set slug for navigation
-
-                    // Kiểm tra xem tên phim có chứa truy vấn không
-                    if (movieItem.getName().toLowerCase().contains(query.toLowerCase())) {
-                        // Thêm phim tìm thấy vào đầu danh sách tìm kiếm
-                        searchResults.add(0, movieItem);
-
-                        // Cập nhật danh sách chính
-                        PhimYeuThich.add(0, movieItem); // Thêm vào đầu danh sách chính
-                        yeuThichAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
-                    }
-                } else {
-                    Log.e("LichSuXemActivity", "Failed to fetch movie details for slug: " + slug);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
-                Log.e("LichSuXemActivity", "Error fetching movie details", t);
-            }
-        });
-    }
-    //Load thong tin phim
     private void fetchMovieDetails(String slug) {
-        Call<ChiTietPhim> call = apiService.getChiTietPhim(slug);
-        call.enqueue(new Callback<ChiTietPhim>() {
+        // Lấy danh sách API từ Firebase
+        ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
+
             @Override
-            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ChiTietPhim.MovieItem movieItem = response.body().getMovie();
-                    PhimYeuThich.add(movieItem); // Thêm phim vào danh sách yêu thích
-                    // Notify the adapter that data has changed
-                    yeuThichAdapter.notifyDataSetChanged();  // Notify adapter for changes
-                    yeuThichAdapter.setRecyclerViewItemClickListener(new YeuThichAdapter.OnRecyclerViewItemClickListener() {
-                        @Override
-                        public void onItemClick(View view, int position) {
-                            // Truyền slug sang ChiTietActivity
-                            String slug = PhimYeuThich.get(position).getSlug(); // Lấy slug từ phim
-                            Intent intent = new Intent(DanhSachYeuThichActivity.this, ChiTietPhimActivity.class);
-                            intent.putExtra("slug", slug); // Truyền slug
-                            startActivity(intent);
-                        }
-                    });
-                    // Remove the reinitialization of lichSuAdapter
-                    // Update click listener outside this function if necessary
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.layout.setVisibility(View.VISIBLE);
-                } else {
-                    Log.e("FavoriteMoviesActivity", "Failed to fetch movie details for slug: " + slug);
+            public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                for (ApiModel api : apiSources) {
+                    // Tạo ApiService mới với URL tương ứng
+                    ApiService currentApiService = ApiClient.createApiService(api.getUrl());
+
+                    if ("Kkphim".equals(api.getName())) {
+                        // Gọi API của Kkphim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim.MovieItem movieItem = response.body().getMovie();
+                                    PhimYeuThich.add(movieItem); // Thêm phim vào danh sách yêu thích
+                                    // Notify the adapter that data has changed
+                                    yeuThichAdapter.notifyDataSetChanged();  // Notify adapter for changes
+                                    yeuThichAdapter.setRecyclerViewItemClickListener(new YeuThichAdapter.OnRecyclerViewItemClickListener() {
+                                        @Override
+                                        public void onItemClick(View view, int position) {
+                                            // Truyền slug sang ChiTietActivity
+                                            String slug = PhimYeuThich.get(position).getSlug(); // Lấy slug từ phim
+                                            Intent intent = new Intent(DanhSachYeuThichActivity.this, ChiTietPhimActivity.class);
+                                            intent.putExtra("slug", slug); // Truyền slug
+                                            startActivity(intent);
+                                        }
+                                    });
+                                    // Remove the reinitialization of lichSuAdapter
+                                    // Update click listener outside this function if necessary
+                                    binding.progressBar.setVisibility(View.GONE);
+                                    binding.layout.setVisibility(View.VISIBLE);
+                                } else {
+                                    Log.e("FavoriteMoviesActivity", "Failed to fetch movie details for slug: " + slug);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(DanhSachYeuThichActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else if ("Ophim".equals(api.getName())) {
+                        // Gọi API của Ophim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim.MovieItem movieItem = response.body().getMovie();
+                                    PhimYeuThich.add(movieItem); // Thêm phim vào danh sách yêu thích
+                                    // Notify the adapter that data has changed
+                                    yeuThichAdapter.notifyDataSetChanged();  // Notify adapter for changes
+                                    yeuThichAdapter.setRecyclerViewItemClickListener(new YeuThichAdapter.OnRecyclerViewItemClickListener() {
+                                        @Override
+                                        public void onItemClick(View view, int position) {
+                                            // Truyền slug sang ChiTietActivity
+                                            String slug = PhimYeuThich.get(position).getSlug(); // Lấy slug từ phim
+                                            Intent intent = new Intent(DanhSachYeuThichActivity.this, ChiTietPhimActivity.class);
+                                            intent.putExtra("slug", slug); // Truyền slug
+                                            startActivity(intent);
+                                        }
+                                    });
+                                    // Remove the reinitialization of lichSuAdapter
+                                    // Update click listener outside this function if necessary
+                                    binding.progressBar.setVisibility(View.GONE);
+                                    binding.layout.setVisibility(View.VISIBLE);
+                                } else {
+                                    Log.e("FavoriteMoviesActivity", "Failed to fetch movie details for slug: " + slug);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(DanhSachYeuThichActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
-                Log.e("FavoriteMoviesActivity", "Error fetching movie details", t);
+            public void onError(String errorMessage) {
+                Toast.makeText(DanhSachYeuThichActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, DanhSachYeuThichActivity.this);
     }
+    private void chiTietPhimTimKiem(String slug, String query, List<ChiTietPhim.MovieItem> searchResults) {
+        // Lấy danh sách API từ Firebase
+        ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
+
+            @Override
+            public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                for (ApiModel api : apiSources) {
+                    // Tạo ApiService mới với URL tương ứng
+                    ApiService currentApiService = ApiClient.createApiService(api.getUrl());
+
+                    if ("Kkphim".equals(api.getName())) {
+                        // Gọi API của Kkphim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim movieDetail = response.body();
+                                    ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
+                                    movieItem.setName(movieDetail.getMovie().getName());
+                                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSlug(slug); // Set slug for navigation
+
+                                    // Kiểm tra xem tên phim có chứa truy vấn không
+                                    if (movieItem.getName().toLowerCase().contains(query.toLowerCase())) {
+                                        // Thêm phim tìm thấy vào đầu danh sách tìm kiếm
+                                        searchResults.add(0, movieItem);
+
+                                        // Cập nhật danh sách chính
+                                        PhimYeuThich.add(0, movieItem); // Thêm vào đầu danh sách chính
+                                        yeuThichAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+                                    }
+                                } else {
+                                    Log.e("LichSuXemActivity", "Failed to fetch movie details for slug: " + slug);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(DanhSachYeuThichActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else if ("Ophim".equals(api.getName())) {
+                        // Gọi API của Ophim
+                        currentApiService.getChiTietPhim(slug).enqueue(new Callback<ChiTietPhim>() {
+                            @Override
+                            public void onResponse(Call<ChiTietPhim> call, Response<ChiTietPhim> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    ChiTietPhim movieDetail = response.body();
+                                    ChiTietPhim.MovieItem movieItem = new ChiTietPhim.MovieItem();
+                                    movieItem.setName(movieDetail.getMovie().getName());
+                                    movieItem.setPosterUrl(movieDetail.getMovie().getPosterUrl());
+                                    movieItem.setSlug(slug); // Set slug for navigation
+
+                                    // Kiểm tra xem tên phim có chứa truy vấn không
+                                    if (movieItem.getName().toLowerCase().contains(query.toLowerCase())) {
+                                        // Thêm phim tìm thấy vào đầu danh sách tìm kiếm
+                                        searchResults.add(0, movieItem);
+
+                                        // Cập nhật danh sách chính
+                                        PhimYeuThich.add(0, movieItem); // Thêm vào đầu danh sách chính
+                                        yeuThichAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+                                    }
+                                } else {
+                                    Log.e("LichSuXemActivity", "Failed to fetch movie details for slug: " + slug);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChiTietPhim> call, Throwable t) {
+                                Log.d("Lỗi: ", t.getMessage());
+                                //Toast.makeText(DanhSachYeuThichActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(DanhSachYeuThichActivity.this, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }, DanhSachYeuThichActivity.this);
+    }
+
+
 
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
