@@ -312,7 +312,7 @@ public class QLPhimActivity extends AppCompatActivity {
 
     private void fetchGoiFromFirebase() {
         DatabaseReference goiRef = FirebaseDatabase.getInstance().getReference("Goi");
-        goiRef.addValueEventListener(new ValueEventListener() {
+        goiRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 goiList.clear();
