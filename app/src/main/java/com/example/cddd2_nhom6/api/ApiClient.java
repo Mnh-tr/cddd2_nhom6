@@ -22,12 +22,31 @@ public class ApiClient {
     private static Retrofit retrofit;
 
     public static ApiService createApiService(String baseUrl) {
+        // Kiểm tra xem baseUrl có giá trị hợp lệ không
+        if (!baseUrl.endsWith("/") || (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://"))) {
+            baseUrl = baseUrl + "/";
+        }
         if (retrofit == null || !retrofit.baseUrl().toString().equals(baseUrl)) {
             retrofit = new Retrofit.Builder()
                     .baseUrl(baseUrl)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
+        return retrofit.create(ApiService.class);
+    }
+    public static ApiService createApiService1(String baseUrl) {
+        // Ensure baseUrl ends with a "/"
+        if (!baseUrl.endsWith("/")) {
+            baseUrl = baseUrl + "/";
+        }
+
+        if (retrofit == null) {
+            retrofit = new Retrofit.Builder()
+                    .baseUrl(baseUrl)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+        }
+
         return retrofit.create(ApiService.class);
     }
 

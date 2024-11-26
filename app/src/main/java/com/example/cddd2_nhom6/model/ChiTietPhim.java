@@ -600,6 +600,7 @@ public class ChiTietPhim {
                 return linkM3u8;
             }
 
+
             public void setLinkM3u8(String linkM3u8) {
                 this.linkM3u8 = linkM3u8;
             }

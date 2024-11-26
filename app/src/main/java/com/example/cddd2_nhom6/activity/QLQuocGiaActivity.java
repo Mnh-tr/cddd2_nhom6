@@ -46,6 +46,7 @@ public class QLQuocGiaActivity extends AppCompatActivity {
         // Cấu hình RecyclerView
         binding.rvQlyQuocGia.setLayoutManager(new LinearLayoutManager(this));
         danhSachQuocGia = new ArrayList<>();
+        quocGiaAdapter = new QuocGiaAdapter(danhSachQuocGia, this);
         binding.rvQlyQuocGia.setAdapter(quocGiaAdapter);
 
         // Kết nối Firebase

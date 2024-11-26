@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -76,7 +77,7 @@ public class TaiPhim {
             }
         }
     }
-    public void loadPosterAndDownloadMovie(String movieSlug, String movieLink, String movieName) {
+    public void loadPosterAndDownloadMovie(String movieSlug, String movieLink, String movieName, ApiService apiService) {
         this.movieName = movieName;
         Call<ChiTietPhim> call = apiService.getChiTietPhim(movieSlug);
         call.enqueue(new Callback<ChiTietPhim>() {
@@ -103,40 +104,67 @@ public class TaiPhim {
 
 
     private void downloadPoster(String posterUrl, String movieName, Runnable onSuccess) {
-        Call<ResponseBody> call = apiService.downloadMovie(posterUrl); // Sử dụng API để tải poster
-        call.enqueue(new Callback<ResponseBody>() {
+        ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    try {
-                        File movieDir = getMovieFile(movieName); // Lấy thư mục phim
-                        File posterFile = new File(movieDir, movieName + "_poster.jpg"); // Đặt tên file poster
-                        try (InputStream inputStream = response.body().byteStream();
-                             FileOutputStream outputStream = new FileOutputStream(posterFile)) {
+            public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                for (ApiModel api : apiSources) {
+                    // Kiểm tra xem ApiService có được tạo thành công không
+                    ApiService currentApiService = ApiClient.createApiService(api.getUrl());
 
-                            byte[] buffer = new byte[4096];
-                            int bytesRead;
-                            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                                outputStream.write(buffer, 0, bytesRead);
-                            }
-
-                            Log.d("DownloadPoster", "Poster đã được lưu tại: " + posterFile.getAbsolutePath());
-                            onSuccess.run(); // Gọi hàm để tiếp tục tải phim sau khi poster tải xong
-                        }
-                    } catch (IOException e) {
-                        Log.e("DownloadPoster", "Lỗi khi lưu poster: " + e.getMessage());
+                    if (currentApiService == null) {
+                        Log.e("DownloadPoster", "ApiService is null for API: " + api.getUrl());
+                        continue; // Bỏ qua trường hợp này và chuyển sang API khác
                     }
-                } else {
-                    Log.e("DownloadPoster", "Tải poster thất bại: " + posterUrl);
+
+                    // Kiểm tra xem posterUrl có hợp lệ không
+                    if (posterUrl == null || posterUrl.isEmpty()) {
+                        Log.e("DownloadPoster", "Poster URL is invalid.");
+                        continue; // Bỏ qua trường hợp này nếu posterUrl không hợp lệ
+                    }
+
+                    // Gọi API để tải poster
+                    currentApiService.downloadMovie(posterUrl).enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                try {
+                                    File movieDir = getMovieFile(movieName); // Lấy thư mục phim
+                                    File posterFile = new File(movieDir, movieName + "_poster.jpg"); // Đặt tên file poster
+                                    try (InputStream inputStream = response.body().byteStream();
+                                         FileOutputStream outputStream = new FileOutputStream(posterFile)) {
+
+                                        byte[] buffer = new byte[4096];
+                                        int bytesRead;
+                                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                            outputStream.write(buffer, 0, bytesRead);
+                                        }
+
+                                        Log.d("DownloadPoster", "Poster đã được lưu tại: " + posterFile.getAbsolutePath());
+                                        onSuccess.run(); // Gọi hàm để tiếp tục tải phim sau khi poster tải xong
+                                    }
+                                } catch (IOException e) {
+                                    Log.e("DownloadPoster", "Lỗi khi lưu poster: " + e.getMessage());
+                                }
+                            } else {
+                                Log.e("DownloadPoster", "Tải poster thất bại: " + posterUrl);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            Log.e("DownloadPoster", "Lỗi khi tải poster: " + t.getMessage());
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("DownloadPoster", "Lỗi khi tải poster: " + t.getMessage());
+            public void onError(String errorMessage) {
+                Toast.makeText(context, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, context);
     }
+
     private void createNotificationBuilder() {
         notificationBuilder = new NotificationCompat.Builder(context, "download_channel")
                 .setContentTitle("Đang Tải: " + movieName) // Sử dụng biến instance
@@ -145,56 +173,85 @@ public class TaiPhim {
                 .setOngoing(true); // Thông báo sẽ không thể bị xóa
     }
     private void downloadMovie(String m3u8Link, String movieName) {
+        // Tạo notification builder
         createNotificationBuilder();
+
         if (recursiveDepth > MAX_RECURSIVE_DEPTH) { // Giới hạn đệ quy
             Toast.makeText(context, "Quá nhiều tệp m3u8 con, tải không thành công!", Toast.LENGTH_LONG).show();
             return;
         }
 
         recursiveDepth++; // Tăng độ sâu mỗi khi đệ quy
-        Call<ResponseBody> call = apiService.downloadMovie(m3u8Link);
-        call.enqueue(new Callback<ResponseBody>() {
+
+        // Fetch all API sources from Firebase
+        ApiClient.fetchAllApiSourcesFromFirebase(new ApiClient.OnAllApiSourcesFetchListener() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(context, "Tải file m3u8 không thành công!", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().byteStream()))) {
-                    String line;
-                    List<String> tsLinks = new ArrayList<>();
-                    while ((line = reader.readLine()) != null) {
-                        if (line.endsWith(".m3u8")) {
-                            // Nếu là m3u8 con, tải đệ quy
-                            String subM3U8Link = line.startsWith("http") ? line : m3u8Link.substring(0, m3u8Link.lastIndexOf("/") + 1) + line;
-                            downloadMovie(subM3U8Link, movieName); // Gọi đệ quy để tải tệp con
-                            return;
-                        }
-                        if (line.endsWith(".ts")) {
-                            tsLinks.add(line); // Thêm link .ts vào danh sách
-                        }
+            public void onAllApiSourcesFetched(List<ApiModel> apiSources) {
+                for (ApiModel api : apiSources) {
+                    // Kiểm tra xem ApiService có được tạo thành công không
+                    ApiService currentApiService = ApiClient.createApiService(api.getUrl());
+                    if (currentApiService == null) {
+                        Log.e("DownloadMovie", "ApiService is null for API: " + api.getUrl());
+                        continue; // Bỏ qua trường hợp này và chuyển sang API khác
                     }
 
-                    if (tsLinks.isEmpty()) {
-                        Toast.makeText(context, "Không tìm thấy link .ts trong file m3u8!", Toast.LENGTH_LONG).show();
-                        return;
+                    // Kiểm tra nếu m3u8Link hợp lệ
+                    if (m3u8Link == null || m3u8Link.isEmpty()) {
+                        Log.e("DownloadMovie", "M3U8 link is invalid.");
+                        continue; // Bỏ qua nếu m3u8Link không hợp lệ
                     }
 
-                    // Tải các file .ts tuần tự
-                    downloadAllTsFilesSequentially(tsLinks, m3u8Link, movieName);
+                    // Gọi API để tải m3u8 file
+                    currentApiService.downloadMovie(m3u8Link).enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().byteStream()))) {
+                                    String line;
+                                    List<String> tsLinks = new ArrayList<>();
+                                    while ((line = reader.readLine()) != null) {
+                                        if (line.endsWith(".m3u8")) {
+                                            // Nếu là m3u8 con, tải đệ quy
+                                            String subM3U8Link = line.startsWith("http") ? line : m3u8Link.substring(0, m3u8Link.lastIndexOf("/") + 1) + line;
+                                            downloadMovie(subM3U8Link, movieName); // Gọi đệ quy để tải tệp con
+                                            return; // Thoát ngay để không tiếp tục xử lý tệp .ts khi có tệp .m3u8 con
+                                        }
+                                        if (line.endsWith(".ts")) {
+                                            tsLinks.add(line); // Thêm link .ts vào danh sách
+                                        }
+                                    }
 
-                } catch (IOException e) {
-                    Toast.makeText(context, "Lỗi khi phân tích file m3u8: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    if (tsLinks.isEmpty()) {
+                                        Toast.makeText(context, "Không tìm thấy link .ts trong file m3u8!", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
+
+                                    // Tải các file .ts tuần tự
+                                    downloadAllTsFilesSequentially(tsLinks, m3u8Link, movieName);
+
+                                } catch (IOException e) {
+                                    Toast.makeText(context, "Lỗi khi phân tích file m3u8: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            } else {
+                                Toast.makeText(context, "Tải file m3u8 không thành công!", Toast.LENGTH_LONG).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            Toast.makeText(context, "Lỗi khi tải file m3u8: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(context, "Lỗi khi tải file m3u8: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            public void onError(String errorMessage) {
+                Toast.makeText(context, "Lỗi khi lấy danh sách API: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
+        }, context);
     }
+
 
     public File getMovieFile(String movieName) {
         // Lấy thư mục Movies riêng của ứng dụng
@@ -220,10 +277,10 @@ public class TaiPhim {
 
     private void downloadTsFile(List<String> tsLinks, String m3u8Link, String movieName, int index, List<File> tsFiles, int retryCount, int totalTsFiles) {
         if (index >= tsLinks.size()) {
-            createM3U8Playlist(getMovieFile(movieName), tsFiles); // Tạo tệp .m3u8 sau khi tải xong tất cả file .ts
-            mergeTsFiles(tsFiles, movieName); // Ghép file khi tải xong tất cả file .ts
-            notificationBuilder.setContentText("Tải hoàn tất!").setOngoing(false); // Cập nhật thông báo
-            notificationManager.notify(1, notificationBuilder.build()); // Cập nhật thông báo
+            createM3U8Playlist(getMovieFile(movieName), tsFiles); // Create .m3u8 after all .ts files are downloaded
+            mergeTsFiles(tsFiles, movieName); // Merge files after download
+            notificationBuilder.setContentText("Tải hoàn tất!").setOngoing(false); // Update notification
+            notificationManager.notify(1, notificationBuilder.build()); // Notify completion
             return;
         }
 
@@ -233,13 +290,22 @@ public class TaiPhim {
 
         final String finalTsFullLink = tsFullLink;
 
-        Call<ResponseBody> call = apiService.downloadMovie(finalTsFullLink);
+        // Dynamically initialize ApiService based on m3u8Link
+        ApiService currentApiService = ApiClient.createApiService(m3u8Link);  // Ensure this returns a non-null ApiService
+        if (currentApiService == null) {
+            Log.e("downloadTsFile", "ApiService is null for URL: " + m3u8Link);
+            return; // Exit the method if ApiService is null
+        }
+
+        // Proceed with the download using the initialized ApiService
+        Call<ResponseBody> call = currentApiService.downloadMovie(finalTsFullLink);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (!response.isSuccessful() || response.body() == null) {
                     Log.e("downloadTsFile", "Lỗi khi tải file .ts: " + finalTsFullLink);
 
+                    // Retry logic
                     if (retryCount < MAX_RETRY_COUNT) {
                         Log.d("downloadTsFile", "Đang thử lại lần thứ " + (retryCount + 1) + " cho file: " + finalTsFullLink);
                         new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -247,11 +313,12 @@ public class TaiPhim {
                         }, 2000);
                     } else {
                         Log.e("downloadTsFile", "Bỏ qua file sau " + MAX_RETRY_COUNT + " lần thử lại: " + finalTsFullLink);
-                        downloadTsFile(tsLinks, m3u8Link, movieName, index + 1, tsFiles, 0, totalTsFiles); // Tiếp tục file tiếp theo
+                        downloadTsFile(tsLinks, m3u8Link, movieName, index + 1, tsFiles, 0, totalTsFiles); // Continue with next file
                     }
                     return;
                 }
 
+                // Process the downloaded file
                 File movieDir = getMovieFile(movieName);
                 File tsFile = new File(movieDir, movieName + "_" + tsLink.substring(tsLink.lastIndexOf("/") + 1));
 
@@ -265,13 +332,13 @@ public class TaiPhim {
                             outputStream.write(buffer, 0, bytesRead);
                         }
 
-                        tsFiles.add(tsFile); // Thêm file đã tải vào danh sách
+                        tsFiles.add(tsFile); // Add downloaded file to the list
 
-                        // Cập nhật thanh tiến trình
-                        int progress = (index + 1) * 100 / totalTsFiles; // Tính toán tiến trình
-                        notificationBuilder.setProgress(100, progress, false); // Cập nhật thanh tiến trình
-                        notificationBuilder.setContentText((index + 1) + "/" + totalTsFiles); // Cập nhật thông báo
-                        notificationManager.notify(1, notificationBuilder.build()); // Cập nhật thông báo
+                        // Update progress notification
+                        int progress = (index + 1) * 100 / totalTsFiles;
+                        notificationBuilder.setProgress(100, progress, false); // Update progress bar
+                        notificationBuilder.setContentText((index + 1) + "/" + totalTsFiles); // Update notification text
+                        notificationManager.notify(1, notificationBuilder.build()); // Notify progress
 
                     } catch (IOException e) {
                         Log.e("downloadTsFile", "Lỗi ghi file .ts: " + e.getMessage());
@@ -280,14 +347,15 @@ public class TaiPhim {
                     Log.d("downloadTsFile", "File đã tồn tại, bỏ qua: " + tsFile.getName());
                 }
 
-                // Tải tiếp file tiếp theo
-                downloadTsFile(tsLinks, m3u8Link, movieName, index + 1, tsFiles, 0, totalTsFiles); // Reset retryCount khi tải file mới
+                // Continue with next file
+                downloadTsFile(tsLinks, m3u8Link, movieName, index + 1, tsFiles, 0, totalTsFiles); // Reset retryCount for next file
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e("downloadTsFile", "Lỗi khi tải file .ts: " + t.getMessage());
 
+                // Retry logic
                 if (retryCount < MAX_RETRY_COUNT) {
                     Log.d("downloadTsFile", "Đang thử lại lần thứ " + (retryCount + 1) + " cho file: " + finalTsFullLink);
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -295,11 +363,12 @@ public class TaiPhim {
                     }, 2000);
                 } else {
                     Log.e("downloadTsFile", "Bỏ qua file sau " + MAX_RETRY_COUNT + " lần thử lại: " + finalTsFullLink);
-                    downloadTsFile(tsLinks, m3u8Link, movieName, index + 1, tsFiles, 0, totalTsFiles); // Tiếp tục file tiếp theo
+                    downloadTsFile(tsLinks, m3u8Link, movieName, index + 1, tsFiles, 0, totalTsFiles); // Continue with next file
                 }
             }
         });
     }
+
 
     private void createM3U8Playlist(File movieDir, List<File> tsFiles) {
         File m3u8File = new File(movieDir, "playlist.m3u8");
@@ -352,7 +421,7 @@ public class TaiPhim {
             notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
             Toast.makeText(context, "Đã ghép file thành công: " + mergedFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            Toast.makeText(context, "Lỗi khi ghép file .ts: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("PlayDownloadedMovieActivity", "Lỗi khi ghép file .ts", e);
         }
     }
 }
