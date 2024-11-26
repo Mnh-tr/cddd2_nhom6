@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.activity.ChiTietPhimActivity;
 import com.example.cddd2_nhom6.activity.ChiTietPhimFirebaseActivity;
 import com.example.cddd2_nhom6.databinding.ItemPhimBinding;
@@ -38,7 +39,7 @@ public class PhimAdapter extends RecyclerView.Adapter<PhimAdapter.PhimViewHolder
         QLPhim movie = movieList.get(position);
 
         // Đặt dữ liệu vào các thành phần view
-
+        holder.binding.smallImageCorner.setImageResource(R.drawable.logo);
         holder.binding.movieTitle.setText(movie.getName());
         holder.binding.movieYear.setText(String.valueOf(movie.getYear()));
 

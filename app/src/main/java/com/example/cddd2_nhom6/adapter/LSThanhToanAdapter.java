@@ -45,59 +45,47 @@ public class LSThanhToanAdapter extends RecyclerView.Adapter<LSThanhToanAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        // Lấy đối tượng LichSuThanhToan hiện tại
         LichSuThanhToan thanhToan = thanhToanList.get(position);
-        DatabaseReference lichSuThanhToanRef = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
-        // Truy vấn người dùng từ Firebase dựa trên id_user tự tạo
+
+        // Tham chiếu đến bảng Users
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-
-        lichSuThanhToanRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                    String userId = userSnapshot.getKey(); // Lấy key cha, ví dụ: FNM51T7
-                    Log.d("User ID", "User ID: " + userId);
-                    usersRef.orderByChild("id_user").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()) {
-                                // Lấy tên của người dùng đầu tiên tìm thấy
-                                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                                    String userName = userSnapshot.child("name").getValue(String.class);
-                                    holder.binding.tvUserName.setText(userName != null ? userName : "Tên không xác định");
-                                    break; // Thoát khỏi vòng lặp sau khi tìm thấy người dùng đầu tiên
-                                }
-                            } else {
-                                holder.binding.tvUserName.setText("Tên không xác định");
+        // Sử dụng id_user từ LichSuThanhToan để truy vấn Users
+        usersRef.orderByChild("id_user").equalTo(thanhToan.getIdUser())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            // Nếu tìm thấy, lấy thông tin từ người dùng đầu tiên khớp
+                            for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                String userName = userSnapshot.child("name").getValue(String.class); // Lấy tên
+                                holder.binding.tvUserName.setText(userName != null ? userName : "Tên không xác định");
+                                break; // Dừng lặp sau khi tìm thấy
                             }
+                        } else {
+                            holder.binding.tvUserName.setText("Tên không xác định"); // Không tìm thấy user
                         }
+                    }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            holder.binding.tvUserName.setText("Lỗi kết nối");
-                        }
-                    });
-                }
-            }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        holder.binding.tvUserName.setText("Lỗi kết nối"); // Lỗi Firebase
+                        Log.e("Firebase Error", error.getMessage());
+                    }
+                });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase Error", error.getMessage());
-            }
-        });
-
-
-
+        // Hiển thị các thông tin khác từ LichSuThanhToan
         holder.binding.tvMaUser.setText(thanhToan.getIdUser());
         holder.binding.tvNoiDung.setText(thanhToan.getNoiDung());
         holder.binding.tvNgayThanhToan.setText(thanhToan.getNgayThanhToan());
         holder.binding.tvNgayXacNhan.setText(thanhToan.getNgayXacNhan());
         holder.binding.tvSoTien.setText(String.valueOf(thanhToan.getSoTien()));
 
-
-        /// Luu Position mới cho Holder
+        // Lưu vị trí cho Holder
         final int pos = position;
         holder.position = pos;
     }
+
 
     @Override
     public int getItemCount() {
