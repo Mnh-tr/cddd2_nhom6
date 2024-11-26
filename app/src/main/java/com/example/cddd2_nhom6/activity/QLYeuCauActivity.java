@@ -314,7 +314,7 @@ public class QLYeuCauActivity extends AppCompatActivity {
         // Tạo đối tượng lịch sử thanh toán
         LichSuThanhToan lsThanhToan = new LichSuThanhToan(
                 null,
-                null, // Không cần lưu idUser trong đối tượng con
+                yeuCau.idUser,
                 yeuCau.getContent(),
                 yeuCau.getPaymentDate(),
                 ngayXacNhan,

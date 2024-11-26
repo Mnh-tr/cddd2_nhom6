@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DoanhThuActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
+
     private ActivityDoanhThuBinding binding;
 
     private HashMap<Integer, Long> monthlyRevenue = new HashMap<>();;
@@ -62,6 +63,7 @@ public class DoanhThuActivity extends AppCompatActivity {
     private LSThanhToanAdapter adapter;
     private List<LichSuThanhToan> lichSuTTList;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,9 +71,11 @@ public class DoanhThuActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         // Khởi tạo Firebase Realtime Database
         databaseReference = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
+
         // Khởi tạo danh sách và adapter
         lichSuTTList = new ArrayList<>();
         adapter = new LSThanhToanAdapter(this, lichSuTTList);
+        layDuLieuFirebase();
         // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
         // Kiểm tra xem ActionBar đã được khởi tạo chưa
@@ -93,13 +97,14 @@ public class DoanhThuActivity extends AppCompatActivity {
         });
 
         datLaiDoanhThuTheoThang();
-        layDuLieuFirebase();
+
+        caiDatSuKienChonNam();
+        loadLichSuThanhToan();
         // Thiết lập Spinner năm
         thietLapSpinner();
 
         // Lắng nghe thay đổi của Spinner để cập nhật dữ liệu
-        caiDatSuKienChonNam();
-        loadLichSuThanhToan();
+
     }
     private void loadLichSuThanhToan() {
         // Hiển thị ProgressBar trong khi tải dữ liệu
@@ -243,8 +248,8 @@ public class DoanhThuActivity extends AppCompatActivity {
         lineDataSet.setColor(Color.BLUE);
         lineDataSet.setLineWidth(2f);
         lineDataSet.setCircleColor(Color.RED);
-        lineDataSet.setCircleRadius(4f);// Kích thước của điểm tròn
-        lineDataSet.setValueTextSize(10f);
+        lineDataSet.setCircleRadius(2f);// Kích thước của điểm tròn
+        lineDataSet.setValueTextSize(8f);
         lineDataSet.setValueTextColor(Color.BLACK);
 
         LineData lineData = new LineData(lineDataSet);
@@ -284,67 +289,52 @@ public class DoanhThuActivity extends AppCompatActivity {
     }
 
 
-    private void hienThiChiTietLSThanhToan(LichSuThanhToan thanhToan){
+    private void hienThiChiTietLSThanhToan(LichSuThanhToan thanhToan) {
+        DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users");
         DialogLichsuThanhtoanBinding dialogBinding = DialogLichsuThanhtoanBinding.inflate(LayoutInflater.from(this));
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
         dialog.show();
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                    String userId = userSnapshot.getKey(); // Lấy key cha, ví dụ: FNM51T7
-                    dialogBinding.tvIdUserDialog.setText(userId);
-                    hienThiNameLenDiaLog(dialogBinding,userId);
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase Error", error.getMessage());
-            }
-        });
         // Hiển thị thông tin chi tiết lịch sử thanh toán
-
-
         dialogBinding.tvContentDialog.setText(thanhToan.getNoiDung());
         dialogBinding.tvAmountDialog.setText(String.valueOf(thanhToan.getSoTien()));
         dialogBinding.tvPaymentDateDialog.setText(thanhToan.getNgayThanhToan());
         dialogBinding.tvNgayXacNhan.setText(thanhToan.getNgayXacNhan());
         dialogBinding.tvNgayHetHan.setText(thanhToan.getNgayHetHan());
 
-
-        // Xử lý các sự kiện liên quan đến thanh toán
-        dialogBinding.btnDong.setOnClickListener(v -> {
-            dialog.dismiss();
-        });
-    }
-
-    private void hienThiNameLenDiaLog(DialogLichsuThanhtoanBinding dialogBinding,String userId){
-        // Truy vấn người dùng từ Firebase dựa trên id_user tự tạo
-        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-        usersRef.orderByChild("id_user").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    // Lấy tên của người dùng đầu tiên tìm thấy
-                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                        String userName = userSnapshot.child("name").getValue(String.class);
-                        dialogBinding.tvUserNameDialog.setText(userName);
-                        break; // Thoát khỏi vòng lặp sau khi tìm thấy người dùng đầu tiên
+        // Lấy thông tin người dùng từ bảng Users dựa trên id_user
+        userReference.orderByChild("id_user").equalTo(thanhToan.getNoiDung().split("_")[0]) // Lấy id_user từ nội dung thanh toán
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                // Hiển thị id_user và name lên dialog
+                                String userId = userSnapshot.child("id_user").getValue(String.class);
+                                String userName = userSnapshot.child("name").getValue(String.class);
+                                dialogBinding.tvIdUserDialog.setText(userId != null ? userId : "Không xác định");
+                                dialogBinding.tvUserNameDialog.setText(userName != null ? userName : "Không xác định");
+                                break; // Lấy thông tin của người dùng đầu tiên
+                            }
+                        } else {
+                            dialogBinding.tvIdUserDialog.setText("Không xác định");
+                            dialogBinding.tvUserNameDialog.setText("Không xác định");
+                        }
                     }
-                } else {
-                    dialogBinding.tvUserNameDialog.setText("Tên không xác định");
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                dialogBinding.tvUserNameDialog.setText("Lỗi kết nối");
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        dialogBinding.tvIdUserDialog.setText("Lỗi kết nối");
+                        dialogBinding.tvUserNameDialog.setText("Lỗi kết nối");
+                    }
+                });
+
+        // Xử lý sự kiện nút đóng
+        dialogBinding.btnDong.setOnClickListener(v -> dialog.dismiss());
     }
+
 
     private String dinhDangTien(Double doanhThu){
         if (doanhThu == null) return "0";
@@ -413,7 +403,7 @@ public class DoanhThuActivity extends AppCompatActivity {
     }
     // Hàm đặt lại doanh thu hàng tháng về 0
     private void datLaiDoanhThuTheoThang() {
-        for (int i = 1; i <= 12; i++) {
+            for (int i = 1; i <= 12; i++) {
             monthlyRevenue.put(i, 0L);
         }
     }
