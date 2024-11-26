@@ -19,6 +19,12 @@ public class ApiModel implements Parcelable {
         this.name = name;
         this.url = url;
     }
+    public ApiModel(String id, String name, String url, boolean isChecked) {
+        this.id = id;
+        this.name = name;
+        this.url = url;
+        this.isChecked = isChecked;
+    }
 
     public ApiModel(String id, String name, String url) {
         this.id = id;

@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cddd2_nhom6.R;
+import com.example.cddd2_nhom6.activity.QuanLyAPI;
 import com.example.cddd2_nhom6.databinding.ItemApiBinding;
 import com.example.cddd2_nhom6.databinding.ItemUserThongbaoBinding;
 import com.example.cddd2_nhom6.model.ApiModel;
@@ -36,8 +37,10 @@ public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
     private List<ApiModel> apiList;
     private OnApiActionListener listener;
     private Context context;
+    private DatabaseReference thamChieuDatabase;
     private List<ApiModel> selectedApi = new ArrayList<>();
     private DatabaseReference apiRef = FirebaseDatabase.getInstance().getReference("api_sources").child("selected_source");
+    private int dem = 0;
 
 
     // Khai báo interface để lắng nghe sự kiện
@@ -65,8 +68,6 @@ public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
     public void onBindViewHolder(@NonNull ApiViewHolder holder, int position) {
         ApiModel api = apiList.get(position);
         holder.binding.tvApiName.setText(api.getName());
-        // trang thai check
-        holder.binding.checkboxExample.setChecked(api.isChecked());
         // Sử dụng View Binding để gán dữ liệu và thiết lập sự kiện
         holder.bind(api);
 
@@ -104,20 +105,12 @@ public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
                     Log.e("ApiAdapter", "Lỗi khi truy vấn Firebase: " + databaseError.getMessage());
                 }
             });
-            binding.checkboxExample.setOnCheckedChangeListener((CompoundButton buttonView, boolean newChecked) -> {
-                // Khi checkbox được đánh dấu (newChecked = true)
-                if (newChecked) {
-                    //cap nhat trang thai
-                    api.setChecked(newChecked);
-                    if (!selectedApi.contains(api)) {
-                        selectedApi.add(api);
-                      }
-                }
-                apiRef.child(api.getId()).child("isChecked").setValue(newChecked)
+            binding.checkboxExample.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
+                apiRef.child(api.getId()).child("isChecked").setValue(isChecked)
                         .addOnSuccessListener(aVoid -> Log.d("ApiAdapter", "Cập nhật trạng thái thành công"))
                         .addOnFailureListener(e -> Log.e("ApiAdapter", "Lỗi khi lưu trạng thái: " + e.getMessage()));
                 // Gửi callback khi trạng thái thay đổi
-                listener.onSelectClick(api, newChecked);
+                listener.onSelectClick(api, isChecked);
             });
 
             // Sự kiện xóa
@@ -206,11 +199,35 @@ public class ApiAdapter extends RecyclerView.Adapter<ApiAdapter.ApiViewHolder> {
                 }
                 return false;
             });
+        }
+        private void xoaApi(ApiModel api) {
+            //lay ten api can xoa
+            String tenApiCanXoa = api.getName();
+            DatabaseReference apiListRef = thamChieuDatabase.child("selected_source");
+            //lay ten api tu firebase
+            apiListRef.orderByChild("name").equalTo(tenApiCanXoa).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot apiSnapshot : snapshot.getChildren()) {
+                        //xoa api
+                        apiSnapshot.getRef().removeValue()
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(context, "API đã được xóa!", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(context, "Lỗi khi xóa API: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    }
+                    if (!snapshot.exists()) {
+                        Toast.makeText(context, "Không tìm thấy API với tên: " + tenApiCanXoa, Toast.LENGTH_SHORT).show();
+                    }
+                }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(context, "Lỗi khi truy xuất dữ liệu: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
-
-
 }
 
 

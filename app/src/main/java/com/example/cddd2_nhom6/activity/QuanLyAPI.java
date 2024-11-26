@@ -84,83 +84,46 @@ public class QuanLyAPI extends AppCompatActivity {
 
             @Override
             public void onSelectClick(ApiModel api, boolean isChecked) {
-                // Cập nhật trạng thái của ApiModel
-                api.setChecked(isChecked);
+                DatabaseReference apiRef = FirebaseDatabase.getInstance().getReference()
+                        .child("api_sources")
+                        .child("selected_source");
 
-                if (isChecked) {
-                    // Lưu API đã chọn lên Firebase
-                    luuApiDaChon(api, isChecked);
-                    Toast.makeText(QuanLyAPI.this, "Đã chọn API: " + api.getName(), Toast.LENGTH_SHORT).show();
+                // Lấy danh sách hiện tại để xác định ID bắt đầu từ 0
+                apiRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        long apiCount = snapshot.getChildrenCount();  // Số lượng mục trong "selected_source"
+                        String apiId = String.valueOf(apiCount);      // ID mới bắt đầu từ 0
 
-                    // Lấy URL mới từ Firebase sau khi lưu
-                    ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
-                        @Override
-                        public void onBaseUrlFetched(String name, String url) {
-                            Toast.makeText(QuanLyAPI.this, "URL đã được cập nhật: " + name, Toast.LENGTH_SHORT).show();
-                        }
+                        // Tạo dữ liệu cần lưu vào Firebase
+                        Map<String, Object> apiData = new HashMap<>();
+                        apiData.put("id", apiCount);
+                        apiData.put("name", api.getName());  // Tên API
+                        apiData.put("url", api.getUrl());    // URL API
+                        apiData.put("isChecked", isChecked); // Trạng thái đã chọn
 
-                        @Override
-                        public void onError(String errorMessage) {
-                            Toast.makeText(QuanLyAPI.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
-                        }
-                    }, QuanLyAPI.this);
-                } else {
-                    // Xóa API khỏi Firebase khi bỏ chọn
-                    FirebaseDatabase.getInstance()
-                            .getReference("selected_source") // Đường dẫn trong Firebase
-                            .child(api.getId()) // Sử dụng ID của API
-                            .removeValue()
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(QuanLyAPI.this, "API đã được xóa: " + api.getName(), Toast.LENGTH_SHORT).show();
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(QuanLyAPI.this, "Lỗi khi xóa API: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
-                }
+                        // Lưu API vào Firebase dưới ID
+                        apiRef.child(apiId).setValue(apiData)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(QuanLyAPI.this, "Đã lưu thông tin API: " + api.getName(), Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(QuanLyAPI.this, "Lỗi khi lưu API: " + api.getName() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    }
 
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(QuanLyAPI.this, "Lỗi Firebase: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
-
         });
 
         binding.rvApiList.setLayoutManager(new LinearLayoutManager(this));
         binding.rvApiList.setAdapter(apiAdapter);
 
-//        binding.exitIcon.setOnClickListener(v -> finish());
         binding.btnAddapi.setOnClickListener(v -> hienThiDialogThem(-1, null));
-    }
-
-    private void luuApiDaChon(ApiModel api, boolean isChecked) {
-        // Tạo dữ liệu cần lưu vào Firebase
-        Map<String, Object> apiData = new HashMap<>();
-        apiData.put("id", api.getId());
-        apiData.put("name", api.getName());  // Tên API
-        apiData.put("url", api.getUrl());        // URL API
-        apiData.put("isChecked", isChecked);     // Trạng thái đã chọn
-
-        DatabaseReference apiRef = FirebaseDatabase.getInstance().getReference().child("api_sources").child("selected_source");
-
-        // Lấy ID số hiện tại trong Firebase (tính theo số lượng dữ liệu đã có)
-        apiRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                long apiCount = snapshot.getChildrenCount();  // Số lượng mục trong "selected_source"
-                String apiId = String.valueOf(apiCount);  // ID tiếp theo
-
-                // Lưu API vào Firebase dưới ID số
-                apiRef.child(apiId).setValue(apiData)
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(QuanLyAPI.this, "Đã lưu thông tin API: " + api.getName(), Toast.LENGTH_SHORT).show();
-                        })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(QuanLyAPI.this, "Lỗi khi lưu API: " + api.getName() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(QuanLyAPI.this, "Lỗi Firebase: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void hienThiDialogThem(int position, String currentName) {
@@ -256,6 +219,7 @@ public class QuanLyAPI extends AppCompatActivity {
                     String apiId = apiSnapshot.getKey();
                     String ten = apiSnapshot.child("name").getValue(String.class);
                     String url = apiSnapshot.child("url").getValue(String.class);
+
                     danhSachApi.add(new ApiModel(apiId,ten, url));
                 }
                 apiAdapter.notifyDataSetChanged();
@@ -333,48 +297,6 @@ public class QuanLyAPI extends AppCompatActivity {
         });
     }
 
-//    private void luuApiDaChon(ApiModel apiDaChon) {
-//        //tham chieu database
-//        thamChieuDatabase.child("selected_source").setValue(apiDaChon)
-//                .addOnSuccessListener(aVoid -> {
-//                    Toast.makeText(QuanLyAPI.this, "Đã lưu API thành công!", Toast.LENGTH_SHORT).show();
-//                    //luu api da chon vao SharedPreferences
-//                    SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
-//                    SharedPreferences.Editor editor = sharedPreferences.edit();
-//                    editor.putString("selectedApiUrl", apiDaChon.getUrl());
-//                    editor.putString("selectedApiName", apiDaChon.getName());
-//                    editor.apply();
-//                })
-//                .addOnFailureListener(e -> Toast.makeText(QuanLyAPI.this, "Lỗi khi lưu API: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-//    }
-
-//    private void luuApiDaChon(ApiModel apiDaChon) {
-//        // Lấy danh sách API đã chọn (từ adapter hoặc danh sách đã chọn)
-//        List<ApiModel> selectedApis = apiAdapter.getSelectedApi();
-//        if (selectedApis.isEmpty()) {
-//            Toast.makeText(this, "Vui lòng chọn API để lưu!", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        // Gửi thông tin API và lưu vào Firebase cho từng API được chọn
-//        for (ApiModel api : selectedApis) {
-//            // Tạo đối tượng API với các thông tin cần thiết
-//            Map<String, Object> apiData = new HashMap<>();
-//            apiData.put("api_name", api.getName());  // Tên API
-//            apiData.put("url", api.getUrl());        // URL API
-//
-//            // Lưu API vào Firebase
-//            DatabaseReference apiRef = FirebaseDatabase.getInstance().getReference().child("api_sources").child("selected_source").push();
-//            apiRef.setValue(apiData)
-//                    .addOnSuccessListener(aVoid -> {
-//                        Toast.makeText(QuanLyAPI.this, "Đã lưu thông tin API: " + api.getName(), Toast.LENGTH_SHORT).show();
-//                    })
-//                    .addOnFailureListener(e -> {
-//                        Toast.makeText(QuanLyAPI.this, "Lỗi khi lưu API: " + api.getName() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                    });
-//        }
-//        apiAdapter.resetCheckboxes();  // Đặt lại trạng thái checkbox
-//    }
 
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
