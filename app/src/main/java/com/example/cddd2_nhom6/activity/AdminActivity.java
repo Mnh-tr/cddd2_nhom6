@@ -60,7 +60,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     private ActivityAdminBinding binding;
     private DatabaseReference dataUser;
     private DatabaseReference dataTruyCap;
-    private DatabaseReference dataThanhToan;
+    private DatabaseReference dataThanhToan , dataQuyen;
     private long startOfDay;
     private long endOfDay;
     private Calendar calendar = Calendar.getInstance();
@@ -70,7 +70,8 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     private  String nameUser;
     private String emailUser;
     private int id_LoaiND;
-
+    final int[] tonggoi = {0};
+    final int[] listenersCompleted = {0};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,10 +81,12 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         dataUser = FirebaseDatabase.getInstance().getReference("Users");
         dataTruyCap = FirebaseDatabase.getInstance().getReference("TruyCapss");
         dataThanhToan = FirebaseDatabase.getInstance().getReference("LichSuThanhToan");
+        dataQuyen = FirebaseDatabase.getInstance().getReference("LichSuCapQuyen");
 
         // Đặt cho tất cả
         updateSelectedButton(binding.btnAll);
         hienThiTatCaThongTin();
+        resetAndReloadData();
         laythongtinUser();
         xulyXemThongTin();
         //Goi chuc nang nhan 2 lan de thoat
@@ -109,6 +112,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         binding.btnAll.setOnClickListener(view -> {
             updateSelectedButton(binding.btnAll);
             hienThiTatCaThongTin();
+            resetAndReloadData();
         });
 
         binding.btnHomNay.setOnClickListener(view -> {
@@ -138,7 +142,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
         });
         // Lắng nghe sự kiện khi nhấn nút "1 tháng qua"
         binding.btnThang.setOnClickListener(view -> {
-
             updateSelectedButton(binding.btnThang);
             layThongTinDKTrongKhoangThoiGian(30);
             laythongtinDoanhThuTrongKhoang(30);
@@ -176,41 +179,6 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             }
         });
 
-        dataThanhToan.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                double doanhthu = 0;
-                int goiVIP = 0;
-
-                // Duyệt qua tất cả các bản ghi trong LichSuThanhToan
-                for (DataSnapshot data : snapshot.getChildren()) {
-
-                    for (DataSnapshot childs : data.getChildren()) {
-                        Long soTien = childs.child("soTien").getValue(Long.class);
-                        doanhthu += soTien;
-                        goiVIP++;
-                    }
-
-                }
-
-                // Định dạng lại doanh thu để hiển thị (thêm dấu phẩy phân cách hàng nghìn)
-                DecimalFormat decimalFormat = new DecimalFormat("#,###");
-                String formattedDoanhThu = decimalFormat.format(doanhthu);
-                binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
-
-                // Hiển thị số lượng gói VIP
-                binding.tvGoiVIPAmount.setText("" + goiVIP);
-
-                // Gọi hàm xử lý biểu đồ (nếu có)
-                xulyBieuDo();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý khi có lỗi
-                Log.e("PaymentData", "DatabaseError: " + error.getMessage());
-            }
-        });
 
         dataTruyCap.addValueEventListener(new ValueEventListener() {
             @Override
@@ -247,6 +215,82 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
 
 
 
+    }
+    // Khi nhấn nút để tính toán lại
+    private void resetAndReloadData() {
+        // Đặt lại giá trị tổng gói VIP và đếm số listener
+        tonggoi[0] = 0;
+        listenersCompleted[0] = 0;
+
+        // Tải lại dữ liệu Firebase
+        dataThanhToan.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                double doanhthu = 0;
+                int goiVIP = 0;
+
+                // Duyệt qua tất cả các bản ghi trong LichSuThanhToan
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    for (DataSnapshot childs : data.getChildren()) {
+                        Long soTien = childs.child("soTien").getValue(Long.class);
+                        if (soTien != null) {
+                            doanhthu += soTien;
+                            goiVIP++;
+                        }
+                    }
+                }
+
+                // Định dạng doanh thu
+                DecimalFormat decimalFormat = new DecimalFormat("#,###");
+                String formattedDoanhThu = decimalFormat.format(doanhthu);
+                binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
+
+                // Cộng số lượng gói VIP
+                tonggoi[0] += goiVIP;
+
+                // Đánh dấu listener hoàn thành
+                listenersCompleted[0]++;
+                checkAndUpdateUI();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("PaymentData", "DatabaseError: " + error.getMessage());
+            }
+        });
+
+        dataQuyen.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int dem = 0;
+
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    Long goiVip = data.child("id_loaiNDUpdate").getValue(Long.class);
+                    if (goiVip != null && goiVip == 1) {
+                        dem++;
+                    }
+                }
+
+                // Cộng số lượng gói VIP
+                tonggoi[0] += dem;
+
+                // Đánh dấu listener hoàn thành
+                listenersCompleted[0]++;
+                checkAndUpdateUI();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("UserData", "DatabaseError: " + error.getMessage());
+            }
+        });
+    }
+    // Hàm kiểm tra và cập nhật UI
+    private void checkAndUpdateUI() {
+        if (listenersCompleted[0] == 2) { // Chỉ cập nhật khi cả 2 listener hoàn thành
+            binding.tvGoiVIPAmount.setText("" + tonggoi[0]);
+            xulyBieuDo(); // Gọi hàm xử lý biểu đồ nếu cần
+        }
     }
 
     // Phương thức để cập nhật màu của các nút
@@ -328,6 +372,8 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
     }
 
     private void layThongTInDoanhThu() {
+        tonggoi[0] = 0;
+        listenersCompleted[0] = 0;
         LayThoigianNgayHomNay(); // 23:59:59 hôm nay
 
         dataThanhToan.addValueEventListener(new ValueEventListener() {
@@ -363,9 +409,11 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 DecimalFormat decimalFormat = new DecimalFormat("#,###");
                 String formattedDoanhThu = decimalFormat.format(doanhthu);
                 binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
-                binding.tvGoiVIPAmount.setText("" + goi);
-                // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
-                xulyBieuDo();
+
+                tonggoi[0] += goi;
+                listenersCompleted[0]++;
+                checkAndUpdateUI();
+
 
             }
 
@@ -374,9 +422,49 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 Log.e("Firebase", "Lỗi khi đọc dữ liệu: " + error.getMessage());
             }
         });
+
+        dataQuyen.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int goi = 0;
+                for (DataSnapshot data : snapshot.getChildren()){
+                    Long goiVip = data.child("id_loaiNDUpdate").getValue(Long.class);
+                    String ngayUpdater = data.child("ngayUpdater").getValue(String.class); // Lấy ngayUpdater
+                    if (goiVip != null && goiVip == 1) {
+                        if (ngayUpdater != null ) {
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                Date date = sdf.parse(ngayUpdater); // Chuyển đổi chuỗi thành Date
+                                long timeInMillis = date.getTime(); // Lấy thời gian mili giây
+
+                                // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
+                                if (timeInMillis >= startOfDay && timeInMillis <= endOfDay) {
+                                    goi++;
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
+                            }
+                        }
+                    }
+
+                }
+                tonggoi[0] += goi;
+                listenersCompleted[0]++;
+                checkAndUpdateUI();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
     // doanh thu
     private void laythongtinDoanhThuTrongKhoang(int soNgay) {
+        tonggoi[0] = 0;
+        listenersCompleted[0] = 0;
         long startTime = LayThoigianCachDay(soNgay);
         long endTime = System.currentTimeMillis();
 
@@ -413,9 +501,10 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
                 DecimalFormat decimalFormat = new DecimalFormat("#,###");
                 String formattedDoanhThu = decimalFormat.format(doanhthu);
                 binding.tvDoanhThuAmount.setText(formattedDoanhThu + " đ");
-                binding.tvGoiVIPAmount.setText("" + goi);
-                // Gọi hàm xulyBieuDo() sau khi đã cập nhật dữ liệu
-                xulyBieuDo();
+
+                tonggoi[0] += goi;
+                listenersCompleted[0]++;
+                checkAndUpdateUI();
 
 
             }
@@ -426,6 +515,43 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
             }
         });
 
+        dataQuyen.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int goi = 0;
+                for (DataSnapshot data : snapshot.getChildren()){
+                    Long goiVip = data.child("id_loaiNDUpdate").getValue(Long.class);
+                    String ngayUpdater = data.child("ngayUpdater").getValue(String.class); // Lấy ngayUpdater
+                    if (goiVip != null && goiVip == 1) {
+                        if (ngayUpdater != null ) {
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                Date date = sdf.parse(ngayUpdater); // Chuyển đổi chuỗi thành Date
+                                long timeInMillis = date.getTime(); // Lấy thời gian mili giây
+
+                                // Kiểm tra xem timeInMillis có nằm trong khoảng startOfDay và endOfDay không
+                                if (timeInMillis >= startTime && timeInMillis <= endTime) {
+                                    goi++;
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace(); // In lỗi nếu không thể phân tích cú pháp
+                            }
+                        }
+                    }
+
+                }
+                tonggoi[0] += goi;
+                listenersCompleted[0]++;
+                checkAndUpdateUI();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
     }
     // Truy Caap
