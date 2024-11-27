@@ -91,7 +91,7 @@ public class QLHoTroActivity extends AppCompatActivity {
         String notificationId = databaseReference.push().getKey();
 
         // Lưu thông tin hỗ trợ
-        HoTro hoTro = new HoTro(title,description,id_user,time);
+        HoTro hoTro = new HoTro(title,description,id_user,time,imageUrl);
 
         // Tạo thông báo cho người dùng với id_user
         DatabaseReference userNotifRef = FirebaseDatabase.getInstance().getReference("ThongBao");

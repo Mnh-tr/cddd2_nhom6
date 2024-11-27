@@ -10,11 +10,12 @@ public class HoTro {
 
     public HoTro() {
     }
-    public HoTro(String name, String description, String userId,String time) {
+    public HoTro(String name, String description, String userId, String time, String imageUrl) {
         this.name = name;
         this.description = description;
         this.userId = userId;
         this.time = time;
+        this.imageUrl = imageUrl;
     }
     public long getId() {
         return id;
@@ -37,6 +38,8 @@ public class HoTro {
     public String getUserId() {
         return userId;
     }
-
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
 }

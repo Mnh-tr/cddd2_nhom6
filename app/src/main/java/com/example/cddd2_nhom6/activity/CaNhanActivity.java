@@ -26,8 +26,8 @@ import com.example.cddd2_nhom6.api.ApiClient;
 import com.example.cddd2_nhom6.api.ApiService;
 import com.example.cddd2_nhom6.databinding.ActivityCanhanBinding;
 import com.example.cddd2_nhom6.model.ApiModel;
-import com.example.cddd2_nhom6.model.AvatarManager;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
+import com.example.cddd2_nhom6.model.CloudDinary;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -59,7 +59,7 @@ public class CaNhanActivity extends AppCompatActivity {
     private LichSuAdapter lichSuAdapter;
     private boolean doubleBackToExitPressedOnce = false;
     private static final int PICK_IMAGE_REQUEST = 100;
-    private AvatarManager avatarManager;
+    private CloudDinary avatarManager;
     private boolean isActivityActive = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +73,7 @@ public class CaNhanActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
         setControl();
         setEven();
-        avatarManager = new AvatarManager(getApplicationContext());
+        avatarManager = new CloudDinary(getApplicationContext());
         setupUI();
         clearAvatarCache();
 
@@ -151,7 +151,7 @@ public class CaNhanActivity extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
             binding.userAvatar.setImageURI(imageUri);
-            avatarManager.uploadAvatar(imageUri, binding.progressBar, new AvatarManager.AvatarUploadCallback() {
+            avatarManager.uploadAvatar(imageUri, binding.progressBar, new CloudDinary.AvatarUploadCallback() {
                 @Override
                 public void onSuccess(String imageUrl) {
                     Toast.makeText(CaNhanActivity.this, "Cập nhật avatar thành công", Toast.LENGTH_SHORT).show();

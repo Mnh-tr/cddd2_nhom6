@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -13,7 +14,9 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.adapter.HoTroAdapter;
 import com.example.cddd2_nhom6.databinding.ActivityDsHoTroBinding;
 import com.example.cddd2_nhom6.model.HoTro;
@@ -25,6 +28,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DSHoTroActivity extends AppCompatActivity {
@@ -39,50 +43,64 @@ public class DSHoTroActivity extends AppCompatActivity {
         binding = ActivityDsHoTroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        //Goi chuc nang nhan 2 lan de thoat
-        getOnBackPressedDispatcher().addCallback(this, callback);
+        // Loại bỏ dòng findViewById không cần thiết khi đã dùng View Binding
 
-        hoTroAdapter = new HoTroAdapter(DSHoTroActivity.this,hoTroList);
+        // Khởi tạo RecyclerView
+        hoTroAdapter = new HoTroAdapter(this, hoTroList);
         binding.recyclerViewApis.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerViewApis.setAdapter(hoTroAdapter);
 
-        layDuLieuHoTroTuFirebase();
+        // Gọi chức năng nhấn 2 lần để thoát
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
+        // Load dữ liệu từ Firebase
+        loadHoTroFromFirebase();
+
+        // Cài đặt Toolbar
         setSupportActionBar(binding.toolbar);
-        // Kiểm tra xem ActionBar đã được khởi tạo chưa
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Quản lý Hỗ Trợ"); // Đặt tên mới cho Toolbar
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+            getSupportActionBar().setTitle("Quản lý Hỗ Trợ");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
-    // Hiển thị danh sách quốc gia từ Firebase
-    private void layDuLieuHoTroTuFirebase() {
+
+    // Hiển thị danh sách hỗ trợ từ Firebase
+    private void loadHoTroFromFirebase() {
         DatabaseReference hoTroRef = FirebaseDatabase.getInstance().getReference("HoTro");
+
         hoTroRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                hoTroList.clear(); // Xóa danh sách cũ
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    HoTro hoTro = dataSnapshot.getValue(HoTro.class);
-                    if (hoTro != null) {
+                hoTroList.clear();
+
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    for (DataSnapshot hoTroItemSnapshot : userSnapshot.getChildren()) {
+                        String name = hoTroItemSnapshot.child("ten").getValue(String.class);
+                        String description = hoTroItemSnapshot.child("moTa").getValue(String.class);
+                        String time = hoTroItemSnapshot.child("thoiGian").getValue(String.class);
+                        String imageUrl = hoTroItemSnapshot.child("imageUrl").getValue(String.class);
+                        String userId = userSnapshot.getKey();
+
+                        // Tạo đối tượng HoTro với imageUrl
+                        HoTro hoTro = new HoTro(name, description, userId, time, imageUrl);
+
                         hoTroList.add(hoTro);
-                    } else {
-                        Log.e("HoTro", "Dữ liệu null tại " + dataSnapshot.getKey());
                     }
                 }
-                // Cập nhật RecyclerView
+
+                Collections.sort(hoTroList, (o1, o2) -> o2.getTime().compareTo(o1.getTime()));
+
                 hoTroAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(DSHoTroActivity.this, "Lỗi khi tải dữ liệu!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DSHoTroActivity.this,
+                        "Lỗi: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
-
     }
-
-
 
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
@@ -99,12 +117,13 @@ public class DSHoTroActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
+        if (item.getItemId() == android.R.id.home) {
             Intent intent = new Intent(this, AdminActivity.class);
             startActivity(intent);
+            finish(); // Đóng activity hiện tại
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -113,12 +132,12 @@ public class DSHoTroActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);  // Giữ màn hình sáng khi hoạt động
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);  // Tắt giữ màn hình sáng khi dừng hoạt động
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 }

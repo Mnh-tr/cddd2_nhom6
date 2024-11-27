@@ -46,10 +46,10 @@ public class HoTroAdapter extends RecyclerView.Adapter<HoTroAdapter.ThongBaoView
         if (hoTro.getImageUrl() != null && !hoTro.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(hoTro.getImageUrl())
-                    .error(R.drawable.ic_notification) // Image to show on error
                     .into(holder.binding.imgIcon);
         } else {
-            holder.binding.imgIcon.setImageResource(R.drawable.ic_notification); // Default image
+            // Nếu không có ảnh, sử dụng ảnh mặc định
+            holder.binding.imgIcon.setImageResource(R.drawable.ic_notification);
         }
 
         /// Luu Position mới cho Holder
