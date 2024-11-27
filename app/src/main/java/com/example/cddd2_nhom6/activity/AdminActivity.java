@@ -853,7 +853,7 @@ public class AdminActivity extends AppCompatActivity implements NavigationView.O
 
         }else if(id == R.id.itemHoTro){
             if(id_LoaiND == 2){
-                Intent myIntent = new Intent(AdminActivity.this, QLHoTroActivity.class);
+                Intent myIntent = new Intent(AdminActivity.this, DSHoTroActivity.class);
                 startActivity(myIntent);
             }else{
                 Toast.makeText(getApplicationContext(), "Bạn cần admin cho quyền mới vào được màn hình này", Toast.LENGTH_SHORT).show();
