@@ -376,11 +376,12 @@ public class DoanhThuActivity extends AppCompatActivity {
     }
     // Hàm tải dữ liệu doanh thu theo năm
     private void taiDuLieuChoNamDuocChon(int year) {
-        datLaiDoanhThuTheoThang();  // Đặt lại dữ liệu doanh thu hàng tháng
+
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
+                datLaiDoanhThuTheoThang();  // Đặt lại dữ liệu doanh thu hàng tháng
                 for (DataSnapshot childSnapshot : snapshot.getChildren()) {
                     for (DataSnapshot child : childSnapshot.getChildren()) {
                         String ngayXacNhan = child.child("ngayXacNhan").getValue(String.class);
