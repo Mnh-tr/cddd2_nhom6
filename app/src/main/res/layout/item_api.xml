@@ -4,17 +4,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="10dp"
     android:background="@drawable/border_radiu_api">
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/checkbox_example"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Hình ảnh logo của API nằm sát lề trái -->
-    <ImageView
-        android:id="@+id/imgApiLogo"
-        android:layout_width="100dp"
-        android:layout_height="60dp"
-        android:layout_alignParentStart="true"
-        android:adjustViewBounds="true"
-        android:contentDescription="API Logo"
-        android:paddingLeft="10dp"
-        android:scaleType="centerInside" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvApiName"
+            android:layout_width="200dp"
+            android:layout_height="60dp"
+            android:textStyle="bold"
+            android:textColor="#FFF"
+            android:gravity="center"
+            android:textSize="20dp" />
+    </LinearLayout>
 
     <!-- Nút xóa nằm sát lề phải -->
     <ImageView
@@ -47,7 +60,7 @@
         android:id="@+id/editApiName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/imgApiLogo"
+        android:layout_below="@id/checkbox_example"
         android:layout_marginTop="8dp"
         android:hint="Enter new API name"
         android:padding="8dp"

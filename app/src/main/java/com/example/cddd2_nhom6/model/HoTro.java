@@ -1,6 +1,7 @@
 package com.example.cddd2_nhom6.model;
 
 public class HoTro {
+    private long id;
     private String name;
     private String description;
     private String time;
@@ -15,13 +16,8 @@ public class HoTro {
         this.userId = userId;
         this.time = time;
     }
-
-    public HoTro(String name, String description, String imageUrl,String time,String userId) {
-        this.name = name;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.time = time;
-        this.userId = userId;
+    public long getId() {
+        return id;
     }
 
     public String getName() {

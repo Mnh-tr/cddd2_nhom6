@@ -19,5 +19,12 @@
         android:textStyle="bold"
         android:layout_marginLeft="10dp"
         android:textSize="20sp"/>
+    <ImageView
+        android:id="@+id/smallImageCorner"
+        android:layout_width="50dp"
+        android:layout_height="36dp"
+        android:padding="4dp"
+        android:layout_gravity="end"
+        android:src="@drawable/logo_kkphim" />
 
 </FrameLayout>

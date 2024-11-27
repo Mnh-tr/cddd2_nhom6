@@ -151,6 +151,15 @@ public class ChiTietPhim {
         @SerializedName("country")
         private List<Country> country;
 
+        private String Source;
+
+        public String getSource() {
+            return Source;
+        }
+
+        public void setSource(String source) {
+            Source = source;
+        }
         // Getters and setters
 
         public Tmdb getTmdb() {
@@ -590,6 +599,7 @@ public class ChiTietPhim {
             public String getLinkM3u8() {
                 return linkM3u8;
             }
+
 
             public void setLinkM3u8(String linkM3u8) {
                 this.linkM3u8 = linkM3u8;

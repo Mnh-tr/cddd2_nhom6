@@ -87,5 +87,10 @@
     <color name="colorVien">#E0E0E0</color><!-- giao diện tối:  #cd201f-->
 
 
-
+    <!-- Màu khi chip được chọn -->
+    <color name="color_chip_selected">#FF6200EE</color> <!-- Ví dụ màu tím -->
+    <!-- Màu khi chip không được chọn -->
+    <color name="color_chip_unselected">#B0BEC5</color> <!-- Màu xám nhạt -->
+    <color name="color_chip_text_selected">#FFFFFF</color> <!-- Màu chữ khi chip được chọn -->
+    <color name="color_chip_text_unselected">#000000</color> <!-- Màu chữ khi chip không được chọn -->
 </resources>

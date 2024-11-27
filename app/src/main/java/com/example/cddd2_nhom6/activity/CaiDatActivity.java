@@ -1,5 +1,7 @@
 package com.example.cddd2_nhom6.activity;
 
+import static com.example.cddd2_nhom6.activity.MainActivity.logUserTimeout;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ActivityCaiDatBinding;
@@ -203,6 +206,23 @@ public class CaiDatActivity extends AppCompatActivity {
         super.onPause();
         // Xóa cờ giữ màn hình sáng khi ứng dụng không còn hoạt động
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Ghi timeout khi ứng dụng thực sự bị xóa khỏi bộ nhớ
+        if (isFinishing()) {
+            logUserTimeout(idUser);
+        }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Kiểm tra nếu ứng dụng không thay đổi cấu hình (xoay màn hình, v.v.)
+        if (!isChangingConfigurations()) {
+            logUserTimeout(idUser);
+        }
     }
 
 }

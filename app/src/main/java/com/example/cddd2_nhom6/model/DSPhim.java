@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
-public class DSPhim implements DSPhimAPI {
+public class DSPhim {
     private String _id;
     private String name;
     private String slug;
@@ -19,10 +19,32 @@ public class DSPhim implements DSPhimAPI {
     private int year;
     // Thêm trường này để lấy APP_DOMAIN_CDN_IMAGE
     private static final String APP_DOMAIN_CDN_IMAGE = "https://phimimg.com/";
+    private static final String APP_DOMAIN_CDN_IMAGE1 = "https://img.ophim.live/uploads/movies/";
     private Modified modified;
     private List<Category> category;
     private List<Country> country;
+    private String Source;
+    private String type;
 
+    // Các getter và setter
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getSource() {
+        return Source;
+    }
+
+    public void setSource(String source) {
+        Source = source;
+    }
+
+    public DSPhim() {
+    }
 
     protected DSPhim(Parcel in) {
         _id = in.readString();
@@ -113,6 +135,19 @@ public class DSPhim implements DSPhimAPI {
 
     public String getPosterUrl() {
         return APP_DOMAIN_CDN_IMAGE + poster_url; // Kết hợp để tạo URL đầy đủ
+    }
+    public String getPosterUrlOPhim() {
+        return APP_DOMAIN_CDN_IMAGE1 + poster_url; // Kết hợp để tạo URL đầy đủ
+    }
+    public void setPoster_url(String poster_url) {
+        this.poster_url = poster_url;
+    }
+    public String getThumb_url() {
+        return thumb_url;
+    }
+    public String getThumb_urlOphim() {
+
+        return APP_DOMAIN_CDN_IMAGE1 + thumb_url;
     }
 
     public int getYear() {

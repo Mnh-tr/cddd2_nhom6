@@ -48,7 +48,7 @@ public class ThongBaoAdapter extends RecyclerView.Adapter<ThongBaoAdapter.ThongB
 
         Log.d("ThongBaoAdapter", "Position: " + position + ", id_TrangThai: " + thongBao.getId_TrangThai());
 // Đặt lại màu nền mặc định trước khi thay đổi (Tránh bị ảnh hưởng do tái sử dụng view)
-        holder.binding.getRoot().setBackgroundColor(context.getResources().getColor(R.color.colorUnread));
+        holder.binding.getRoot().setBackgroundColor(context.getResources().getColor(R.color.blue));
 
         // Kiểm tra trạng thái id_TrangThai để thay đổi màu
         if (thongBao.getId_TrangThai() == 0) {

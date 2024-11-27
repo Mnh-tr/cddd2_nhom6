@@ -252,7 +252,7 @@ public class ThemPhimActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(tenPhim) || TextUtils.isEmpty(moTa) || TextUtils.isEmpty(dienVien) ||
                 TextUtils.isEmpty(tacGia) || TextUtils.isEmpty(thoiLuong) || TextUtils.isEmpty(namPhatHanh) ||
                 TextUtils.isEmpty(posterUrl) || TextUtils.isEmpty(thumbUrl) || TextUtils.isEmpty(movieUrl) ||
-                quocGia.equals("Chọn quốc gia") || theLoai.isEmpty()) {
+                quocGia.equals("Chọn quốc gia") || theLoai.isEmpty() || binding.radioGroupType.getCheckedRadioButtonId() == -1 ) {
 
             Toast.makeText(ThemPhimActivity.this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
@@ -300,7 +300,9 @@ public class ThemPhimActivity extends AppCompatActivity {
                     moviesRef.child(idMovie).setValue(movieData).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Toast.makeText(ThemPhimActivity.this, "Cập nhật phim thành công!", Toast.LENGTH_SHORT).show();
-                            resetForm();
+                            Intent a = new Intent(ThemPhimActivity.this,QLPhimActivity.class);
+                            startActivity(a);
+                            finish();
                         } else {
                             Toast.makeText(ThemPhimActivity.this, "Cập nhật phim thất bại!", Toast.LENGTH_SHORT).show();
                         }

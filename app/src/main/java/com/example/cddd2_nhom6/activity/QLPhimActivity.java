@@ -55,7 +55,7 @@ public class QLPhimActivity extends AppCompatActivity {
         binding = ActivityQlphimBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        fetchGoiFromFirebase();
+
         // Hiển thị tất cả phim khi mở ứng dụng
         fetchMoviesFromFirebase("All");
         updateSelectedButton(binding.btnChonTatCa);
@@ -202,12 +202,14 @@ public class QLPhimActivity extends AppCompatActivity {
         // Cập nhật lại giao diện
         adapter.getSelectedMovies().clear(); // Xóa danh sách phim đã chọn
         adapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+        binding.deleteIcon.setVisibility(View.GONE);
         Toast.makeText(this, "Đã xóa phim", Toast.LENGTH_SHORT).show();
     }
 
     private void fetchMoviesFromFirebase(String goiType) {
 
         binding.progressBar.setVisibility(View.VISIBLE);
+        fetchGoiFromFirebase();
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Movies");
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -309,9 +311,8 @@ public class QLPhimActivity extends AppCompatActivity {
 
 
     private void fetchGoiFromFirebase() {
-        binding.progressBar.setVisibility(View.VISIBLE);
         DatabaseReference goiRef = FirebaseDatabase.getInstance().getReference("Goi");
-        goiRef.addValueEventListener(new ValueEventListener() {
+        goiRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 goiList.clear();
@@ -321,7 +322,7 @@ public class QLPhimActivity extends AppCompatActivity {
                         goiList.add(goi);
                     }
                 }
-                binding.progressBar.setVisibility(View.GONE);
+                fetchGoiFromFirebase();
             }
 
             @Override

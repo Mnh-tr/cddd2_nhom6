@@ -1,27 +1,48 @@
 package com.example.cddd2_nhom6.adapter;
+
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide;
-import java.util.List;
 
+import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.activity.ChiTietPhimActivity;
 import com.example.cddd2_nhom6.databinding.ItemPhimBinding;
-import com.example.cddd2_nhom6.model.ChiTietPhim;
 import com.example.cddd2_nhom6.model.DSPhim;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimViewHolder>{
-    private Activity context;  // Thêm biến Activity context
+    private Context context;  // Thêm biến Activity context
     private List<DSPhim> dsPhims;
     private static OnRecyclerViewItemClickListener recyclerViewItemClickListener;
+
+    public DSPhimAdapter(Context context) {
+        this.context = context;
+        this.dsPhims = new ArrayList<>(); // Khởi tạo danh sách rỗng
+    }
+    public void updateFilms(List<DSPhim> films) {
+        if (films != null) {
+            this.dsPhims.clear();
+            this.dsPhims.addAll(films);
+            notifyDataSetChanged();
+        }
+    }
+
+    public void addFilms(List<DSPhim> films) {
+        if (films != null) {
+            int startPosition = this.dsPhims.size();
+            this.dsPhims.addAll(films);
+            notifyItemRangeInserted(startPosition, films.size());
+        }
+    }
 
     // Constructor
     public DSPhimAdapter(Activity context, List<DSPhim> dsPhims) {
@@ -32,12 +53,6 @@ public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimView
     // Setter cho listener
     public void setRecyclerViewItemClickListener(OnRecyclerViewItemClickListener recyclerViewItemClickListener) {
         DSPhimAdapter.recyclerViewItemClickListener = recyclerViewItemClickListener;
-    }
-    // Thêm phương thức để cập nhật dữ liệu mới
-    public void updateData(List<DSPhim> newMovieList) {
-        this.dsPhims.clear(); // Xóa dữ liệu cũ
-        this.dsPhims.addAll(newMovieList); // Thêm dữ liệu mới
-        notifyDataSetChanged(); // Thông báo adapter cập nhật
     }
 
     @NonNull
@@ -53,15 +68,33 @@ public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimView
         holder.binding.movieTitle.setText(dsPhim.getName());
         holder.binding.movieYear.setText(String.valueOf(dsPhim.getYear()));
 
-        // Sử dụng Glide để load hình ảnh
-        Glide.with(context)  // Sử dụng context đã được cung cấp
-                .load(dsPhim.getPosterUrl())
-                .into(holder.binding.moviePoster);
+        String imageUrl = dsPhim.getPosterUrl();
+        String thumbUrl = dsPhim.getPosterUrlOPhim();
+        String source = dsPhim.getSource();
 
-        /// Luu Position mới cho Holder
+        // Load image based on source
+        if (source != null) {
+            if (source.equalsIgnoreCase("Ophim")) {
+                loadImage(holder, thumbUrl, imageUrl);
+                holder.binding.smallImageCorner.setImageResource(R.drawable.ic_logo_ophim);
+            } else if (source.equalsIgnoreCase("Kkphim")) {
+                loadImage(holder, imageUrl, thumbUrl);
+                holder.binding.smallImageCorner.setImageResource(R.drawable.logo_kkphim);
+            } else {
+                // If source is unknown, try to load any available image
+                loadImage(holder, imageUrl, thumbUrl);
+            }
+        } else {
+            // If source is null, try to load any available image
+            loadImage(holder, imageUrl, thumbUrl);
+        }
+
+        // Save the new position for the Holder
         final int pos = position;
         holder.position = pos;
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -81,7 +114,6 @@ public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimView
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //Lay thong tin chi tiet phim tu slug truyen den man hinh chi tiet phim
                     Intent intent = new Intent(view.getContext(), ChiTietPhimActivity.class);
                     DSPhim dsPhim = dsPhims.get(position);
                     intent.putExtra("slug", dsPhim.getSlug());
@@ -97,5 +129,16 @@ public class DSPhimAdapter extends RecyclerView.Adapter<DSPhimAdapter.DSPhimView
     // Interface để xử lý sự kiện click
     public interface OnRecyclerViewItemClickListener {
         void onItemClick(View view, int position);
+    }
+    private void loadImage(DSPhimViewHolder holder, String primaryUrl, String fallbackUrl) {
+        if (primaryUrl != null && !primaryUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(primaryUrl)
+                    .into(holder.binding.moviePoster);
+        } else if (fallbackUrl != null && !fallbackUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(fallbackUrl)
+                    .into(holder.binding.moviePoster);
+        }
     }
 }

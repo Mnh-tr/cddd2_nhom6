@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -23,6 +24,7 @@ import com.example.cddd2_nhom6.databinding.ActivityQuanLyApiBinding;
 import com.example.cddd2_nhom6.databinding.DialogAddApiBinding;
 import com.example.cddd2_nhom6.databinding.DialogAddCategoryBinding;
 import com.example.cddd2_nhom6.model.ApiModel;
+import com.example.cddd2_nhom6.model.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -41,7 +43,6 @@ public class QuanLyAPI extends AppCompatActivity {
     private List<ApiModel> danhSachApi;
     private DatabaseReference thamChieuDatabase;
     private ApiModel apiDaChon;
-    private ImageView imageView;
     private boolean doubleBackToExitPressedOnce = false;
 
     @Override
@@ -49,7 +50,6 @@ public class QuanLyAPI extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityQuanLyApiBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        imageView = findViewById(R.id.img_selectApi);
 // Thiết lập ActionBar và DrawerLayout
         setSupportActionBar(binding.toolbar);
         // Kiểm tra xem ActionBar đã được khởi tạo chưa
@@ -64,9 +64,8 @@ public class QuanLyAPI extends AppCompatActivity {
         thamChieuDatabase = FirebaseDatabase.getInstance().getReference("api_sources");
 
         layDanhSachApiTuFirebase();
-        hienThiLogoDaChon();
 
-        apiAdapter = new ApiAdapter(danhSachApi, new ApiAdapter.OnApiActionListener() {
+        apiAdapter = new ApiAdapter(danhSachApi, QuanLyAPI.this, new ApiAdapter.OnApiActionListener() {
             @Override
             public void onEditClick(ApiModel api) {
                 apiDaChon = api;
@@ -84,26 +83,46 @@ public class QuanLyAPI extends AppCompatActivity {
             }
 
             @Override
-            public void onSelectClick(ApiModel api) {
-                luuApiDaChon(api);
-                ApiClient.fetchBaseUrlFromFirebase(new ApiClient.OnBaseUrlFetchListener() {
+            public void onSelectClick(ApiModel api, boolean isChecked) {
+                DatabaseReference apiRef = FirebaseDatabase.getInstance().getReference()
+                        .child("api_sources")
+                        .child("selected_source");
+
+                // Lấy danh sách hiện tại để xác định ID bắt đầu từ 0
+                apiRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onBaseUrlFetched(String name, String url) {
-                        Toast.makeText(QuanLyAPI.this, "URL đã được cập nhật: " + name, Toast.LENGTH_SHORT).show();
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        long apiCount = snapshot.getChildrenCount();  // Số lượng mục trong "selected_source"
+                        String apiId = String.valueOf(apiCount);      // ID mới bắt đầu từ 0
+
+                        // Tạo dữ liệu cần lưu vào Firebase
+                        Map<String, Object> apiData = new HashMap<>();
+                        apiData.put("id", apiCount);
+                        apiData.put("name", api.getName());  // Tên API
+                        apiData.put("url", api.getUrl());    // URL API
+                        apiData.put("isChecked", isChecked); // Trạng thái đã chọn
+
+                        // Lưu API vào Firebase dưới ID
+                        apiRef.child(apiId).setValue(apiData)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(QuanLyAPI.this, "Đã lưu thông tin API: " + api.getName(), Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(QuanLyAPI.this, "Lỗi khi lưu API: " + api.getName() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
                     }
 
                     @Override
-                    public void onError(String errorMessage) {
-                        Toast.makeText(QuanLyAPI.this, "Lỗi khi lấy URL: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(QuanLyAPI.this, "Lỗi Firebase: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                }, QuanLyAPI.this);
+                });
             }
         });
 
         binding.rvApiList.setLayoutManager(new LinearLayoutManager(this));
         binding.rvApiList.setAdapter(apiAdapter);
 
-//        binding.exitIcon.setOnClickListener(v -> finish());
         binding.btnAddapi.setOnClickListener(v -> hienThiDialogThem(-1, null));
     }
 
@@ -200,6 +219,7 @@ public class QuanLyAPI extends AppCompatActivity {
                     String apiId = apiSnapshot.getKey();
                     String ten = apiSnapshot.child("name").getValue(String.class);
                     String url = apiSnapshot.child("url").getValue(String.class);
+
                     danhSachApi.add(new ApiModel(apiId,ten, url));
                 }
                 apiAdapter.notifyDataSetChanged();
@@ -210,37 +230,6 @@ public class QuanLyAPI extends AppCompatActivity {
                 Toast.makeText(QuanLyAPI.this, "Lỗi tải API: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void hienThiLogoDaChon() {
-        //tham chieu database
-        thamChieuDatabase.child("selected_source").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                //lay api tu firebase
-                String tenDaChon = snapshot.child("name").getValue(String.class);
-                capNhatLogo(tenDaChon);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(QuanLyAPI.this, "Lỗi khi tải selected_source: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void capNhatLogo(String tenDaChon) {
-        if (tenDaChon != null) {
-            if (tenDaChon.equalsIgnoreCase("Kkphim")) {
-                imageView.setImageResource(R.drawable.logo_kkphim);
-            } else if (tenDaChon.equalsIgnoreCase("ophim")) {
-                imageView.setImageResource(R.drawable.ic_logo_ophim);
-            } else {
-                imageView.setImageResource(R.drawable.logo);
-            }
-        } else {
-            imageView.setImageResource(R.drawable.logo);
-        }
     }
 
     private void capNhatApi(ApiModel api) {
@@ -308,20 +297,6 @@ public class QuanLyAPI extends AppCompatActivity {
         });
     }
 
-    private void luuApiDaChon(ApiModel apiDaChon) {
-        //tham chieu database
-        thamChieuDatabase.child("selected_source").setValue(apiDaChon)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(QuanLyAPI.this, "Đã lưu API thành công!", Toast.LENGTH_SHORT).show();
-                    //luu api da chon vao SharedPreferences
-                    SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("selectedApiUrl", apiDaChon.getUrl());
-                    editor.putString("selectedApiName", apiDaChon.getName());
-                    editor.apply();
-                })
-                .addOnFailureListener(e -> Toast.makeText(QuanLyAPI.this, "Lỗi khi lưu API: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    }
 
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {

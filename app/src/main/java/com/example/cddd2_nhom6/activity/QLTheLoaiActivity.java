@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -120,23 +121,70 @@ public class QLTheLoaiActivity extends AppCompatActivity {
         // Hiển thị dialog
         dialog.show();
     }
-//xoa the loai
 private void deleteCategory(int position) {
     // Lấy ID từ categoryList
     String categoryId = categoryList.get(position).getId();
+    String categoryName = categoryList.get(position).getName(); // Lấy tên thể loại (Hành Động, Tình Cảm)
 
-    // Xóa thể loại khỏi Firebase dựa trên ID thực
+    // Truy vấn Firebase Movies để kiểm tra thể loại có xuất hiện trong phim nào không
     FirebaseDatabase.getInstance()
-            .getReference("theLoai")
-            .child(categoryId) // Xóa bằng ID từ Firebase
-            .removeValue();
+            .getReference("Movies")
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    boolean hasMatchingCategory = false;
 
-    // Xóa thể loại khỏi danh sách và cập nhật RecyclerView
-    categoryList.remove(position);
-    categoryAdapter.notifyItemRemoved(position);
+                    // Kiểm tra từng phim trong Firebase
+                    for (DataSnapshot movieSnapshot : dataSnapshot.getChildren()) {
+                        String theLoai = movieSnapshot.child("theLoai").getValue(String.class);
 
-    Toast.makeText(QLTheLoaiActivity.this, "Xóa thể loại thành công", Toast.LENGTH_SHORT).show();
+                        if (theLoai != null) {
+                            // Cắt chuỗi theLoai thành mảng và kiểm tra xem categoryName có tồn tại không
+                            String[] categories = theLoai.split(", ");
+                            for (String category : categories) {
+                                if (category.trim().equals(categoryName)) {
+                                    hasMatchingCategory = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (hasMatchingCategory) {
+                            break;
+                        }
+                    }
+
+                    if (hasMatchingCategory) {
+                        // Nếu tìm thấy phim có thể loại này, không xóa thể loại và thông báo
+                        Toast.makeText(QLTheLoaiActivity.this,
+                                "Không thể xóa thể loại vì có phim thuộc thể loại này",
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Nếu không có phim nào thuộc thể loại này, tiến hành xóa
+                        // Xóa thể loại khỏi Firebase
+                        FirebaseDatabase.getInstance()
+                                .getReference("theLoai")
+                                .child(categoryId) // Xóa thể loại khỏi Firebase
+                                .removeValue();
+
+                        // Xóa thể loại khỏi danh sách và cập nhật RecyclerView
+                        categoryList.remove(position);
+                        categoryAdapter.notifyItemRemoved(position);
+
+                        // Thông báo thành công
+                        Toast.makeText(QLTheLoaiActivity.this, "Xóa thể loại thành công", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    // Xử lý lỗi nếu có
+                    Toast.makeText(QLTheLoaiActivity.this, "Lỗi khi kiểm tra thể loại", Toast.LENGTH_SHORT).show();
+                }
+            });
 }
+
+
 
 
     // sửa thể loại
@@ -223,9 +271,25 @@ private void deleteCategory(int position) {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 long count = dataSnapshot.getChildrenCount(); // Đếm số lượng hiện có để tạo id mới
-
                 // Tạo id mới
                 String newId = String.valueOf(count + 1); // Nếu count bắt đầu từ 0, id đầu tiên sẽ là 1
+
+                boolean idExists;
+                do {
+                    idExists = false;
+                    for (DataSnapshot theloaiSnapshot : dataSnapshot.getChildren()) {
+                        Object idloaiObj = theloaiSnapshot.child("id").getValue();
+                        String idloai = idloaiObj != null ? String.valueOf(idloaiObj) : "";
+                        if (newId.equals(idloai)) {
+                            int newIdInt = Integer.parseInt(newId);
+                            newIdInt++; // Tăng giá trị id nếu bị trùng
+                            newId = String.valueOf(newIdInt);
+                            idExists = true;
+                            break;
+                        }
+                    }
+                } while (idExists);
+
 
                 // Tạo một HashMap để thêm dữ liệu
                 HashMap<String, Object> newCategory = new HashMap<>();

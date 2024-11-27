@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DSPhimAPiOphim implements DSPhimAPI {
+public class DSPhimAPiOphim {
     private String _id;
     private String name;
     private String slug;

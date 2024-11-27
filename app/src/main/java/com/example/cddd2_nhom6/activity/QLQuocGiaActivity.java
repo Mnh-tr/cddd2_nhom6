@@ -97,6 +97,8 @@ public class QLQuocGiaActivity extends AppCompatActivity {
                 duLieu.put("name", tenQuocGia);
                 duLieu.put("imageLink", linkAnh);
 
+
+
                 // Lưu quốc gia mới vào Firebase với ID mới
                 databaseRef.child(String.valueOf(newId)).setValue(duLieu)
                         .addOnSuccessListener(aVoid -> {

@@ -1,8 +1,10 @@
 package com.example.cddd2_nhom6.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -15,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.cddd2_nhom6.adapter.HoTroAdapter;
 import com.example.cddd2_nhom6.databinding.ActivityDsHoTroBinding;
 import com.example.cddd2_nhom6.model.HoTro;
+import com.example.cddd2_nhom6.model.QuocGia;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,7 +36,6 @@ public class DSHoTroActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityDsHoTroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -44,34 +46,43 @@ public class DSHoTroActivity extends AppCompatActivity {
         binding.recyclerViewApis.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerViewApis.setAdapter(hoTroAdapter);
 
-        binding.btnBack.setOnClickListener(v -> onBackPressed());
-        getHoTroFromDatabase();
-    }
-    private void getHoTroFromDatabase() {
-        DatabaseReference hoTroRef = FirebaseDatabase.getInstance().getReference("HoTro");
+        layDuLieuHoTroTuFirebase();
 
+        setSupportActionBar(binding.toolbar);
+        // Kiểm tra xem ActionBar đã được khởi tạo chưa
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Quản lý Hỗ Trợ"); // Đặt tên mới cho Toolbar
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiện biểu tượng trở về
+        }
+    }
+    // Hiển thị danh sách quốc gia từ Firebase
+    private void layDuLieuHoTroTuFirebase() {
+        DatabaseReference hoTroRef = FirebaseDatabase.getInstance().getReference("HoTro");
         hoTroRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                hoTroList.clear(); // Clear the list before adding new items
-                for (DataSnapshot hoTroSnapshot : snapshot.getChildren()) {
-                    HoTro hoTro = hoTroSnapshot.getValue(HoTro.class);
+                hoTroList.clear(); // Xóa danh sách cũ
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    HoTro hoTro = dataSnapshot.getValue(HoTro.class);
                     if (hoTro != null) {
-                        Log.d("HoTroData", "Loaded HoTro ID: " + hoTro.getUserId()); // Log loaded ID
-                        hoTroList.add(0,hoTro); // Add to list if HoTro is not null
+                        hoTroList.add(hoTro);
                     } else {
-                        Log.d("HoTroData", "HoTro is null for key: " + hoTroSnapshot.getKey());
+                        Log.e("HoTro", "Dữ liệu null tại " + dataSnapshot.getKey());
                     }
                 }
-                hoTroAdapter.notifyDataSetChanged(); // Update adapter
+                // Cập nhật RecyclerView
+                hoTroAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(DSHoTroActivity.this, "Error fetching HoTro: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(DSHoTroActivity.this, "Lỗi khi tải dữ liệu!", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
+
+
 
     // Thiết lập OnBackPressedDispatcher
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
@@ -88,6 +99,16 @@ public class DSHoTroActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
     };
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            Intent intent = new Intent(this, AdminActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     protected void onResume() {

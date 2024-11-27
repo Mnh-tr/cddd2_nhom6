@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.cddd2_nhom6.R;
 import com.example.cddd2_nhom6.databinding.ItemLichsuBinding;
 import com.example.cddd2_nhom6.model.ChiTietPhim;
 
@@ -40,9 +41,26 @@ public class LichSuAdapter extends RecyclerView.Adapter<LichSuAdapter.MovieViewH
         holder.binding.movieTitle.setText(movie.getName());
 
         // Sử dụng Glide để load hình ảnh
-        Glide.with(context)  // Sử dụng context đã được cung cấp
-                .load(movie.getPosterUrl())
-                .into(holder.binding.moviePoster);
+        String imageUrl = movie.getPosterUrl();
+        String thumbUrl = movie.getThumbUrl();
+        String source = movie.getSource();
+
+        // Load image based on source
+        if (source != null) {
+            if (source.equalsIgnoreCase("Ophim")) {
+                loadImage(holder, thumbUrl, imageUrl);
+                holder.binding.smallImageCorner.setImageResource(R.drawable.ic_logo_ophim);
+            } else if (source.equalsIgnoreCase("Kkphim")) {
+                loadImage(holder, imageUrl, thumbUrl);
+                holder.binding.smallImageCorner.setImageResource(R.drawable.logo_kkphim);
+            } else {
+                // If source is unknown, try to load any available image
+                loadImage(holder, imageUrl, thumbUrl);
+            }
+        } else {
+            // If source is null, try to load any available image
+            loadImage(holder, imageUrl, thumbUrl);
+        }
 
 
 
@@ -75,5 +93,16 @@ public class LichSuAdapter extends RecyclerView.Adapter<LichSuAdapter.MovieViewH
     // Interface để xử lý sự kiện click
     public interface OnRecyclerViewItemClickListener {
         void onItemClick(View view, int position);
+    }
+    private void loadImage(LichSuAdapter.MovieViewHolder holder, String primaryUrl, String fallbackUrl) {
+        if (primaryUrl != null && !primaryUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(primaryUrl)
+                    .into(holder.binding.moviePoster);
+        } else if (fallbackUrl != null && !fallbackUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(fallbackUrl)
+                    .into(holder.binding.moviePoster);
+        }
     }
 }
