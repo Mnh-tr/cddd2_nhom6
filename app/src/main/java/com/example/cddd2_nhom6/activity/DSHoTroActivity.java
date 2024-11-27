@@ -89,7 +89,6 @@ public class DSHoTroActivity extends AppCompatActivity {
                 }
 
                 Collections.sort(hoTroList, (o1, o2) -> o2.getTime().compareTo(o1.getTime()));
-
                 hoTroAdapter.notifyDataSetChanged();
             }
 

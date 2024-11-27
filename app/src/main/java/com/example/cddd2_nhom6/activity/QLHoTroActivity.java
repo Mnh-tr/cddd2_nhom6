@@ -96,13 +96,13 @@ public class QLHoTroActivity extends AppCompatActivity {
         // Tạo thông báo cho người dùng với id_user
         DatabaseReference userNotifRef = FirebaseDatabase.getInstance().getReference("ThongBao");
         String userNotifId = userNotifRef.push().getKey();
-
+        ThongBao thongBao = new ThongBao(userNotifId,title,time,description,id_user,0); // Thêm thời gian để sắp xếp
         // Lưu dữ liệu hỗ trợ và thông báo vào Firebase
-        databaseReference.child(notificationId).setValue(hoTro)
+        userNotifRef.child(userNotifId).setValue(thongBao)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // Lưu thông báo hỗ trợ vào màn hình thông báo của người dùng
-                        ThongBao thongBao = new ThongBao(userNotifId,id_user,title,time,description,0); // Thêm thời gian để sắp xếp
+
                         userNotifRef.child(userNotifId).setValue(thongBao)
                                 .addOnCompleteListener(notifTask -> {
                                     if (notifTask.isSuccessful()) {

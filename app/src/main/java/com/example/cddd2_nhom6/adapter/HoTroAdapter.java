@@ -43,6 +43,7 @@ public class HoTroAdapter extends RecyclerView.Adapter<HoTroAdapter.ThongBaoView
         holder.binding.tvTitle.setText(hoTro.getName());
         holder.binding.tvTime.setText(hoTro.getTime());
         holder.binding.tvContent.setText(hoTro.getDescription());
+        // Xử lý hiển thị ảnh
         if (hoTro.getImageUrl() != null && !hoTro.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(hoTro.getImageUrl())
